@@ -7,7 +7,7 @@ function Footer(){
         }
         return(
                 <div>
-                        <h2 style={footer}>blog</h2>
+                        <h2 style={footer}>CANVAS</h2>
                 </div>
         )
 }
