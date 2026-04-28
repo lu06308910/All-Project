@@ -14,10 +14,12 @@ function App() {
 
           {/* 기본으로 보여줄 페이지 */}
           <Route index element={<Home />}></Route>
-
+          
           {/* 앞으로 추가될 페이지는 여기에 계속 Route 추가해주시면 됨 */}
+          <Route path='manager' element={<Manager />}></Route>
+        
         </Route>
-        <Route path='manager' element={<Manager />}></Route>
+
       </Routes>
     </BrowserRouter>
   )
