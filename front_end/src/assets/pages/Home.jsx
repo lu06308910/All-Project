@@ -1,6 +1,8 @@
+import React from 'react';
+
 function Home() {
         return (
-                <div class="layoutAll">
+                <div>
                         <div>
                                 <a href="">수납가구</a>
                                 <a href="">침대/매트리스</a>

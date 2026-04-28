@@ -40,8 +40,10 @@ function Top() {
         </div>
       </header >
 
-      <Outlet />
-      
+      <main className="inner-container">
+        <Outlet />
+      </main>
+
       <Footer />
     </div>
 
