@@ -19,7 +19,8 @@ function Manager(){
                                                 onClick={() => setActiveMenu(menu)}
                                                 style={{ 
                                                         cursor: 'pointer', 
-                                                        backgroundColor: activeMenu === menu ? '#3a4ca8' : '#333333'
+                                                        backgroundColor: activeMenu === menu ? '#3a4ca8' : '#333333',
+                                                        padding: activeMenu == menu ? '10px' : '0px'
                                                 }}
                                         >
                                         {menu}
@@ -27,31 +28,59 @@ function Manager(){
                                 ))}
                                 </div>
                         </div>
-                        <div className='category-content'>
-                                {activeMenu == '회원 관리' && (
-                                        <>
-                                                <h4 style={{textAlign:'left'}}>회원 검색</h4>
-                                                <div class="row" style={{backgroundColor:'#eeeeee'}}>
-                                                        <div className="col p-2">번호</div>
-                                                        <div className="col p-2">아이디</div>
-                                                        <div className="col p-2">성명</div>
-                                                        <div className="col p-2">이메일</div>
-                                                        <div className="col p-2">연락처</div>
-                                                        <div className="col p-2">가입일</div>
-                                                        <div className="col p-2">관리</div>
-                                                </div>
-                                                <div class="row">
-                                                        <div className="col p-2">*번호</div>
-                                                        <div className="col p-2">*아이디</div>
-                                                        <div className="col p-2">*성명</div>
-                                                        <div className="col p-2">*이메일</div>
-                                                        <div className="col p-2">*연락처</div>
-                                                        <div className="col p-2">*가입일</div>
-                                                        <div className="col p-2">*관리</div>
-                                                </div>
-                                        </>
-                                        )
-                                }
+                        <div style={{display: 'flex', flexDirection: 'column', width:'1000px'}}>
+                                <div className='category-content'>
+                                        {activeMenu == '회원 관리' && (
+                                                <>
+                                                        <h4 style={{textAlign:'left'}}>회원 검색</h4>
+                                                        <div class="row" style={{backgroundColor:'#eeeeee'}}>
+                                                                <div className="col p-2">번호</div>
+                                                                <div className="col p-2">아이디</div>
+                                                                <div className="col p-2">성명</div>
+                                                                <div className="col p-2">이메일</div>
+                                                                <div className="col p-2">연락처</div>
+                                                                <div className="col p-2">가입일</div>
+                                                                <div className="col p-2">관리</div>
+                                                        </div>
+                                                        <div class="row">
+                                                                <div className="col p-2">*번호</div>
+                                                                <div className="col p-2">*아이디</div>
+                                                                <div className="col p-2">*성명</div>
+                                                                <div className="col p-2">*이메일</div>
+                                                                <div className="col p-2">*연락처</div>
+                                                                <div className="col p-2">*가입일</div>
+                                                                <div className="col p-2">*관리</div>
+                                                        </div>
+                                                </>
+                                                )
+                                        }
+                                </div>
+                                <div className='category-content'>
+                                        {activeMenu == '회원 관리' && (
+                                                <>
+                                                        <h4 style={{textAlign:'left'}}>탈퇴회원 검색</h4>
+                                                        <div class="row" style={{backgroundColor:'#eeeeee'}}>
+                                                                <div className="col p-2">번호</div>
+                                                                <div className="col p-2">아이디</div>
+                                                                <div className="col p-2">성명</div>
+                                                                <div className="col p-2">이메일</div>
+                                                                <div className="col p-2">연락처</div>
+                                                                <div className="col p-2">가입일</div>
+                                                                <div className="col p-2">관리</div>
+                                                        </div>
+                                                        <div class="row">
+                                                                <div className="col p-2">*번호</div>
+                                                                <div className="col p-2">*아이디</div>
+                                                                <div className="col p-2">*성명</div>
+                                                                <div className="col p-2">*이메일</div>
+                                                                <div className="col p-2">*연락처</div>
+                                                                <div className="col p-2">*가입일</div>
+                                                                <div className="col p-2">*관리</div>
+                                                        </div>
+                                                </>
+                                                )
+                                        }
+                                </div>
                         </div>
                 </div>
         )
