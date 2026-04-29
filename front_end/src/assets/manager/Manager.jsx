@@ -34,7 +34,7 @@ function Manager(){
 
                                 {/* 회원관리 페이지 */}
                                 {activeMenu == '회원 관리' &&(
-                                        <div style={{display: 'flex', flexDirection: 'column', width:'900px'}}>
+                                        <div style={{display: 'flex', flexDirection: 'column', width:'80%'}}>
                                                 <div className='category-content'>
                                                         <h4 style={{textAlign:'left', fontWeight:'600'}}>회원 검색</h4>
                                                         <div class="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em'}}>
@@ -91,7 +91,7 @@ function Manager(){
 
                                 {/* 기업관리 페이지 */}
                                 {activeMenu == '기업 관리' &&(
-                                        <div style={{display: 'flex', flexDirection: 'column', width:'900px'}}>
+                                        <div style={{display: 'flex', flexDirection: 'column', width:'80%'}}>
                                                 <div className='category-content'>
                                                         <h4 style={{textAlign:'left', fontWeight:'600'}}>기업 검색</h4>
                                                         <div class="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em'}}>
@@ -156,29 +156,30 @@ function Manager(){
                                                         <div style={{textAlign:'left'}}>
                                                                 <div style={{display: 'flex', justifyContent: 'space-between', gap:'10px'}}>
                                                                 <p>카테고리 :</p> 
-                                                                <select className="cat1" style={{width:'200px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'40px'}}>
+                                                                <select className="cat1" style={{width:'200px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px'}}>
                                                                                 <option value="null">대분류</option>
                                                                                 <option value="category">카테고리1</option>
                                                                                 <option value="category">카테고리2</option>
                                                                 </select>
-                                                                <select className="cat1" style={{width:'200px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'40px'}}>
+                                                                <select className="cat1" style={{width:'200px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px'}}>
                                                                                 <option value="null">소분류</option>
                                                                                 <option value="category">카테고리1</option>
                                                                                 <option value="category">카테고리2</option>
                                                                 </select>
                                                                 </div>
-                                                                <div style={{display: 'flex', justifyContent: 'space-between', gap:'10px'}}>
-                                                                <p>검색어 :</p>
-                                                                <select className="cat1" style={{width:'200px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'40px'}}>
-                                                                                <option value="null">전체</option>
-                                                                                <option value="category">상품명</option>
-                                                                                <option value="category">기업명</option>
-                                                                </select>
-                                                                <input type='text' className='search-text'></input>
+                                                                <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                                                                        <p>검색어 :</p>
+                                                                        <select className="cat1" style={{width:'100px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px'}}>
+                                                                                        <option value="null">전체</option>
+                                                                                        <option value="category">상품명</option>
+                                                                                        <option value="category">기업명</option>
+                                                                        </select>
+                                                                        <input type='text' style={{width:'300px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px'}}></input>
+                                                                </div>
+                                                                <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                                                                        <p>등록일자 :</p>
                                                                 </div>
                                                                 
-                                                                <p>검색어 :</p>
-                                                                <p>등록일자 :</p>
                                                         </div>
                                                         
                                                 </div>
