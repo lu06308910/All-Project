@@ -1,0 +1,174 @@
+/* 전체 레이아웃 */
+.all-product-wrap {
+  display: flex;
+  width: 100%;
+  margin-top: 100px;
+  padding: 0 40px;
+  box-sizing: border-box;
+}
+
+/* ----------------------- */
+/* 왼쪽 메뉴 */
+/* ----------------------- */
+.side-menu {
+  width: 220px;
+  padding-right: 20px;
+  flex-shrink: 0;   /* ← 왼쪽 메뉴가 절대 줄어들지 않게 고정 */
+}
+
+.p-menu {
+  padding: 12px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.p-menu a {
+  display: block;
+  color: #000;
+  text-decoration: none;
+}
+/* 1차 메뉴 */
+.p-menu {
+  padding: 12px 0;
+  cursor: pointer;
+  border-bottom: 1px solid #ddd;
+}
+
+/* 2차 카테고리 */
+.submenu {
+  padding-left: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+
+.submenu a {
+  font-size: 14px;
+  color: #555;
+  text-decoration: none;
+}
+
+.submenu a:hover {
+  color: #000;
+}
+
+
+
+/* ----------------------- */
+/* 오른쪽 컨텐츠 */
+/* ----------------------- */
+.product-content {
+  flex: 1;
+  padding-left: 40px;
+}
+
+/* 정렬 버튼 영역 */
+.sort-btns {
+  margin-bottom: 20px;
+}
+
+.sort-btns button {
+  margin-right: 10px;
+  padding: 8px 16px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+/* ----------------------- */
+/* 제품 그리드 */
+/* ----------------------- */
+/* 그리드 */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+}
+
+.product-card {
+  width: 260px;        /* 카드 너비 */
+  height: 420px;       /* 카드 전체 높이 일정하게 고정 */
+  padding: 15px;
+  
+  border-radius: 10px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card img {
+  width: 100%;
+  height: 100%;       /* 이미지 높이 고정 */
+  object-fit: cover;   /* 이미지 비율 유지하면서 자르기 */
+  border-radius: 8px;
+}
+
+/* 제품 정보 */
+.product-info .title {
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+/* 제품 정보 영역 크기 통일 */
+.product-info {
+  flex: 1;             /* 남는 영역을 일정하게 채우도록 */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.price {
+  margin-top: 5px;
+}
+
+.symbol {
+  font-size: 12px;
+}
+
+.amount {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;      /* ★ 별점 영역 고정 높이 */
+}
+.rating img {
+  width: 15px;       /* 별 아이콘 크기 통일 */
+  height: 15px;
+  object-fit: contain;
+}
+/* 링크 공통 */
+.product-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+/* 더보기 버튼 */
+.more-btn-wrap {
+  width: 100%;
+  text-align: center;
+  margin-top: 30px;
+}
+.more-btn {
+    padding: 10px 40px;
+    border-radius: 30px;
+    background: black;
+    color: white;
+    cursor: pointer;
+    font-size: 15px;
+    margin-bottom: 20px;
+}
+.more-box {
+    display: flex;
+    justify-content: center;   /* 버튼 중앙 정렬 */
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;   /* 위쪽 보더만 */
+}

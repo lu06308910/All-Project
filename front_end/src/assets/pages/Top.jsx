@@ -16,7 +16,7 @@ function Top() {
 
           {/* 메인 카테고리 */}
           <div className="main-categori">
-            <Link to="/">모든 상품</Link>
+            <Link to="/allproduct">모든 상품</Link>
             <Link to="/">공간별</Link>
             <Link to="/">할인 상품</Link>
             <Link to="/">서비스지원</Link>
