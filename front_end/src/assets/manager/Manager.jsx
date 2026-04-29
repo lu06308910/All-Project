@@ -10,6 +10,7 @@ function Manager(){
         const [activeMenu, setActiveMenu] = useState('대시보드');
 
         const menus = ['대시보드', '회원 관리', '기업 관리', '상품 관리', '게시글 관리', '문의 관리', '통계', '환경설정'];
+        const submenus= ['-예약', '-이벤트 관리']
 
         return(
                 <div className='inner-container'>
@@ -19,22 +20,45 @@ function Manager(){
                                              <h1 className="canvas">CANVAS</h1>   
                                         </Link>
                                         <div className='sub-mana'>
-                                                {menus.map((menu) => (
-                                                <p 
-                                                        key={menu} 
+                                        {menus.map((menu) => (
+                                                <p key={menu}>
+                                                <p
                                                         onClick={() => setActiveMenu(menu)}
-                                                        style={{ 
-                                                                cursor: 'pointer', 
-                                                                backgroundColor: activeMenu === menu ? '#3a4ca8' : '#333333',
-                                                                padding: '0px 15px'
+                                                        style={{
+                                                        cursor: 'pointer',
+                                                        backgroundColor: activeMenu === menu ? '#3a4ca8' : '#333333',
+                                                        padding: '0px 15px',
+                                                        margin: 0
                                                         }}
                                                 >
-                                                {menu}
+                                                        {menu}
+                                                </p>
+                                                
+                                                {/* 서브메뉴 조건부 렌더링 */}
+                                                {menu === '게시글 관리' && activeMenu === '게시글 관리' && (
+                                                        <div style={{ backgroundColor: '#222222' }}>
+                                                        {submenus.map((sub) => (
+                                                                <p
+                                                                key={sub}
+                                                                onClick={() => setActiveMenu(sub)}
+                                                                style={{
+                                                                        cursor: 'pointer',
+                                                                        padding: '8px 30px',
+                                                                        fontSize: '0.9em',
+                                                                        color: activeMenu === sub ? '#ffffff' : '#aaaaaa',
+                                                                        backgroundColor: activeMenu === sub ? '#4a5cb8' : 'transparent',
+                                                                        margin: 0
+                                                                }}
+                                                                >
+                                                                {sub}
+                                                                </p>
+                                                        ))}
+                                                        </div>
+                                                )}
                                                 </p>
                                         ))}
                                         </div>
                                 </div>
-
                                 {/* 회원관리 페이지 */}
                                 {activeMenu == '회원 관리' &&(
                                         <div style={{display: 'flex', flexDirection: 'column', width:'80%'}}>
@@ -237,7 +261,15 @@ function Manager(){
                                         </div>
                                 )}
                                 {/* 게시글관리 페이지 */}
-                                {activeMenu == '게시글 관리' && (
+                                {activeMenu == '예약 관리' && (
+                                        <div>
+                                                <div className='category-content'>
+                                                        <h4 style={{textAlign:'left', fontWeight:'600'}}>게시글 검색</h4>
+                                                </div>
+                                        </div>
+                                )}
+                                {/* 게시글관리 페이지 */}
+                                {activeMenu == '이벤트 관리' && (
                                         <div>
                                                 <div className='category-content'>
                                                         <h4 style={{textAlign:'left', fontWeight:'600'}}>게시글 검색</h4>
