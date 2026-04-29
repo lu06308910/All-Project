@@ -1,13 +1,16 @@
+/*관리자 페이지 로고*/
 .canvas{
-      font-weight: 600;
-      color: white;
-      font-size: 2rem;
-      margin:0;
-      word-break: break-all;
+        font-weight: 600;
+        color: white;
+        font-size: 1.7rem;
+        margin-left: 30px;
+        word-break: break-all;
+        text-decoration: none;
 }
+/* 매니저 카테고리 */
 .manager-container {
-    display: flex;
-    width: 100%;
+        display: flex;
+        width: 100%;
 }
 .category-mana{
         background-color: #333333;
@@ -22,6 +25,7 @@
         height: 800px;
         padding: 20px;
 }
+/* 메뉴 셀렉 후 */
 .sub-mana{
         display: flex;
         flex-direction: column;
@@ -38,4 +42,21 @@
         border-radius: 10px;
         width: 80px;
         padding: 5px;
+}
+.button2{
+        font-size: 0.8em;
+        background-color: #666666;
+        text-align: center;
+        color: white;
+        border-radius: 30px;
+        width: 50px;
+        padding: 5px;
+}
+/* 캘린더 */
+.calendar{
+        padding: 2px;
+        border: 1px solid #333333;
+        border-radius: 10px;
+        text-align: center;
+        width: 180px;
 }
