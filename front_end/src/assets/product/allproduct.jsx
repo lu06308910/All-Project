@@ -10,7 +10,7 @@ function AllProduct() {
         setOpenMenu(openMenu === menuName ? null : menuName);
     };
 
-    // 🔥 제품 데이터 배열
+    // 제품 데이터 배열
     const products = [
         { id: 1, img: "public/p1.png", title: "BILLY 빌리", price: "89,900" },
         { id: 2, img: "public/p2.png", title: "BILLY 빌리", price: "89,900" },
@@ -21,7 +21,7 @@ function AllProduct() {
         { id: 7, img: "public/p3.png", title: "BILLY 빌리", price: "89,900" },
     ];
 
-    // 🔥 처음 4개 + showMore true면 전체
+    // 처음 4개 + showMore true면 전체
     const visibleProducts = showMore ? products : products.slice(0, 4);
 
     return (
@@ -80,13 +80,14 @@ function AllProduct() {
                     <button>평점순</button>
                 </div>
 
-                {/* 🔥 제품 리스트 (한 줄 4개 고정 + 더보기 기능) */}
+                {/* 제품 리스트 (한 줄 4개 고정 + 더보기 기능) */}
                 <div className="product-grid">
                     {visibleProducts.map((item) => (
                         <Link to="" className="product-link" key={item.id}>
                             <div className="product-card">
-                                <img src={item.img} alt="" />
+                                <div className="product-img"><img src={item.img} alt="" /></div>
                                 <div className="product-info">
+                                    <div style={{ fontWeight: 'bold' }}>canvas</div>    
                                     <div className="title">{item.title}</div>
                                     <div className="price">
                                         <span className="symbol">₩</span>
@@ -106,7 +107,7 @@ function AllProduct() {
                     ))}
                 </div>
 
-                {/* 🔥 더보기 버튼 */}
+                {/* 더보기 버튼 */}
                 <div className="more-box">
                     <button className="more-btn" onClick={() => setShowMore(!showMore)}>
                         {showMore ? "접기" : "더보기"}

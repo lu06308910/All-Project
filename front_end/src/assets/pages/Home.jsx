@@ -1,11 +1,11 @@
-import React from 'react';
-import './../css/home.css';
+import React, { useState } from "react";
+import { Link } from 'react-router-dom';
+import './../css/kdh.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Carousel } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
 
 function Home() {
-
+        // 카테고리
         const categories = [
                 { id: 1, name: '수납가구', img: '/image/storage.jpeg' },
                 { id: 2, name: '침대/매트리스', img: '/image/bed.jpeg' },
@@ -15,14 +15,23 @@ function Home() {
                 { id: 6, name: '조명', img: '/image/lighting.jpeg' },
                 { id: 7, name: '욕실', img: '/image/bath.jpeg' },
         ]
-
+        // 모든상품
         const products = [
-                { id: 1, name: '1.스와니예 라지킹 침대 프레임(ㅇㅇ/ㅇㅇ)', price: '1,125,000', brand: 'CANVAS', img: '/image/product.jpeg' },
-                { id: 2, name: '2.스와니예 라지킹 침대 프레임(ㅇㅇ/ㅇㅇ)', price: '1,125,000', brand: 'CANVAS', img: '/image/product.jpeg' },
-                { id: 3, name: '3.스와니예 라지킹 침대 프레임(ㅇㅇ/ㅇㅇ)', price: '1,125,000', brand: 'CANVAS', img: '/image/product.jpeg' },
-                { id: 4, name: '4.스와니예 라지킹 침대 프레임(ㅇㅇ/ㅇㅇ)', price: '1,125,000', brand: 'CANVAS', img: '/image/product.jpeg' }
+                { id: 1, name: '1.스와니예 라지킹 침대 프레임(--/-)', price: '1,125,000', brand: 'CANVAS', img: '/image/product.jpeg' },
+                { id: 2, name: '2.스와니예 라지킹 침대 프레임(--/-)', price: '1,125,000', brand: 'CANVAS', img: '/image/product.jpeg' },
+                { id: 3, name: '3.스와니예 라지킹 침대 프레임(--/-)', price: '1,125,000', brand: 'CANVAS', img: '/image/product.jpeg' },
+                { id: 4, name: '4.스와니예 라지킹 침대 프레임(--/-)', price: '1,125,000', brand: 'CANVAS', img: '/image/product.jpeg' },
+                { id: 5, name: '5.스와니예 라지킹 침대 프레임(--/-)', price: '1,125,000', brand: 'CANVAS', img: '/image/product.jpeg' },
+                { id: 6, name: '6.스와니예 라지킹 침대 프레임(--/-)', price: '1,125,000', brand: 'CANVAS', img: '/image/product.jpeg' }
         ]
 
+        const [showMore, setShowMore] = useState(false);
+        const [showTopBtn, setShowTopBtn] = useState(false);
+
+        // 더보기
+        const visibleProducts = showMore ? products : products.slice(0, 4);
+
+        // --------------------------------------------------------------------------------------------------
         return (
                 <div className="home-main">
                         {/* 카테고리 */}
@@ -64,14 +73,14 @@ function Home() {
                         </div>
 
                         {/* 모든 상품 */}
-                        <div className="product-section">
+                        <div className="main-product-section">
                                 <h2>CANVAS 상품</h2><br />
                                 <p>CANVAS의 모든 컬렉션을 만나보세요</p>
                                 <hr />
                         </div>
 
                         <div className="product-grid">
-                                {products.map((product) => (
+                                {visibleProducts.map((product) => (
                                         <div key={product.id} className="product-card">
                                                 <Link to={`/product/${product.id}`} className="product-link">
                                                         <div className="product-img-box">
@@ -89,6 +98,14 @@ function Home() {
                                         </div>
                                 ))}
                         </div>
+
+                        {/* 더보기 버튼 */}
+                        <div className="more-box">
+                                <button className="more-btn" onClick={() => setShowMore(!showMore)}>
+                                        {showMore ? "접기" : "더보기"}
+                                </button>
+                        </div>
+                        
                 </div >
         );
 }

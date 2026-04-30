@@ -90,50 +90,30 @@
 }
 
 /* 모든 상품 */
-.product-section {
+.main-product-section {
         text-align: center;
         margin-top: 100px;
         padding: 0 20px;
 }
 
-.product-section h2 {
+.main-product-section h2 {
         font-size: 32px;
         font-weight: 700;
         margin-bottom: 0;
 }
 
-.product-section p {
+.main-product-section p {
         font-size: 16px;
         color: #666;
         margin-top: 10px;
 }
 
-.product-section hr {
+.main-product-section hr {
         max-width: 1200px;
         margin: 40px auto;
         border: 0;
         height: 1px;
         background-color: #ddd;
-}
-
-.product-gird {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 30px;
-        max-width: 1200px;
-        margin: 0 auto 100px;
-        padding: 0 20px;
-}
-
-.product-card {
-        width: calc(25% - 22.5px);
-        margin-bottom: 20px;
-}
-
-.product-link {
-        text-decoration: none;
-        color: inherit;
-        display: block;
 }
 
 .product-img-box {
@@ -187,3 +167,4 @@
         font-weight: 800;
         margin-right: 2px;
 }
+
