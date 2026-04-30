@@ -65,10 +65,10 @@ function Top() {
             </div>
 
             <div className="icon-categori">
-              <div>로그인</div>
-              <div>회원가입</div>
-              <div>마이스토어</div>
-              <div>장바구니</div>
+              <div><Link to="/login">로그인</Link></div>
+              <div><Link to="/member/signup">회원가입</Link></div>
+              <div><Link to="">마이스토어</Link></div>
+              <div><Link to="">장바구니</Link></div>
             </div>
           </div>
         </div>
