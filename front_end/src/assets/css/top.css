@@ -154,10 +154,18 @@
         cursor: pointer;
 }
 
-.icon-categori div:hover {
+.icon-categori a {
+        text-decoration: none;
+        color: inherit;
+        display: inline-block;
+}
+
+.icon-categori div:hover,
+.icon-categori div:hover a {
         color: #000;
         text-decoration: underline;
 }
+
 
 /* 반응형 대응 (화면이 작아질 때) */
 @media (max-width: 1024px) {
