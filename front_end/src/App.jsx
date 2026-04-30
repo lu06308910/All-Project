@@ -5,6 +5,7 @@ import Home from './assets/pages/Home';
 import Manager from './assets/manager/Manager'
 import AllRroduct from './assets/product/allproduct';
 import Space from './assets/product/space';
+import Qna from './assets/qna/Qna';
 
 function App() {
 
@@ -20,6 +21,7 @@ function App() {
           {/* 앞으로 추가될 페이지는 여기에 계속 Route 추가해주시면 됨 */}
           <Route path='/allproduct' element={<AllRroduct />}></Route>
           <Route path='/spaceproduct' element={<Space />}></Route>
+          <Route path='/qna' element={<Qna />}></Route>
         </Route>
         <Route path='manager' element={<Manager />}></Route>
       </Routes>
