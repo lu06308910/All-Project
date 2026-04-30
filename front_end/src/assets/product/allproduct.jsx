@@ -85,8 +85,9 @@ function AllProduct() {
                     {visibleProducts.map((item) => (
                         <Link to="" className="product-link" key={item.id}>
                             <div className="product-card">
-                                <img src={item.img} alt="" />
+                                <div className="product-img"><img src={item.img} alt="" /></div>
                                 <div className="product-info">
+                                    <div style={{ fontWeight: 'bold' }}>canvas</div>    
                                     <div className="title">{item.title}</div>
                                     <div className="price">
                                         <span className="symbol">₩</span>
