@@ -1,0 +1,329 @@
+/* 전체 레이아웃 */
+.all-product-wrap {
+  display: flex;
+  width: 100%;
+  margin-top: 100px;
+  padding: 0 40px;
+  box-sizing: border-box;
+}
+
+/* ----------------------- */
+/* 왼쪽 메뉴 */
+/* ----------------------- */
+.side-menu {
+  width: 220px;
+  padding-right: 20px;
+  flex-shrink: 0;
+  
+}
+
+.p-menu {
+  padding: 12px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.p-menu a {
+  display: block;
+  color: #000;
+  text-decoration: none;
+}
+
+/* 1차 메뉴 */
+.p-menu {
+  padding: 12px 0;
+  cursor: pointer;
+}
+
+/* 2차 카테고리 */
+.submenu {
+  padding-left: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+
+.submenu a {
+  font-size: 14px;
+  color: #555;
+  text-decoration: none;
+}
+
+.submenu a:hover {
+  color: #000;
+}
+
+
+
+/* ----------------------- */
+/* 오른쪽 컨텐츠 */
+/* ----------------------- */
+.product-content {
+  flex: 1;
+  padding-left: 40px;
+}
+
+/* 정렬 버튼 영역 */
+.sort-btns {
+  margin-bottom: 20px;
+}
+
+.sort-btns button {
+  margin-right: 10px;
+  padding: 8px 16px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+/* ----------------------- */
+/* 제품 그리드 */
+/* ----------------------- */
+/* 그리드 */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  transition: all 0.5s ease-in-out;
+  margin-bottom: 20px;
+}
+
+.product-card {
+  width: 260px;
+  /* 카드 너비 */
+  height: 420px;
+  /* 카드 전체 높이 일정하게 고정 */
+  padding: 15px;
+  border-radius: 10px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  /* 대호 추가(부드럽게 열리기) */
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+ 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.product-img {
+  width: 100%;
+  height: 260px;      /* 이미지 영역 고정 높이 */
+  overflow: hidden;   /* 이미지 넘치는 부분 숨김 */
+}
+.product-img {
+  width: 100%;
+  height: 260px;      /* 이미지 영역 고정 높이 */
+  overflow: hidden;   /* 이미지 넘치는 부분 숨김 */
+}
+
+.product-img img{
+  width: 100%;
+  height: 100%;
+  /* 이미지 높이 고정 */
+  object-fit: cover;
+  /* 이미지 비율 유지하면서 자르기 */
+  border-radius: 8px;
+}
+
+/* 제품 정보 */
+.product-info .title {
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+/* 제품 정보 영역 크기 통일 */
+.product-info {
+  flex: 1;
+  /* 남는 영역을 일정하게 채우도록 */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.price {
+  margin-top: 5px;
+}
+
+.symbol {
+  font-size: 12px;
+}
+
+.amount {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  /* ★ 별점 영역 고정 높이 */
+}
+
+.rating img {
+  width: 15px;
+  /* 별 아이콘 크기 통일 */
+  height: 15px;
+  object-fit: contain;
+}
+
+/* 링크 공통 */
+.product-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+/* 더보기 버튼 */
+.more-btn-wrap {
+  width: 100%;
+  text-align: center;
+  margin-top: 30px;
+}
+
+.more-btn {
+  padding: 10px 40px;
+  border-radius: 30px;
+  background: black;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
+.more-box {
+  display: flex;
+  justify-content: center;
+  /* 버튼 중앙 정렬 */
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+  /* 위쪽 보더만 */
+}
+/* ----------------------- */
+/* 공간별 페이지 */
+/* ----------------------- */
+.space-wrap {
+    width: 100%;
+    margin: 0 auto;
+}
+.space-wrap h1 , .space-wrap h2 {
+    font-weight: bold;
+    margin: 100px 0px 50px;
+}
+/* 핵심 레이아웃 */
+.space-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 250px 250px;
+    gap: 15px;
+}
+
+/* 큰 이미지: 1번째 */
+.big-img {
+    grid-column: 1 / 2;
+    grid-row: 1 / 3;   /* 세로 2칸 차지 */
+}
+
+/* 위 작은 이미지 */
+.small-top {
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+}
+
+/* 오른쪽 식물 이미지 */
+.small-right {
+    grid-column: 3 / 4;
+    grid-row: 1 / 2;
+}
+
+/* 아래 긴 테이블 이미지 */
+.wide-bottom {
+    grid-column: 2 / 4;
+    grid-row: 2 / 3;
+}
+
+/* 이미지 스타일 */
+.space-grid img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 공통 이미지 박스 */
+.img-box {
+    position: relative;
+    overflow: hidden; /* 오버레이 넘침 방지 */
+}
+
+/* 버튼 이미지 위치 */
+.btn-img {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 40px !important;     
+    height: 40px !important;    
+
+    z-index: 2;
+    object-fit: contain;
+    cursor: pointer;
+}
+/*  오버레이 박스 기본 숨김 */
+.hover-box {
+    position: absolute;
+    bottom: -50px;  /* 아래로 숨겨둠 */
+    left: 0;
+    width: 100%;
+    height: 50px;
+
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 14px;
+    opacity: 0;
+
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+/*  마우스 오버 시 나타나는 효과 */
+.img-box:hover .hover-box {
+    bottom: 0;
+    opacity: 1;
+}
+/* ----------------------- */
+/* QnA 페이지 */  
+/* ----------------------- */
+.qna-menu {
+  padding: 12px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+
+.qna-menu a {
+  font-size: 15px;
+  color: #555;
+  text-decoration: none;
+}
+
+.qna-menu a:hover {
+  color: #000;
+}
+
+
