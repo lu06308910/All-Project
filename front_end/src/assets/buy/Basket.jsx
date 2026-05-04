@@ -35,46 +35,89 @@ function Basket() {
                                                 <button className='button3'>선택 삭제</button>
                                         </div>
                                         <hr/>
-                                        <h5>장바구니 상품 (---)</h5>
-                                        <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
+                                        <h5 style={{ margin:'20px 30px'}}>장바구니 상품 (---)</h5>
+                                        <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', marginTop:'20px'}}>
                                                 <thead>
                                                         <tr>
-                                                                <th style={{backgroundColor:'#eeeeee', width: '10%'}}>
+                                                                <th style={{backgroundColor:'#eeeeee', width: '10%', textAlign:'center' }}>
                                                                         <input type="checkbox" aria-label="전체 선택"/>
                                                                 </th>
-                                                                <th style={{backgroundColor:'#eeeeee', width: '40%'}}>상품명/옵션정보</th>
-                                                                <th style={{backgroundColor:'#eeeeee', width: '10%'}}>수량</th>
-                                                                <th style={{backgroundColor:'#eeeeee', width: '10%'}}>가격</th>
-                                                                <th style={{backgroundColor:'#eeeeee', width: '10%'}}>배송비</th>
-                                                                <th style={{backgroundColor:'#eeeeee', width: '10%'}}>최종구매가</th>
-                                                                <th style={{backgroundColor:'#eeeeee', width: '10%'}}>주문관리</th>
+                                                                <th style={{backgroundColor:'#eeeeee', width: '40%', textAlign:'center' }}>상품명/옵션정보</th>
+                                                                <th style={{backgroundColor:'#eeeeee', width: '10%', textAlign:'center' }}>수량</th>
+                                                                <th style={{backgroundColor:'#eeeeee', width: '10%', textAlign:'center' }}>가격</th>
+                                                                <th style={{backgroundColor:'#eeeeee', width: '10%', textAlign:'center' }}>배송비</th>
+                                                                <th style={{backgroundColor:'#eeeeee', width: '10%', textAlign:'center' }}>최종구매가</th>
+                                                                <th style={{backgroundColor:'#eeeeee', width: '10%', textAlign:'center' }}>주문관리</th>
                                                         </tr>
                                                 </thead>
                                                 <tbody>
                                                         <tr>
-                                                                <td style={{ width: '10%' }}>
+                                                                <td style={{ width: '10%', textAlign:'center' }}>
                                                                         <input type="checkbox" aria-label="항목 선택" />
                                                                 </td>
-                                                                <td style={{ width: '40%', display:'flex', alignItems:'center'}}>
-                                                                        <img></img>
-                                                                        <div style={{flexDirection:'column'}}>
-                                                                                <button className='button3'>제품명</button>
-                                                                                <span>제품명</span>
-                                                                                <div>
-                                                                                        <span>제품옵션</span>
-                                                                                        <span>옵션변경</span>
+                                                                <td style={{ width: '40%'}}>
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                                                <img src='image/bed.jpeg' className='img-basket' alt="제품" />
+                                                                                <div style={{ 
+                                                                                        display: 'flex', flexDirection: 'column', gap: '4px'
+                                                                                }}>
+                                                                                        <button className='button3'>제품명</button>
+                                                                                        <span
+                                                                                        style={{overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
+                                                                                        WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, whiteSpace: 'normal',
+                                                                                        height: '1.5em', fontWeight: '500', width:'80%'}}>
+                                                                                                제품명길게썼을때잘리는지안잘리는지테스트얼마나길게써야잘리는지
+                                                                                        </span>
+                                                                                        <div>
+                                                                                                <span>제품옵션 </span>
+                                                                                                <span>옵션변경</span>
+                                                                                        </div>
                                                                                 </div>
                                                                         </div>
                                                                 </td>
-                                                                <td style={{ width: '10%' }}>수량</td>
-                                                                <td style={{ width: '10%' }}>3,089,000원</td>
-                                                                <td style={{ width: '10%' }}>3,000원</td>
-                                                                <td style={{ width: '10%' }}>3,092,000원</td>
-                                                                <td style={{ width: '10%' }}>
+                                                                <td style={{ width: '10%' , textAlign:'center' }}>수량</td>
+                                                                <td style={{ width: '10%' , textAlign:'center' }}>3,089,000원</td>
+                                                                <td style={{ width: '10%' , textAlign:'center' }}>3,000원</td>
+                                                                <td style={{ width: '10%' , textAlign:'center' }}>3,092,000원</td>
+                                                                <td style={{ width: '10%' , textAlign:'center' }}>
+                                                                        <button className='button3' style={{backgroundColor:'black', color:'white'}}>구매하기</button>
+                                                                </td>
+                                                        </tr>
+                                                        <hr style={{width:'100%'}}/>
+                                                        <tr>
+                                                                <td style={{ width: '10%', textAlign:'center'  }}>
+                                                                        <input type="checkbox" aria-label="항목 선택" />
+                                                                </td>
+                                                                <td style={{ width: '40%'}}>
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                                                <img src='image/bed.jpeg' className='img-basket' alt="제품" />
+                                                                                <div style={{ 
+                                                                                        display: 'flex', flexDirection: 'column', gap: '4px'
+                                                                                }}>
+                                                                                        <button className='button3'>제품명</button>
+                                                                                        <span
+                                                                                        style={{overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
+                                                                                        WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, whiteSpace: 'normal',
+                                                                                        height: '1.5em', fontWeight: '500', width:'80%'}}>
+                                                                                                제품명길게썼을때잘리는지안잘리는지테스트얼마나길게써야잘리는지
+                                                                                        </span>
+                                                                                        <div>
+                                                                                                <span>제품옵션 </span>
+                                                                                                <span>옵션변경</span>
+                                                                                        </div>
+                                                                                </div>
+                                                                        </div>
+                                                                </td>
+                                                                <td style={{ width: '10%' , textAlign:'center' }}>수량</td>
+                                                                <td style={{ width: '10%' , textAlign:'center' }}>3,089,000원</td>
+                                                                <td style={{ width: '10%' , textAlign:'center' }}>3,000원</td>
+                                                                <td style={{ width: '10%' , textAlign:'center' }}>3,092,000원</td>
+                                                                <td style={{ width: '10%' , textAlign:'center' }}>
                                                                         <button className='button3' style={{backgroundColor:'black', color:'white'}}>구매하기</button>
                                                                 </td>
                                                         </tr>
                                                 </tbody>
+                                                
                                         </table>
                                         
                                 </div>
