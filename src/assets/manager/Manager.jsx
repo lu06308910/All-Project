@@ -23,7 +23,7 @@ function Manager(){
 
         const Reservation =()=>(
                 <div>
-                        <h4 style={{textAlign:'left', fontWeight:'600'}}>예약 게시글 목록</h4>
+                        <h4 style={{textAlign:'left', fontWeight:'60%'}}>예약 게시글 목록</h4>
                         <hr/>
                         <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px', fontSize:'0.8em'}}>
                                 <thead>
@@ -64,7 +64,7 @@ function Manager(){
         )
         const Event = () =>(
                 <div>
-                        <h4 style={{textAlign:'left', fontWeight:'600'}}>진행 중인 이벤트</h4>
+                        <h4 style={{textAlign:'left', fontWeight:'60%'}}>진행 중인 이벤트</h4>
                         <hr/>
                         <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px', fontSize:'0.8em'}}>
                                 <thead>
@@ -101,7 +101,7 @@ function Manager(){
                                 </div>
                                 <button className='button'>게시글등록</button>
                         </div>
-                        <h4 style={{textAlign:'left', fontWeight:'600'}}>마무리 된 이벤트</h4>
+                        <h4 style={{textAlign:'left', fontWeight:'60%'}}>마무리 된 이벤트</h4>
                         <hr/>
                         <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px', fontSize:'0.8em'}}>
                                 <thead>
@@ -156,7 +156,7 @@ function Manager(){
                                 <div className='light-but'>2025-02-14 매출</div>
                                 <button style={{background:"white", border: "1px solid white", color:"black"}} onClick={() => setModalOpen(false)}>X</button>
                         </div>
-                        <table className="table table-bordered" style={{width:'600px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
+                        <table className="table table-bordered" style={{width:'60%', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
                                 <thead>
                                         <tr>
                                                 <th style={{backgroundColor:'#eeeeee'}}>주문번호</th>
@@ -287,7 +287,7 @@ function Manager(){
                         zIndex: 1000,
                         borderRadius: '8px',
                         boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
-                        width: '600px'
+                        width: '60%'
                 }}>
                         <div style={{display:"flex", justifyContent:"space-between"}}>
                                 <div className='light-but'>2025-02-14 매출</div>
@@ -399,7 +399,7 @@ function Manager(){
                                                         </div>
                                                 </div>
                                                 <div className='category-content'>
-                                                        <h4 style={{textAlign:'left', fontWeight:'600'}}>탈퇴회원 검색</h4>
+                                                        <h4 style={{textAlign:'left', fontWeight:'60%'}}>탈퇴회원 검색</h4>
                                                         <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em'}}>
                                                                 <div className="col p-2">번호</div>
                                                                 <div className="col p-2">아이디</div>
