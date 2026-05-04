@@ -9,6 +9,7 @@ import Manager from './assets/manager/Manager';
 import AllRroduct from './assets/product/allproduct';
 
 import Space from './assets/product/space';
+import Sale from './assets/product/sale';
 import Qna from './assets/qna/Qna';
 import QnaWrite from './assets/qna/QnaWrite';
 import NoticeList from './assets/qna/NoticeList';
@@ -29,6 +30,7 @@ function App() {
           <Route path='/member/signup' element={<Member/>}></Route>
           <Route path='/allproduct' element={<AllRroduct />}></Route>
           <Route path='/spaceproduct' element={<Space />}></Route>
+          <Route path='/sale' element={<Sale />}></Route>
           <Route path='/qna' element={<Qna />}></Route>
           <Route path='/qna/write' element={<QnaWrite />}></Route>
           <Route path='/qna/noticelist' element={<NoticeList />}></Route>

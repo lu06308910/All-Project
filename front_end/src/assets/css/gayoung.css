@@ -14,10 +14,10 @@
 }
 .category-mana{
         background-color: #333333;
-        width: 18%;
+        width: 15%;
         height: 800px;
         text-align: left;
-        padding-left: 15px;
+        margin-left: 15px;
         padding-top: 30px;
 }
 .category-content{
@@ -32,7 +32,6 @@
         color: white;
         gap: 10px;
         padding-top: 50px;
-        padding-left: 10px;
 }
 .button{
         font-size: 0.8em;
@@ -59,4 +58,26 @@
         border-radius: 10px;
         text-align: center;
         width: 180px;
+}
+/* 페이지네이션 */
+.pagination{
+        gap: 20px;
+        display: flex;
+        justify-content: center;
+}
+.paging-text{
+        text-decoration:none;
+        color:#c4c4c4;
+}
+.paging-active-text{
+        text-decoration:none;
+        color:#000000;
+        font-weight: 600;
+}
+.light-but{
+        border: 1px solid #999999;
+        color: #999999;
+        border-radius: 10px;
+        padding: 5px 10px;
+        font-size: 0.9em;
 }
