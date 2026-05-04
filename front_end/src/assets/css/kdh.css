@@ -70,6 +70,7 @@
         width: 100%;
         overflow: hidden;
 }
+
 .sub-slider {
         width: 40%;
         overflow: hidden;
@@ -78,32 +79,38 @@
 .main-slider .carousel-inner {
         height: 650px !important;
 }
+
 .sub-slider .carousel-inner {
         height: 400px !important;
 }
+
 .main-slider .carousel-item,
 .main-slider .carousel-item a {
         height: 100% !important;
         display: block;
 }
+
 .sub-slider .carousel-item,
 .sub-slider .carousel-item a {
         height: 100% !important;
         display: block;
 }
+
 .main-slider .carousel-item img {
         width: 100%;
         height: 100% !important;
         object-fit: cover !important;
         object-position: center;
 }
+
 .sub-slider .carousel-item img {
         width: 100%;
         height: 100% !important;
-        object-fit: contain !important; 
+        object-fit: contain !important;
         object-position: center;
         background-color: white;
 }
+
 /* 모든 상품 */
 .main-product-section {
         text-align: center;
@@ -198,7 +205,7 @@
 
 .login-container {
         width: 100%;
-        max-width: 400px;
+        max-width: 500px;
         padding: 20px;
 }
 
@@ -225,17 +232,21 @@
 
 /* 입력 폼 스타일 */
 .login-form .input-group {
-        margin-bottom: 15px;
+        margin-bottom: 25px;
         position: relative;
+        display: block;
+        width: 100%;
 }
 
 .login-form p {
         display: block;
+        width: 100%;
         font-size: 11px;
         font-weight: 700;
         color: #222;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
         letter-spacing: 0.5px;
+        text-align: left;
 }
 
 .login-form input {
@@ -290,22 +301,43 @@
 
 /*찾기/회원가입 */
 .auth-helper {
-        display: flex;
-        justify-content: space-between;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center;
+        width: 100%;
         margin-top: 25px;
-        padding: 0 5px;
+        padding: 10px 0;
 }
 
 .auth-helper a {
         font-size: 12px;
         color: #888;
         text-decoration: none;
-        transition: color 0.2s;
+        transition: all 0.2s;
+        /* 클릭 범위를 넓히기 위해 패딩 살짝 추가 */
+        padding: 0 5px;
 }
 
 .auth-helper a:hover {
         color: #000;
         text-decoration: underline;
+}
+
+.auth-helper .divider {
+        width: 1px;
+        height: 10px;
+        background-color: #ddd;
+        margin: 0 10px;
+}
+
+.auth-helper p {
+        width: auto !important;
+        margin-bottom: 0 !important;
+        font-size: 12px !important;
+        color: #888 !important;
+        font-weight: 400 !important;
+        letter-spacing: 0 !important;
+        text-align: center;
 }
 
 /* 카카오 로그인 */
@@ -321,6 +353,7 @@
         color: #bbb;
         letter-spacing: 1px;
         margin-bottom: 15px;
+        text-align: center;
 }
 
 .kakao-login-btn {
@@ -354,28 +387,97 @@
 }
 
 /* 회원가입 페이지(나머진 로그인 class 동일) */
-
-.address-zip {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 8px;
+.signup-container {
+        max-width: 650px !important;
 }
 
-.address-zip input {
-        flex: 1;
+.input-group p {
+        display: block;
+        /* 한 줄을 통째로 차지하게 함 */
+        margin-bottom: 10px;
+        font-weight: 600;
+        font-size: 12px;
+        color: #000;
+}
+
+.address-zip {
+        display: flex !important;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        width: 100%;
+}
+
+.address-zip input[name="zipcode"] {
+        width: 120px !important;
+        flex: none;
+        margin-bottom: 0 !important;
 }
 
 .zip-btn {
         width: 100px;
+        height: 40px;
         background-color: #333;
         color: #fff;
-        cursor: pointer;
         border: none;
-        font-size: 13px;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 2px;
+        cursor: pointer;
 }
 
 .address-main,
 .address-detail {
-        margin-top: 5px;
         width: 100%;
+        margin-bottom: 10px !important;
+        background-color: transparent;
+}
+
+.login-form input:focus {
+        border-bottom: 1px solid #000;
+}
+
+.user-type-tab {
+        display: flex;
+        margin-bottom: 30px;
+        border-bottom: 1px solid #e0e0e0;
+}
+
+.user-type-tab button {
+        flex: 1;
+        padding: 15px 0;
+        background: none;
+        border: none;
+        font-size: 14px;
+        color: #999;
+        cursor: pointer;
+        transition: all 0.3s;
+        position: relative;
+}
+
+.user-type-tab button.active {
+        color: #000;
+        font-weight: 700;
+}
+
+.user-type-tab button.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: #000;
+}
+
+/* ID/PWD 찾기 */
+
+.mode-btn.active {
+        border-bottom: 2px solid #000 !important;
+        color: #000;
+}
+
+.mode-btn {
+        color: #999;
+        transition: 0.3s;
 }

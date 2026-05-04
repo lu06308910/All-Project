@@ -83,7 +83,7 @@ function AllProduct() {
                 {/* 제품 리스트 (한 줄 4개 고정 + 더보기 기능) */}
                 <div className="product-grid">
                     {visibleProducts.map((item) => (
-                        <Link to="" className="product-link" key={item.id}>
+                        <Link to="/productDetail" className="product-link" key={item.id}>
                             <div className="product-card">
                                 <div className="product-img"><img src={item.img} alt="" /></div>
                                 <div className="product-info">
