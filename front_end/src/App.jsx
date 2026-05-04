@@ -13,6 +13,7 @@ import Sale from './assets/product/sale';
 import Qna from './assets/qna/Qna';
 import QnaWrite from './assets/qna/QnaWrite';
 import NoticeList from './assets/qna/NoticeList';
+import Basket from './assets/buy/Basket';
 
 function App() {
 
@@ -34,10 +35,10 @@ function App() {
           <Route path='/qna' element={<Qna />}></Route>
           <Route path='/qna/write' element={<QnaWrite />}></Route>
           <Route path='/qna/noticelist' element={<NoticeList />}></Route>
-
+          <Route path='/basket' element={<Basket />}></Route>
 
         </Route>
-        <Route path='manager' element={<Manager />}></Route>
+        <Route path='/manager' element={<Manager />}></Route>
       </Routes>
     </BrowserRouter>
   )
