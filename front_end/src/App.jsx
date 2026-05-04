@@ -4,6 +4,7 @@ import Top from './assets/pages/Top';
 import Home from './assets/pages/Home';
 import Login from './assets/pages/login';
 import Member from './assets/pages/member';
+import FindMember from './assets/pages/findmember';
 
 import Manager from './assets/manager/Manager';
 import AllRroduct from './assets/product/allproduct';
@@ -27,8 +28,9 @@ function App() {
           <Route index element={<Home />}></Route>
 
           {/* 앞으로 추가될 페이지는 여기에 계속 Route 추가해주시면 됨 */}
-          <Route path='/login' element={<Login/>}></Route>
-          <Route path='/member/signup' element={<Member/>}></Route>
+          <Route path='/login' element={<Login />}></Route>
+          <Route path='/member/signup' element={<Member />}></Route>
+          <Route path='/member/findmember' element={<FindMember />}></Route>
           <Route path='/allproduct' element={<AllRroduct />}></Route>
           <Route path='/productDetail' element={<ProductDetail />}></Route>
           <Route path='/spaceproduct' element={<Space />}></Route>

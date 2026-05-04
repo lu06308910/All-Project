@@ -52,7 +52,7 @@ function Top() {
           <div className="main-categori">
             <Link to="/allproduct">모든 상품</Link>
             <Link to="/spaceproduct">공간별</Link>
-            <Link to="">할인 상품</Link>
+            <Link to="/sale">할인 상품</Link>
             <Link to="/qna">서비스지원</Link>
             <Link to="/manager">관리자페이지</Link>
           </div>
