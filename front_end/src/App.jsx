@@ -8,6 +8,7 @@ import FindMember from './assets/pages/findmember';
 
 import Manager from './assets/manager/Manager';
 import AllRroduct from './assets/product/allproduct';
+import ProductDetail from './assets/product/ProductDetail';
 
 import Space from './assets/product/space';
 import Sale from './assets/product/sale';
@@ -31,6 +32,7 @@ function App() {
           <Route path='/member/signup' element={<Member />}></Route>
           <Route path='/member/findmember' element={<FindMember />}></Route>
           <Route path='/allproduct' element={<AllRroduct />}></Route>
+          <Route path='/productDetail' element={<ProductDetail />}></Route>
           <Route path='/spaceproduct' element={<Space />}></Route>
           <Route path='/sale' element={<Sale />}></Route>
           <Route path='/qna' element={<Qna />}></Route>
