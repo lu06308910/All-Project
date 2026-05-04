@@ -40,9 +40,9 @@ function Qna() {
                                         <h2 style={{ margin: 0 }}>서비스 지원</h2>
                                 </div>
 
-                                <div className="qna-menu"><Link to="">자주하는 질문</Link></div>
-                                <div className="qna-menu"><Link to="">1:1 문의하기</Link></div>
-                                <div className="qna-menu"><Link to="">공지사항</Link></div>
+                                <div className="qna-menu"><Link to="/qna">자주하는 질문</Link></div>
+                                <div className="qna-menu"><Link to="/qna/write">1:1 문의하기</Link></div>
+                                <div className="qna-menu"><Link to="/qna/noticelist">공지사항</Link></div>
                         </div>
 
 
@@ -72,7 +72,8 @@ function Qna() {
                                         <button className="search-icon"></button>
                                 </div>
 
-                                <button style={{
+                                <button onClick={() => (window.location.href = '/qna/write')}
+                                        style={{
                                         padding: '10px 20px', backgroundColor: '#000', color: '#fff', border: 'none',
                                         float: 'right', marginBottom: '30px', cursor: 'pointer'
                                 }}>

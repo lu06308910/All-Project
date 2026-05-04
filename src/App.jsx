@@ -11,6 +11,8 @@ import AllRroduct from './assets/product/allproduct';
 import Space from './assets/product/space';
 import Sale from './assets/product/sale';
 import Qna from './assets/qna/Qna';
+import QnaWrite from './assets/qna/QnaWrite';
+import NoticeList from './assets/qna/NoticeList';
 
 function App() {
 
@@ -30,6 +32,10 @@ function App() {
           <Route path='/spaceproduct' element={<Space />}></Route>
           <Route path='/sale' element={<Sale />}></Route>
           <Route path='/qna' element={<Qna />}></Route>
+          <Route path='/qna/write' element={<QnaWrite />}></Route>
+          <Route path='/qna/noticelist' element={<NoticeList />}></Route>
+
+
         </Route>
         <Route path='manager' element={<Manager />}></Route>
       </Routes>
