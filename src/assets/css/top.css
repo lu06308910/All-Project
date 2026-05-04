@@ -166,6 +166,7 @@
         text-decoration: underline;
 }
 
+
 /* 반응형 대응 (화면이 작아질 때) */
 @media (max-width: 1024px) {
         .header-container {
