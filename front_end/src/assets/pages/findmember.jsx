@@ -38,13 +38,30 @@ function FindInfo() {
                         alert("처리 중 오류가 발생했습니다.");
                 }
         };
-// ------------------------------------------------------------------------------------
+        // ------------------------------------------------------------------------------------
         return (
                 <div className="login-wrapper">
                         <div className="login-container">
                                 <div className="login-title">
                                         <p className="title-sub">CANVAS SUPPORT</p>
                                         <h2 className="title-main">{findMode === 'ID' ? 'FIND ID' : 'FIND PASSWORD'}</h2>
+                                </div>
+                                {/* 회원 타입 탭 */}
+                                <div className="user-type-tab">
+                                        <button
+                                                type="button"
+                                                className={formData.userType === 'PERSONAL' ? 'active' : ''}
+                                                onClick={() => setFormData({ ...formData, userType: 'PERSONAL' })}
+                                        >
+                                                일반 회원
+                                        </button>
+                                        <button
+                                                type="button"
+                                                className={formData.userType === 'BUSINESS' ? 'active' : ''}
+                                                onClick={() => setFormData({ ...formData, userType: 'BUSINESS' })}
+                                        >
+                                                기업 회원
+                                        </button>
                                 </div>
 
                                 {/* ID 찾기,PWD 찾기 탭 */}
@@ -62,24 +79,6 @@ function FindInfo() {
                                                 style={{ flex: 1, padding: '15px', border: 'none', background: 'none', cursor: 'pointer', fontWeight: findMode === 'PWD' ? '700' : '400' }}
                                         >
                                                 비밀번호 찾기
-                                        </button>
-                                </div>
-
-                                {/* 회원 타입 탭 */}
-                                <div className="user-type-tab">
-                                        <button
-                                                type="button"
-                                                className={formData.userType === 'PERSONAL' ? 'active' : ''}
-                                                onClick={() => setFormData({ ...formData, userType: 'PERSONAL' })}
-                                        >
-                                                일반 회원
-                                        </button>
-                                        <button
-                                                type="button"
-                                                className={formData.userType === 'BUSINESS' ? 'active' : ''}
-                                                onClick={() => setFormData({ ...formData, userType: 'BUSINESS' })}
-                                        >
-                                                기업 회원
                                         </button>
                                 </div>
 
