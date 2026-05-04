@@ -72,7 +72,8 @@ function Qna() {
                                         <button className="search-icon"></button>
                                 </div>
 
-                                <button style={{
+                                <button onClick={() => (window.location.href = '/qna/write')}
+                                        style={{
                                         padding: '10px 20px', backgroundColor: '#000', color: '#fff', border: 'none',
                                         float: 'right', marginBottom: '30px', cursor: 'pointer'
                                 }}>
