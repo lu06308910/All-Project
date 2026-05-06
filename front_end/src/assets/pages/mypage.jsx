@@ -293,9 +293,6 @@ const ProductManagement = () => {
                                         <p style={{ fontSize: '13px', color: '#666' }}>품절/중지</p>
                                         <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#f44336' }}>1건</h3>
                                 </div>
-                                <button className="btn-dark" style={{ padding: '8px 20px', borderRadius: '4px' }}
-                                 onClick={()=>{location.href="/mypage/addproduct"}}>+ 새 상품 등록
-                                </button>
                         </div>
 
                         {/* 검색 및 등록 버튼 */}
@@ -318,7 +315,9 @@ const ProductManagement = () => {
                                                 </button>
                                         ))}
                                 </div>
-                                <button className="btn-dark" style={{ padding: '8px 16px', borderRadius: '4px', fontSize: '13px' }}>+ 새 상품 등록</button>
+                                <button className="btn-dark" style={{ padding: '8px 20px', borderRadius: '4px' }}
+                                 onClick={()=>{location.href="/mypage/addproduct"}}>+ 새 상품 등록
+                                </button>
                         </div>
 
                         <div className="recent-orders">
