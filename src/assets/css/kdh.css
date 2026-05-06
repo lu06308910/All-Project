@@ -43,10 +43,12 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
+        /* 이미지가 원에 꽉 차게 */
 }
 
 .category-circle:hover {
         transform: scale(1.05);
+        /* 살짝 커지는 효과 */
 }
 
 .category-name {
@@ -68,7 +70,6 @@
         width: 100%;
         overflow: hidden;
 }
-
 .sub-slider {
         width: 40%;
         overflow: hidden;
@@ -77,38 +78,32 @@
 .main-slider .carousel-inner {
         height: 650px !important;
 }
-
 .sub-slider .carousel-inner {
         height: 400px !important;
 }
-
 .main-slider .carousel-item,
 .main-slider .carousel-item a {
         height: 100% !important;
         display: block;
 }
-
 .sub-slider .carousel-item,
 .sub-slider .carousel-item a {
         height: 100% !important;
         display: block;
 }
-
 .main-slider .carousel-item img {
         width: 100%;
         height: 100% !important;
         object-fit: cover !important;
         object-position: center;
 }
-
 .sub-slider .carousel-item img {
         width: 100%;
         height: 100% !important;
-        object-fit: contain !important;
+        object-fit: contain !important; 
         object-position: center;
         background-color: white;
 }
-
 /* 모든 상품 */
 .main-product-section {
         text-align: center;
@@ -203,7 +198,7 @@
 
 .login-container {
         width: 100%;
-        max-width: 500px;
+        max-width: 400px;
         padding: 20px;
 }
 
@@ -230,21 +225,17 @@
 
 /* 입력 폼 스타일 */
 .login-form .input-group {
-        margin-bottom: 25px;
+        margin-bottom: 15px;
         position: relative;
-        display: block;
-        width: 100%;
 }
 
 .login-form p {
         display: block;
-        width: 100%;
         font-size: 11px;
         font-weight: 700;
         color: #222;
-        margin-bottom: 8px;
+        margin-bottom: 5px;
         letter-spacing: 0.5px;
-        text-align: left;
 }
 
 .login-form input {
@@ -299,43 +290,22 @@
 
 /*찾기/회원가입 */
 .auth-helper {
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center;
-        width: 100%;
+        display: flex;
+        justify-content: space-between;
         margin-top: 25px;
-        padding: 10px 0;
+        padding: 0 5px;
 }
 
 .auth-helper a {
         font-size: 12px;
         color: #888;
         text-decoration: none;
-        transition: all 0.2s;
-        /* 클릭 범위를 넓히기 위해 패딩 살짝 추가 */
-        padding: 0 5px;
+        transition: color 0.2s;
 }
 
 .auth-helper a:hover {
         color: #000;
         text-decoration: underline;
-}
-
-.auth-helper .divider {
-        width: 1px;
-        height: 10px;
-        background-color: #ddd;
-        margin: 0 10px;
-}
-
-.auth-helper p {
-        width: auto !important;
-        margin-bottom: 0 !important;
-        font-size: 12px !important;
-        color: #888 !important;
-        font-weight: 400 !important;
-        letter-spacing: 0 !important;
-        text-align: center;
 }
 
 /* 카카오 로그인 */
@@ -351,7 +321,6 @@
         color: #bbb;
         letter-spacing: 1px;
         margin-bottom: 15px;
-        text-align: center;
 }
 
 .kakao-login-btn {
@@ -385,269 +354,28 @@
 }
 
 /* 회원가입 페이지(나머진 로그인 class 동일) */
-.signup-container {
-        max-width: 650px !important;
-}
-
-.input-group p {
-        display: block;
-        /* 한 줄을 통째로 차지하게 함 */
-        margin-bottom: 10px;
-        font-weight: 600;
-        font-size: 12px;
-        color: #000;
-}
 
 .address-zip {
-        display: flex !important;
-        align-items: center;
+        display: flex;
         gap: 10px;
-        margin-bottom: 10px;
-        width: 100%;
+        margin-bottom: 8px;
 }
 
-.address-zip input[name="zipcode"] {
-        width: 120px !important;
-        flex: none;
-        margin-bottom: 0 !important;
+.address-zip input {
+        flex: 1;
 }
 
 .zip-btn {
         width: 100px;
-        height: 40px;
         background-color: #333;
         color: #fff;
-        border: none;
-        font-size: 12px;
-        font-weight: 600;
-        border-radius: 2px;
         cursor: pointer;
+        border: none;
+        font-size: 13px;
 }
 
 .address-main,
 .address-detail {
+        margin-top: 5px;
         width: 100%;
-        margin-bottom: 10px !important;
-        background-color: transparent;
-}
-
-.login-form input:focus {
-        border-bottom: 1px solid #000;
-}
-
-.user-type-tab {
-        display: flex;
-        margin-bottom: 30px;
-        border-bottom: 1px solid #e0e0e0;
-}
-
-.user-type-tab button {
-        flex: 1;
-        padding: 15px 0;
-        background: none;
-        border: none;
-        font-size: 14px;
-        color: #999;
-        cursor: pointer;
-        transition: all 0.3s;
-        position: relative;
-}
-
-.user-type-tab button.active {
-        color: #000;
-        font-weight: 700;
-}
-
-.user-type-tab button.active::after {
-        content: '';
-        position: absolute;
-        bottom: -1px;
-        left: 0;
-        width: 100%;
-        height: 2px;
-        background-color: #000;
-}
-
-/* ID/PWD 찾기 */
-
-.mode-btn.active {
-        border-bottom: 2px solid #000 !important;
-        color: #000;
-}
-
-.mode-btn {
-        color: #999;
-        transition: 0.3s;
-}
-
-/* =======마이페이지========== */
-
-/* 전체 컨테이너 */
-.mypage-container {
-        width:100%;
-        margin: 0 auto;
-        padding: 40px 20px;
-        font-family: 'Pretendard', sans-serif;
-        color: #333;
-}
-
-/* 상단 타이틀 */
-.mypage-title {
-        font-size: 28px;
-        font-weight: 700;
-        margin-bottom: 30px;
-}
-
-/* 상단 요약 카드 섹션 */
-.info-box {
-        background-color: #f9f9f9;
-        border: 1px solid #eee;
-        border-radius: 8px;
-        padding: 30px;
-        margin-bottom: 50px;
-}
-
-.profile-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
-}
-
-.nickname-link {
-        font-size: 20px;
-        font-weight: 600;
-        cursor: pointer;
-}
-
-.info-stats {
-        display: flex;
-        border-top: 1px solid #e0e0e0;
-        padding-top: 25px;
-}
-
-.stat-item {
-        flex: 1;
-        text-align: center;
-}
-
-.stat-item:first-child {
-        border-right: 1px solid #e0e0e0;
-}
-
-.stat-label {
-        font-size: 14px;
-        font-weight: 700;
-        margin-bottom: 10px;
-}
-
-.stat-value {
-        font-size: 15px;
-        font-weight: 800;
-}
-
-/* 메인 콘텐츠 레이아웃 */
-.main-wrapper {
-        display: flex;
-        gap: 60px;
-}
-
-/* 사이드바 네비게이션 */
-.sidebar {
-        width: 180px;
-        flex-shrink: 0;
-        border-right: 1px solid #eee;
-        padding-right: 20px;
-}
-
-.mypage-side-menu {
-        list-style: none;
-        padding: 0;
-}
-
-/* 주문 내역 */
-.content-area {
-        flex: 1;
-}
-
-.content-header {
-        text-align: center;
-        margin-bottom: 30px;
-}
-
-.content-header h2 {
-        font-size: 32px;
-        font-weight: 800;
-}
-
-/* 주문 아이템 리스트 */
-.order-item {
-        display: flex;
-        align-items: center;
-        padding: 25px 0;
-        border-bottom: 1px solid #eee;
-        gap: 20px;
-}
-
-.item-img {
-        width: 160px;
-        height: 110px;
-        background-color: #e9e9e9;
-        border-radius: 4px;
-}
-
-.item-info {
-        flex: 1;
-}
-
-.brand-name {
-        font-size: 12px;
-        color: #999;
-        font-weight: 700;
-        text-transform: uppercase;
-}
-
-.product-name {
-        font-size: 18px;
-        font-weight: 700;
-        margin: 5px 0;
-}
-
-.product-price {
-        font-size: 18px;
-        font-weight: 800;
-}
-
-.btn-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        align-items: center;
-        width: 100px;
-}
-
-.btn-light {
-        border: 1px solid #ccc;
-        background: white;
-        padding: 5px 12px;
-        font-size: 12px;
-        font-weight: 700;
-        border-radius: 3px;
-        cursor: pointer;
-}
-
-.btn-dark {
-        background: #333;
-        color: white;
-        padding: 5px 12px;
-        font-size: 12px;
-        font-weight: 700;
-        border-radius: 3px;
-        cursor: pointer;
-}
-
-.status-text {
-        font-weight: 800;
-        color: #007bff;
-        margin-bottom: 5px;
 }

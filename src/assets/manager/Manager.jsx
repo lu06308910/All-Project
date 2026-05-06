@@ -3,28 +3,10 @@ import './../css/gayoung.css'
 import './../css/top.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
-import { Line, Doughnut } from 'react-chartjs-2';
-import { 
-  Chart as ChartJS, 
-  CategoryScale, 
-  LinearScale, 
-  PointElement, 
-  LineElement, 
-  Title, 
-  Tooltip, 
-  Legend, 
-  ArcElement
-} from 'chart.js';
-ChartJS.register(
-  CategoryScale, 
-  LinearScale, 
-  PointElement, 
-  LineElement, 
-  ArcElement,
-  Title, 
-  Tooltip, 
-  Legend
-);
+import { Chart, Line } from 'react-chartjs-2';
+import {  Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend} from 'chart.js';
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
 
 function Manager(){
         
@@ -41,7 +23,7 @@ function Manager(){
 
         const Reservation =()=>(
                 <div>
-                        <h4 style={{textAlign:'left', fontWeight:'600'}}>예약 게시글 목록</h4>
+                        <h4 style={{textAlign:'left', fontWeight:'60%'}}>예약 게시글 목록</h4>
                         <hr/>
                         <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px', fontSize:'0.8em'}}>
                                 <thead>
@@ -66,13 +48,13 @@ function Manager(){
                                                 <td>2026-05-04</td>
                                                 <td>미공개</td>
                                                 <td>
-                                                        <button className='button2' style={{marginRight:'10px'}}>수정</button>
+                                                        <button className='button2'>수정</button>
                                                         <button className='button2'>삭제</button>
                                                 </td>
                                         </tr>
                                 </tbody>
                         </table>
-                        <div style={{display: 'flex', justifyContent: 'space-between', width:'94%'}}>
+                        <div style={{display: 'flex', justifyContent: 'space-between'}}>
                                 <div style={{textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
                                         더보기
                                 </div>
@@ -82,7 +64,7 @@ function Manager(){
         )
         const Event = () =>(
                 <div>
-                        <h4 style={{textAlign:'left', fontWeight:'600'}}>진행 중인 이벤트</h4>
+                        <h4 style={{textAlign:'left', fontWeight:'60%'}}>진행 중인 이벤트</h4>
                         <hr/>
                         <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px', fontSize:'0.8em'}}>
                                 <thead>
@@ -107,19 +89,19 @@ function Manager(){
                                                 <td>2026-05-30</td>
                                                 <td>공개</td>
                                                 <td>
-                                                        <button className='button2' style={{marginRight:'10px'}}>수정</button>
+                                                        <button className='button2'>수정</button>
                                                         <button className='button2'>삭제</button>
                                                 </td>
                                         </tr>
                                 </tbody>
                         </table>
-                        <div style={{display: 'flex', justifyContent: 'space-between', width:'94%'}}>
+                        <div style={{display: 'flex', justifyContent: 'space-between'}}>
                                 <div style={{textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
                                         더보기
                                 </div>
                                 <button className='button'>게시글등록</button>
                         </div>
-                        <h4 style={{textAlign:'left', fontWeight:'600'}}>마무리 된 이벤트</h4>
+                        <h4 style={{textAlign:'left', fontWeight:'60%'}}>마무리 된 이벤트</h4>
                         <hr/>
                         <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px', fontSize:'0.8em'}}>
                                 <thead>
@@ -144,13 +126,13 @@ function Manager(){
                                                 <td>2026-04-25</td>
                                                 <td>미공개</td>
                                                 <td>
-                                                        <button className='button2' style={{marginRight:'10px'}}>수정</button>
+                                                        <button className='button2'>수정</button>
                                                         <button className='button2'>삭제</button>
                                                 </td>
                                         </tr>
                                 </tbody>
                         </table>
-                        <div style={{display: 'flex', justifyContent: 'space-between', width:'94%'}}>
+                        <div style={{display: 'flex', justifyContent: 'space-between'}}>
                                 <div style={{textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
                                         더보기
                                 </div>
@@ -174,7 +156,7 @@ function Manager(){
                                 <div className='light-but'>2025-02-14 매출</div>
                                 <button style={{background:"white", border: "1px solid white", color:"black"}} onClick={() => setModalOpen(false)}>X</button>
                         </div>
-                        <table className="table table-bordered" style={{width:'600px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
+                        <table className="table table-bordered" style={{width:'60%', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
                                 <thead>
                                         <tr>
                                                 <th style={{backgroundColor:'#eeeeee'}}>주문번호</th>
@@ -206,21 +188,23 @@ function Manager(){
                 </div>
         )
         const data = {
-                labels: [
-                        'A기업',
-                        'B기업',
-                        'C기업'
+                labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+                datasets: [
+                        {
+                                label: '기업명1',
+                                data: [65, 59, 80, 81, 56, 55, 40],
+                                borderColor: 'rgb(255, 99, 132)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                                yAxisID: 'y',
+                        },
+                        {
+                                label: '기업명2',
+                                data: [28, 48, 40, 19, 86, 27, 90],
+                                borderColor: 'rgb(53, 162, 235)',
+                                backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                                yAxisID: 'y1',
+                        },
                 ],
-                datasets: [{
-                        label: 'My First Dataset',
-                        data: [300, 50, 100],
-                        backgroundColor: [
-                        'rgb(255, 99, 132)',
-                        'rgb(54, 162, 235)',
-                        'rgb(255, 205, 86)'
-                ],
-                        hoverOffset: 4
-                }]
         };
         const data2 = {
                 labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -234,26 +218,34 @@ function Manager(){
                         }
                 ],
         };
-        const data3 = {
-                labels: [
-                        'A기업',
-                        'B기업',
-                        'C기업'
-                ],
-                datasets: [{
-                        label: 'My First Dataset',
-                        data: [300, 50, 100],
-                        backgroundColor: [
-                        'rgb(255, 99, 132)',
-                        'rgb(54, 162, 235)',
-                        'rgb(255, 205, 86)'
-                ],
-                        hoverOffset: 4
-                }]
-        };
         const ChartData =  {
-                type: 'doughnut',
-                data: data
+                type: 'line',
+                data: data,
+                options: {
+                        responsive: true,
+                        interaction: {
+                                mode: 'index',
+                                intersect: false,
+                        },
+                        stacked: false,
+                        scales: {
+                                y: {
+                                        type: 'linear',
+                                        display: true,
+                                        position: 'left',
+                                },
+                                y1: {
+                                        type: 'linear',
+                                        display: true,
+                                        position: 'right',
+
+                                        //
+                                        grid: {
+                                                drawOnChartArea: false,
+                                        },
+                                },
+                        }
+                },
         };
         const ChartData2 =  {
                 type: 'line',
@@ -284,10 +276,6 @@ function Manager(){
                         }
                 },
         };
-        const ChartData3 =  {
-                type: 'doughnut',
-                data: data
-        };
         const ChartModel = ()=>(
                 <div style={{
                         position: 'fixed',
@@ -299,13 +287,13 @@ function Manager(){
                         zIndex: 1000,
                         borderRadius: '8px',
                         boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
-                        width: '600px'
+                        width: '60%'
                 }}>
                         <div style={{display:"flex", justifyContent:"space-between"}}>
                                 <div className='light-but'>2025-02-14 매출</div>
                                 <button style={{background:"white", border: "1px solid white", color:"black"}} onClick={() => setChartOpen(false)}>X</button>
                         </div>
-                        <Doughnut data={data} options={ChartData.options} />
+                        <Line data={data} options={ChartData.options} />
                 </div>
         )
         
@@ -365,29 +353,10 @@ function Manager(){
                                 {/* 대시보드 페이지 */}
                                 {activeMenu == '대시보드' &&(
                                         <div className='category-content'>
-                                                <h4 style={{textAlign:'left', fontWeight:'600'}}>매출 현황</h4>
+                                                <h4 style={{textAlign:'left', fontWeight:'60%'}}>매출 현황</h4>
                                                 <hr/>
-                                                <div style={{display: 'flex', gap: '20px', alignItems: 'center'}}>
-                                                        <div style={{ flex: 3, height: '350px' }}> 
-                                                                <Line 
-                                                                data={data2} 
-                                                                options={{
-                                                                        ...ChartData.options2,
-                                                                        maintainAspectRatio: false
-                                                                }}
-                                                                />
-                                                        </div>
-                                                        <div style={{ flex: 1.5, height: '350px' }}>
-                                                                <Doughnut 
-                                                                data={data3} 
-                                                                options={{
-                                                                        ...ChartData.options3,
-                                                                        maintainAspectRatio: false
-                                                                }}
-                                                                />
-                                                        </div>
-                                                </div>
-                                                <h4 style={{textAlign:'left', fontWeight:'600'}}>상위 리스트</h4>
+                                                <Line data={data2} options={ChartData.options2}/>
+                                                <h4 style={{textAlign:'left', fontWeight:'60%'}}>상위 리스트</h4>
                                                 <hr/>
                                                 <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em'}}>
                                                         <div className="col p-2">인기 상품 TOP 5</div>
@@ -403,13 +372,7 @@ function Manager(){
                                 {activeMenu == '회원 관리' &&(
                                         <div style={{display: 'flex', flexDirection: 'column', width:'80%'}}>
                                                 <div className='category-content'>
-                                                        <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
-                                                                <h4 style={{textAlign:'left', fontWeight:'600'}}>회원 검색</h4>
-                                                                <div className="search-bar">
-                                                                        <input type="text" placeholder="검색할 상품을 입력해주세요." />
-                                                                        <button className="search-icon"></button>
-                                                                </div>
-                                                        </div>
+                                                        <h4 style={{textAlign:'left', fontWeight:'60%'}}>회원 검색</h4>
                                                         <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em'}}>
                                                                 <div className="col p-2">번호</div>
                                                                 <div className="col p-2">아이디</div>
@@ -436,13 +399,7 @@ function Manager(){
                                                         </div>
                                                 </div>
                                                 <div className='category-content'>
-                                                        <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
-                                                                <h4 style={{textAlign:'left', fontWeight:'600'}}>탈퇴회원 검색</h4>
-                                                                <div className="search-bar">
-                                                                        <input type="text" placeholder="검색할 상품을 입력해주세요." />
-                                                                        <button className="search-icon"></button>
-                                                                </div>
-                                                        </div>
+                                                        <h4 style={{textAlign:'left', fontWeight:'60%'}}>탈퇴회원 검색</h4>
                                                         <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em'}}>
                                                                 <div className="col p-2">번호</div>
                                                                 <div className="col p-2">아이디</div>
@@ -472,13 +429,7 @@ function Manager(){
                                 {activeMenu == '기업 관리' &&(
                                         <div style={{display: 'flex', flexDirection: 'column', width:'80%'}}>
                                                 <div className='category-content'>
-                                                        <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
-                                                                <h4 style={{textAlign:'left', fontWeight:'600'}}>기업 검색</h4>
-                                                                <div className="search-bar">
-                                                                        <input type="text" placeholder="검색할 상품을 입력해주세요." />
-                                                                        <button className="search-icon"></button>
-                                                                </div>
-                                                        </div>
+                                                        <h4 style={{textAlign:'left', fontWeight:'60%'}}>기업 검색</h4>
                                                         <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em'}}>
                                                                 <div className="col p-2">번호</div>
                                                                 <div className="col p-2">아이디</div>
@@ -505,13 +456,7 @@ function Manager(){
                                                         </div>
                                                 </div>
                                                 <div className='category-content'>
-                                                        <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
-                                                                <h4 style={{textAlign:'left', fontWeight:'600'}}>탈퇴기업 검색</h4>
-                                                                <div className="search-bar">
-                                                                        <input type="text" placeholder="검색할 상품을 입력해주세요." />
-                                                                        <button className="search-icon"></button>
-                                                                </div>
-                                                        </div>
+                                                        <h4 style={{textAlign:'left', fontWeight:'60%'}}>탈퇴기업 검색</h4>
                                                         <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em'}}>
                                                                 <div className="col p-2">번호</div>
                                                                 <div className="col p-2">아이디</div>
@@ -543,7 +488,7 @@ function Manager(){
                                         <div>
                                                 <div className='category-content'>
                                                         {/* 상품검색 */}
-                                                        <h4 style={{textAlign:'left', fontWeight:'600'}}>상품 검색</h4>
+                                                        <h4 style={{textAlign:'left', fontWeight:'60%'}}>상품 검색</h4>
                                                         <hr/>
                                                         <div style={{textAlign:'left', width:'500px'}}>
                                                                 <div style={{display: 'flex', justifyContent: 'space-between', gap:'10px'}}>
@@ -587,7 +532,7 @@ function Manager(){
                                                                 </div>
                                                         </div>
                                                         {/* 상품 목록 */}
-                                                        <h4 style={{textAlign:'left', fontWeight:'600', marginTop:'20px'}}>상품 목록</h4>
+                                                        <h4 style={{textAlign:'left', fontWeight:'60%', marginTop:'20px'}}>상품 목록</h4>
                                                         <hr/>
                                                         <button className='button' style={{marginLeft:'920px'}}>상품등록</button>
                                                         <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
@@ -615,7 +560,7 @@ function Manager(){
                                                                                 <td>재고</td>
                                                                                 <td>등록일</td>
                                                                                 <td>
-                                                                                        <button className='button2' style={{marginRight:'10px'}}>수정</button>
+                                                                                        <button className='button2'>수정</button>
                                                                                         <button className='button2'>삭제</button>
                                                                                 </td>
                                                                         </tr>
@@ -645,13 +590,7 @@ function Manager(){
                                 {activeMenu == '문의 관리' && (
                                         <div style={{display: 'flex', flexDirection: 'column', width:'80%'}}>
                                                 <div className='category-content'>
-                                                        <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
-                                                                <h4 style={{textAlign:'left', fontWeight:'600'}}>문의 목록</h4>
-                                                                <div className="search-bar">
-                                                                        <input type="text" placeholder="검색할 단어 및 문장을 입력해주세요." />
-                                                                        <button className="search-icon"></button>
-                                                                </div>
-                                                        </div>
+                                                        <h4 style={{textAlign:'left', fontWeight:'60%'}}>문의 목록</h4>
                                                         <hr/>
                                                         <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center'}}>
                                                                 <div className="col p-2">번호</div>
@@ -668,7 +607,7 @@ function Manager(){
                                                                 <div className="col p-2">김희*</div>
                                                                 <div className="col p-2">2026-04-26</div>
                                                                 <div className="col p-2">
-                                                                        <button className='button2' style={{marginRight:'10px'}}>수정</button>
+                                                                        <button className='button2'>수정</button>
                                                                         <button className='button2'>삭제</button>
                                                                 </div>
                                                         </div>
@@ -689,7 +628,7 @@ function Manager(){
                                 {activeMenu == '통계' && (
                                         <div>
                                                 <div className='category-content'>
-                                                        <h4 style={{textAlign:'left', fontWeight:'600'}}>기업 검색</h4>
+                                                        <h4 style={{textAlign:'left', fontWeight:'60%'}}>기업 검색</h4>
                                                         <hr/>
                                                 <div style={{textAlign:'left', width:'500px'}}>
                                                                 <div style={{display: 'flex', justifyContent: 'space-between'}}>
@@ -720,7 +659,7 @@ function Manager(){
                                                                 </div>
                                                         </div>
                                                         {/* 상품 목록 */}
-                                                        <h4 style={{textAlign:'left', fontWeight:'600', marginTop:'20px'}}>상품 목록</h4>
+                                                        <h4 style={{textAlign:'left', fontWeight:'60%', marginTop:'20px'}}>상품 목록</h4>
                                                         <hr/>
                                                         <button className='button' style={{marginLeft:'920px'}} onClick={()=>setChartOpen(true)}>매출 통계</button>
                                                         <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
