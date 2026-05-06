@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { Carousel } from 'react-bootstrap';
 import './../css/seul.css';
 
 function ProductDetail() {
@@ -14,6 +15,32 @@ function ProductDetail() {
         const [color, setColor] = useState("");
         const [extraOption, setExtraOption] = useState("");
         const [selectedOptions, setSelectedOptions] = useState([]);
+
+        // 리뷰 
+        const [reviewFilter, setReviewFilter] = useState("all"); // 리뷰글보기 , 사진만 보기 버튼
+        const [zoomImage, setZoomImage] = useState(null); // 리뷰 확대 사진
+
+        // 제품 데이터 배열, 관련상품 
+        const products = [
+                { id: 1, img: "public/p1.png", title: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", price: "89,900", discount: "17%", rating: '4.9', ratcut: '304' },
+                { id: 2, img: "public/p2.png", title: "BILLY 빌리", price: "89,900", discount: "17%", rating: '4.9', ratcut: '304' },
+                { id: 3, img: "public/p3.png", title: "BILLY 빌리", price: "89,900", discount: "17%", rating: '4.9', ratcut: '304' },
+                { id: 4, img: "public/p4.png", title: "BILLY 빌리", price: "89,900", discount: "17%", rating: '4.9', ratcut: '304' },
+                { id: 5, img: "public/p1.png", title: "BILLY 빌리", price: "89,900", discount: "17%", rating: '4.9', ratcut: '304' },
+                { id: 6, img: "public/p2.png", title: "BILLY 빌리", price: "89,900", discount: "17%", rating: '4.9', ratcut: '304' },
+                { id: 7, img: "public/p3.png", title: "BILLY 빌리", price: "89,900", discount: "17%", rating: '4.9', ratcut: '304' },
+        ];
+        const chunkProducts = (arr, size) => {
+                const result = [];
+                for (let i = 0; i < arr.length; i += size) {
+                        result.push(arr.slice(i, i + size));
+                }
+                return result;
+        };
+
+        const productChunks = chunkProducts(products, 4);
+
+
 
         const addOption = () => {
                 if (!color || !extraOption) return alert("옵션을 모두 선택하세요!");
@@ -31,14 +58,15 @@ function ProductDetail() {
                 setExtraOption("");
                 setCount(1);
         };
-
+        // 상품문의
+        const [openQna, setOpenQna] = useState(false);
 
         return (
                 <div className="product-detail-container">
 
                         {/* 상단 카테고리 경로 */}
                         <div className="breadcrumb">
-                                제품 &gt; 수납가구 &gt; 책장 
+                                제품 &gt; 수납가구 &gt; 책장
                         </div>
 
                         <div className="product-wrapper">
@@ -141,14 +169,14 @@ function ProductDetail() {
 
                                                 </div>
                                         )}
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '10px 0' }}>
-                                                <button className="buy-btn">장바구니 담기</button>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '10px 0', justifyContent: 'space-between' }}>
+                                                <button className="buy-btn">장바구니</button>
                                                 <button className="buy-btn">구매하기</button>
                                         </div>
                                 </div>
                         </div>
 
-                        {/* ⭐ 탭 메뉴 */}
+                        {/* 탭 메뉴 */}
                         <div className="tab-menu">
                                 <div
                                         onClick={() => setActiveTab("detail")}
@@ -204,36 +232,263 @@ function ProductDetail() {
 
                                 {activeTab === "related" && (
                                         <div style={{ padding: "40px 0", textAlign: "center" }}>
-                                                관련 상품 리스트 영역
+                                                <Carousel
+                                                        indicators={false} // 하단 점 숨기기
+                                                        interval={null}    // 자동 재생 끄기 (화살표로만 조작)
+                                                        variant="dark"     // 화살표 색상을 어둡게 (배경이 밝을 때)
+                                                >
+                                                        {productChunks.map((chunk, index) => (
+                                                                <Carousel.Item key={index}>
+                                                                        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', padding: '0 50px', marginTop: '100px', marginBottom: '100px' }}>
+                                                                                {chunk.map((item) => (
+                                                                                        <Link to="" className="product-link" key={item.id} style={{ textDecoration: 'none', color: 'inherit', width: '25%' }}>
+                                                                                                <div className="product-card">
+                                                                                                        <div className="product-img">
+                                                                                                                <img src={item.img} alt={item.title} style={{ width: '100%' }} />
+                                                                                                        </div>
+                                                                                                        <div style={{ textAlign: 'left', marginTop: '10px' }}>
+                                                                                                                <div style={{ color: "gray", fontSize: '0.8em' }}>한샘</div>
+                                                                                                                <div className="title" style={{
+                                                                                                                        overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
+                                                                                                                        WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, whiteSpace: 'normal',
+                                                                                                                        height: '2.8em', fontWeight: '500'
+                                                                                                                }}>{item.title}</div>
+                                                                                                                <div style={{ color: 'gray', textDecoration: 'line-through', fontSize: '0.8em' }}>
+                                                                                                                        {item.price}원
+                                                                                                                </div>
+                                                                                                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                                                                                        <span style={{ color: 'red', marginRight: '5px', fontWeight: 'bold' }}>{item.discount}</span>
+                                                                                                                        <span style={{ fontWeight: 'bold' }}>{item.price}원</span>
+                                                                                                                </div>
+                                                                                                                <div style={{ fontSize: '0.8em', color: 'gray' }}>
+                                                                                                                        <span>★</span>
+                                                                                                                        <span>{item.rating}</span>
+                                                                                                                        <span style={{ color: 'gray' }}>({item.ratcut})</span>
+                                                                                                                </div>
+                                                                                                        </div>
+                                                                                                </div>
+                                                                                        </Link>
+                                                                                ))}
+                                                                        </div>
+                                                                </Carousel.Item>
+                                                        ))}
+                                                </Carousel>
                                         </div>
                                 )}
 
                                 {activeTab === "review" && (
-                                        
                                         <div style={{ padding: "40px 0" }}>
+
+                                                {/* 별점 */}
+                                                <div style={{ textAlign: 'center', margin: '50px 0' }}>
+                                                        <p style={{ fontWeight: 'bold', fontSize: '20px' }}>별점</p>
+                                                        <h1 style={{ fontSize: '50px' }}>4.5</h1>
+                                                        <span style={{ fontSize: '25px' }}>★★★★★</span>
+                                                </div>
+
                                                 {/* 정렬 버튼 */}
                                                 <div className="sort-btns">
-                                                        <button>전체(1,500건)</button>
-                                                        <button>사진(620건)</button>
+                                                        <button
+                                                                onClick={() => setReviewFilter("all")}
+                                                                className={reviewFilter === "all" ? "active" : ""}
+                                                        >
+                                                                전체(1,500건)
+                                                        </button>
+
+                                                        <button
+                                                                onClick={() => setReviewFilter("photo")}
+                                                                className={reviewFilter === "photo" ? "active" : ""}
+                                                        >
+                                                                사진(620건)
+                                                        </button>
                                                 </div>
-                                                <div className="review-imageBox" style={{border:'2px solid #ccc',borderRadius:'10px', height:'250px', textAlign:'center',lineHeight:'250px'}}>
-                                                        <img src="public/review1.jpg" />
-                                                        <img src="public/review2.jpg" />
-                                                        <img src="public/review3.jpg" />
-                                                        <img src="public/review4.jpg" />
-                                                        <img src="public/review5.jpg" />
-                                                
+
+                                                {/* 사진 영역 */}
+                                                <div
+                                                        className="review-imageBox"
+                                                        style={{
+                                                                overflowX: reviewFilter === "photo" ? "visible" : "auto",
+                                                                flexWrap: reviewFilter === "photo" ? "wrap" : "nowrap",
+                                                                height: reviewFilter === "photo" ? "auto" : "250px"
+                                                        }}
+                                                >
+                                                        <img src="public/review1.jpg" onClick={() => setZoomImage("public/review1.jpg")} />
+                                                        <img src="public/review2.jpg" onClick={() => setZoomImage("public/review2.jpg")} />
+                                                        <img src="public/review3.jpg" onClick={() => setZoomImage("public/review3.jpg")} />
+                                                        <img src="public/review4.jpg" onClick={() => setZoomImage("public/review4.jpg")} />
+                                                        <img src="public/review5.jpg" onClick={() => setZoomImage("public/review5.jpg")} />
                                                 </div>
 
+                                                {/* 리뷰글 */}
+                                                {reviewFilter === "all" && (
+                                                        <div style={{ marginTop: "40px" }}>
+                                                                <div style={{
+                                                                        borderBottom: "1px solid #ccc",
+                                                                        paddingBottom: "20px",
+                                                                        marginBottom: "20px"
+                                                                }}>
+                                                                        <p style={{ color: '#7a7a7a', margin: '0px' }}>상품옵션 : 내추럴,기본옵션</p>
+                                                                        <div>★★★★★</div>
+                                                                        <p>생각보다 튼튼하고 깔끔한 느낌이에요! 추천드려요 ㅎㅎ</p>
+                                                                </div>
 
+                                                                <div style={{
+                                                                        borderBottom: "1px solid #ccc",
+                                                                        paddingBottom: "20px",
+                                                                        marginBottom: "20px"
+                                                                }}>
+                                                                        <p style={{ color: '#7a7a7a', margin: '0px' }}>상품옵션 : 내추럴,기본옵션</p>
+                                                                        <div>★★★★☆</div>
+                                                                        <p>생각보다 작은 편이에요. 그래도 만족하고 있어요.</p>
+                                                                </div>
+                                                        </div>
+                                                )}
 
+                                        </div>
+                                )}
 
+                                {/*  확대 이미지 모달 (어느 모드에서도 보이도록 바깥에!) */}
+                                {zoomImage && (
+                                        <div className="zoom-modal">
+                                                <div className="zoom-content">
+                                                        <button className="close-btn" onClick={() => setZoomImage(null)}>✕</button>
+                                                        <img src={zoomImage} className="zoom-img" />
+                                                </div>
                                         </div>
                                 )}
 
                                 {activeTab === "qna" && (
                                         <div style={{ padding: "40px 0", textAlign: "center" }}>
-                                                Q&A 목록 영역
+                                                <div style={{ textAlign: 'left', margin: '20px 0' }}>
+                                                        <h3>문의사항</h3>
+                                                        <div style={{ float: 'right', margin: '30px 10px' }}>
+                                                                <button id="p-qnaBtn" style={{ margin: '10px', padding: '10px' }}
+                                                                        onClick={() => setOpenQna(true)}>
+                                                                        상품문의
+                                                                </button>
+                                                        </div>
+                                                </div>
+
+                                                <table style={{ width: '100%', borderTop: '2px solid #000', fontSize: '15px', borderCollapse: 'collapse' }}>
+                                                        <thead>
+                                                                <tr style={{ borderBottom: '1px solid #ccc', height: '50px' }}>
+                                                                        <th style={{ width: '80px' }}>번호</th>
+                                                                        <th style={{ textAlign: 'left', paddingLeft: '60px' }}>제목</th>
+                                                                        <th style={{ width: '120px' }}>작성자</th>
+                                                                        <th style={{ width: '120px' }}>작성일</th>
+                                                                </tr>
+                                                        </thead>
+
+                                                        <tbody>
+                                                                <tr style={{ borderBottom: '1px solid #eee', height: '48px' }}>
+                                                                        <td>12</td>
+                                                                        <td style={{ textAlign: 'left', paddingLeft: '60px', fontWeight: 'bold' }}>상품문의[답변완료]</td>
+                                                                        <td>이*</td>
+                                                                        <td>2025.04.13</td>
+                                                                </tr>
+
+                                                                <tr style={{ borderBottom: '1px solid #eee', height: '48px' }}>
+                                                                        <td>11</td>
+                                                                        <td style={{ textAlign: 'left', paddingLeft: '60px', fontWeight: 'bold' }}>어떤 재질인지 궁금합니다.[답변완료]</td>
+                                                                        <td>김*철</td>
+                                                                        <td>2025.04.10</td>
+                                                                </tr>
+                                                        </tbody>
+                                                </table>
+                                        </div>
+                                )}
+
+                                {openQna && (
+                                        <div
+                                                style={{
+                                                        position: "fixed",
+                                                        top: 0,
+                                                        left: 0,
+                                                        width: "100vw",
+                                                        height: "100vh",
+                                                        background: "rgba(0,0,0,0.5)",
+                                                        display: "flex",
+                                                        justifyContent: "center",
+                                                        alignItems: "center",
+                                                        zIndex: 9999
+                                                }}
+                                                onClick={() => setOpenQna(false)}  // 바깥 클릭 → 닫힘
+                                        >
+                                                <div
+                                                        style={{
+                                                                background: "#fff",
+                                                                width: "600px",
+                                                                padding: "30px",
+                                                                borderRadius: "8px",
+                                                                position: "relative"
+                                                        }}
+                                                        onClick={(e) => e.stopPropagation()} // 내부 클릭은 유지
+                                                >
+                                                        {/* 닫기(X) 버튼 */}
+                                                        <button
+                                                                onClick={() => setOpenQna(false)}
+                                                                style={{
+                                                                        position: "absolute",
+                                                                        top: "20px",
+                                                                        right: "20px",
+                                                                        background: "none",
+                                                                        border: "none",
+                                                                        fontSize: "24px",
+                                                                        cursor: "pointer"
+                                                                }}
+                                                        >
+                                                                ✕
+                                                        </button>
+
+                                                        {/* 타이틀 */}
+                                                        <h2 style={{ marginBottom: "20px" }}>상품 문의하기</h2>
+
+                                                        {/* 문의 유형 */}
+                                                        <div style={{ marginBottom: "20px" }}>
+                                                                <label>문의 유형</label>
+                                                                <select style={{ width: "100%", padding: "10px", marginTop: "5px" }}>
+                                                                        <option>문의 유형 선택</option>
+                                                                        <option>상품 문의</option>
+                                                                        <option>배송 문의</option>
+                                                                        <option>기타</option>
+                                                                </select>
+                                                        </div>
+
+                                                        {/* 제목 */}
+                                                        <div style={{ marginBottom: "20px" }}>
+                                                                <label>제목</label>
+                                                                <input
+                                                                        type="text"
+                                                                        placeholder="제목을 입력해주세요."
+                                                                        style={{ width: "100%", padding: "10px", marginTop: "5px" }}
+                                                                />
+                                                        </div>
+
+                                                        {/* 내용 */}
+                                                        <div style={{ marginBottom: "20px" }}>
+                                                                <label>내용</label>
+                                                                <textarea
+                                                                        placeholder="내용을 입력해주세요."
+                                                                        style={{ width: "100%", height: "150px", padding: "10px", marginTop: "5px" }}
+                                                                />
+                                                        </div>
+
+                                                        {/* 하단 버튼 */}
+                                                        <button
+                                                                style={{
+                                                                        width: "100%",
+                                                                        padding: "12px",
+                                                                        background: "#333",
+                                                                        color: "#fff",
+                                                                        border: "none",
+                                                                        borderRadius: "5px",
+                                                                        fontSize: "16px",
+                                                                        cursor: "pointer"
+                                                                }}
+                                                        >
+                                                                문의하기
+                                                        </button>
+                                                </div>
                                         </div>
                                 )}
                         </div>
