@@ -266,7 +266,9 @@ const ProductManagement = () => {
                                 <div className="search-bar">
                                         <input type="text" placeholder="상품명 검색" style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
                                 </div>
-                                <button className="btn-dark" style={{ padding: '8px 20px', borderRadius: '4px' }}>+ 새 상품 등록</button>
+                                <button className="btn-dark" style={{ padding: '8px 20px', borderRadius: '4px' }}
+                                 onClick={()=>{location.href="/mypage/addproduct"}}>+ 새 상품 등록
+                                </button>
                         </div>
 
                         <div className="product-list">

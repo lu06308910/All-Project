@@ -6,6 +6,7 @@ import Login from './assets/pages/login';
 import Member from './assets/pages/member';
 import FindMember from './assets/pages/findmember';
 import Mypage from './assets/pages/mypage';
+import AddProduct from './assets/pages/AddProduct';
 
 import Manager from './assets/manager/Manager';
 import AllRroduct from './assets/product/allproduct';
@@ -35,6 +36,7 @@ function App() {
           <Route path='/member/signup' element={<Member />}></Route>
           <Route path='/member/findmember' element={<FindMember />}></Route>
           <Route path='/mypage' element={<Mypage />}></Route>
+          <Route path='/mypage/addproduct' element={<AddProduct />}></Route>
           <Route path='/allproduct' element={<AllRroduct />}></Route>
           <Route path='/productDetail' element={<ProductDetail />}></Route>
           <Route path='/spaceproduct' element={<Space />}></Route>
