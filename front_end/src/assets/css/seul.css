@@ -433,11 +433,11 @@
 
 .buy-btn {
   margin-top: 20px;
-
-  padding: 15px;
+  padding: 20px;
   background: #000;
   color: #fff;
   border: none;
+  border-radius: 10px;
   cursor: pointer;
 }
 
@@ -517,9 +517,68 @@
 }
 
 /*--------- 리뷰-----------*/
-.review-imageBox img {
-  width: 200px;
-  height: 200px;
-  margin: 0 10px;
+.review-imageBox {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+}
 
+.review-imageBox img {
+  width: calc(25% - 10px);  
+  height: 200px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* 리뷰버튼 활성화 */
+.sort-btns button {
+  padding: 8px 15px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  border-radius: 30px;
+}
+
+.sort-btns button.active  ,#p-qnaBtn{
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+/* 모달 배경 */
+.zoom-modal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(2px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.zoom-content {
+  position: relative;
+}
+
+.zoom-img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+}
+
+.close-btn {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
 }
