@@ -69,11 +69,9 @@ const CancelHistory = ({ cancelItems }) => {
                                         {/* 상태 표시 (취소 완료, 반품 신청 등) */}
                                         <div className="btn-group">
                                                 <span className="status-text" style={{ fontWeight: 'bold' }}>{item.status}</span>
-                                                {/* 교환 신청 처럼 추가 버튼이 필요한 경우 */}
                                                 {item.status === '교환 신청' && <button className="btn-light">배송조회</button>}
                                         </div>
 
-                                        {/* 날짜 및 상세보기 버튼 */}
                                         <div className="btn-group">
                                                 <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{item.date}</span>
                                                 <button className="btn-light" style={{ border: '1px solid #333' }}>
@@ -204,7 +202,6 @@ const SalesStatus = () => {
 
         return (
                 <div className="sales-status-container">
-                        {/* 요약 카드 섹션 */}
                         <div className="status-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginBottom: '30px' }}>
                                 <div className="status-card" style={{ padding: '20px', border: '1px solid #eee', borderRadius: '8px', textAlign: 'center' }}>
                                         <p style={{ fontSize: '13px', color: '#666' }}>오늘의 매출</p>
@@ -224,7 +221,6 @@ const SalesStatus = () => {
                                 </div>
                         </div>
 
-                        {/* 최근 주문 목록 표 */}
                         <div className="recent-orders">
                                 <h4 style={{ marginBottom: '15px' }}>최근 주문 내역</h4>
                                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
@@ -253,36 +249,256 @@ const SalesStatus = () => {
         );
 };
 
-/* 상품 등록/관리 (기업용) */
+/* 상품 등록/관리 */
 const ProductManagement = () => {
         const [products, setProducts] = useState([
-                { id: 1, name: "크로켓 2000 거실장", stock: 15, price: "230,000", status: "판매중" },
-                { id: 2, name: "심플 라인 소파", stock: 5, price: "450,000", status: "품절임박" }
+                { id: 1, name: "감성 스테이 제주 A동", price: "250,000", stock: 5, status: "판매중", date: "2026-05-01" },
+                { id: 2, name: "오션뷰 프라이빗 풀빌라", price: "480,000", stock: 2, status: "판매중", date: "2026-04-28" },
+                { id: 3, name: "숲속 작은 오두막", price: "180,000", stock: 0, status: "품절", date: "2026-04-25" },
         ]);
 
+        const [editingId, setEditingId] = useState(null);
+        const [editFormData, setEditFormData] = useState({});
+
+        // 수정 버튼 클릭 시
+        const handleEditClick = (product) => {
+                setEditingId(product.id);
+                setEditFormData({ ...product });
+        };
+
+        // 입력 값 변경 시
+        const handleInputChange = (e) => {
+                const { name, value } = e.target;
+                setEditFormData({ ...editFormData, [name]: value });
+        };
+
+        // 저장 버튼 클릭 시
+        const handleSaveClick = () => {
+                setProducts(products.map(p => p.id === editingId ? editFormData : p));
+                setEditingId(null);
+        };
+
         return (
-                <div className="product-mgmt-container">
-                        <div className="mgmt-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                                <div className="search-bar">
-                                        <input type="text" placeholder="상품명 검색" style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
+                <div className="sales-status-container">
+                        <div className="status-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', marginBottom: '30px' }}>
+                                <div className="status-card" style={{ padding: '20px', border: '1px solid #eee', borderRadius: '8px', textAlign: 'center' }}>
+                                        <p style={{ fontSize: '13px', color: '#666' }}>전체 상품</p>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0' }}>{products.length}건</h3>
                                 </div>
-                                <button className="btn-dark" style={{ padding: '8px 20px', borderRadius: '4px' }}>+ 새 상품 등록</button>
+                                <div className="status-card" style={{ padding: '20px', border: '1px solid #eee', borderRadius: '8px', textAlign: 'center' }}>
+                                        <p style={{ fontSize: '13px', color: '#666' }}>판매 중</p>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#2196F3' }}>2건</h3>
+                                </div>
+                                <div className="status-card" style={{ padding: '20px', border: '1px solid #eee', borderRadius: '8px', textAlign: 'center' }}>
+                                        <p style={{ fontSize: '13px', color: '#666' }}>품절/중지</p>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#f44336' }}>1건</h3>
+                                </div>
                         </div>
 
-                        <div className="product-list">
-                                {products.map(product => (
-                                        <div key={product.id} className="order-item" style={{ padding: '20px', marginBottom: '10px', border: '1px solid #eee' }}>
-                                                <div className="item-info">
-                                                        <span style={{ fontSize: '12px', color: '#888' }}>상품번호: {product.id}</span>
-                                                        <h3 className="product-name">{product.name}</h3>
-                                                        <p className="product-price">{product.price}원 | 재고: {product.stock}개</p>
-                                                </div>
-                                                <div className="btn-group" style={{ flexDirection: 'row', gap: '10px' }}>
-                                                        <button className="btn-light" style={{ width: '80px' }}>수정</button>
-                                                        <button className="btn-light" style={{ width: '80px', color: 'red' }}>삭제</button>
-                                                </div>
-                                        </div>
-                                ))}
+                        {/* 검색 및 등록 버튼 */}
+                        <div className="recent-orders" style={{ marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                <div className="filter-group" style={{ display: 'flex', gap: '8px' }}>
+                                        {['전체', '판매중', '품절'].map((label) => (
+                                                <button
+                                                        key={label}
+                                                        style={{
+                                                                padding: '6px 12px',
+                                                                fontSize: '13px',
+                                                                borderRadius: '4px',
+                                                                border: '1px solid #ddd',
+                                                                background: label === '전체' ? '#333' : '#fff',
+                                                                color: label === '전체' ? '#fff' : '#333',
+                                                                cursor: 'pointer'
+                                                        }}
+                                                >
+                                                        {label}
+                                                </button>
+                                        ))}
+                                </div>
+                                <button className="btn-dark" style={{ padding: '8px 16px', borderRadius: '4px', fontSize: '13px' }}>+ 새 상품 등록</button>
+                        </div>
+
+                        <div className="recent-orders">
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                                        <thead>
+                                                <tr style={{ borderBottom: '2px solid #333', textAlign: 'left' }}>
+                                                        <th style={{ padding: '12px' }}>상품 정보</th>
+                                                        <th>판매가</th>
+                                                        <th>재고</th>
+                                                        <th>상태</th>
+                                                        <th style={{ textAlign: 'center' }}>관리</th>
+                                                </tr>
+                                        </thead>
+                                        <tbody>
+                                                {products.map(product => (
+                                                        <tr key={product.id} style={{ borderBottom: '1px solid #eee' }}>
+                                                                <td style={{ padding: '12px' }}>
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                                                <div style={{ width: '40px', height: '40px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}></div>
+                                                                                {editingId === product.id ? (
+                                                                                        <input
+                                                                                                name="name"
+                                                                                                value={editFormData.name}
+                                                                                                onChange={handleInputChange}
+                                                                                                style={{ padding: '4px', border: '1px solid #ccc', borderRadius: '4px', width: '150px' }}
+                                                                                        />
+                                                                                ) : (
+                                                                                        <span style={{ fontWeight: '500' }}>{product.name}</span>
+                                                                                )}
+                                                                        </div>
+                                                                </td>
+
+                                                                {/* 판매가 */}
+                                                                <td>
+                                                                        {editingId === product.id ? (
+                                                                                <input
+                                                                                        name="price"
+                                                                                        value={editFormData.price}
+                                                                                        onChange={handleInputChange}
+                                                                                        style={{ padding: '4px', border: '1px solid #ccc', borderRadius: '4px', width: '80px' }}
+                                                                                />
+                                                                        ) : (
+                                                                                `${product.price}원`
+                                                                        )}
+                                                                </td>
+
+                                                                {/* 재고 */}
+                                                                <td>
+                                                                        {editingId === product.id ? (
+                                                                                <input
+                                                                                        type="number"
+                                                                                        name="stock"
+                                                                                        value={editFormData.stock}
+                                                                                        onChange={handleInputChange}
+                                                                                        style={{ padding: '4px', border: '1px solid #ccc', borderRadius: '4px', width: '50px' }}
+                                                                                />
+                                                                        ) : (
+                                                                                `${product.stock}개`
+                                                                        )}
+                                                                </td>
+
+                                                                {/* 상태 */}
+                                                                <td>
+                                                                        {editingId === product.id ? (
+                                                                                <select
+                                                                                        name="status"
+                                                                                        value={editFormData.status}
+                                                                                        onChange={handleInputChange}
+                                                                                        style={{ padding: '4px', border: '1px solid #ccc', borderRadius: '4px' }}
+                                                                                >
+                                                                                        <option value="판매중">판매중</option>
+                                                                                        <option value="품절">품절</option>
+                                                                                </select>
+                                                                        ) : (
+                                                                                <span style={{
+                                                                                        background: product.status === '품절' ? '#ffebee' : '#e3f2fd',
+                                                                                        color: product.status === '품절' ? '#c62828' : '#1976d2',
+                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                                }}>{product.status}</span>
+                                                                        )}
+                                                                </td>
+
+                                                                {/* 관리 버튼 영역 */}
+                                                                <td style={{ textAlign: 'center' }}>
+                                                                        {editingId === product.id ? (
+                                                                                <>
+                                                                                        <button onClick={handleSaveClick} style={{ color: '#2196F3', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold', marginRight: '8px' }}>저장</button>
+                                                                                        <button onClick={() => setEditingId(null)} style={{ color: '#666', background: 'none', border: 'none', cursor: 'pointer' }}>취소</button>
+                                                                                </>
+                                                                        ) : (
+                                                                                <>
+                                                                                        <button onClick={() => handleEditClick(product)} style={{ background: 'none', border: 'none', color: '#666', fontSize: '12px', cursor: 'pointer', marginRight: '8px' }}>수정</button>
+                                                                                        <button style={{ background: 'none', border: 'none', color: '#f44336', fontSize: '12px', cursor: 'pointer' }}>삭제</button>
+                                                                                </>
+                                                                        )}
+                                                                </td>
+                                                        </tr>
+                                                ))}
+                                        </tbody>
+                                </table>
+                        </div>
+                </div>
+        );
+};
+
+const SettlementHistory = () => {
+        const settlementData = [
+                { id: 1, date: "2026-05-01", amount: "1,250,000", fee: "37,500", net: "1,212,500", status: "입금완료" },
+                { id: 2, date: "2026-04-15", amount: "890,000", fee: "26,700", net: "863,300", status: "입금완료" },
+                { id: 3, date: "2026-05-15", amount: "2,100,000", fee: "63,000", net: "2,037,000", status: "입금대기" },
+        ];
+
+        return (
+                <div className="sales-status-container">
+                        {/* 정산 요약 카드 */}
+                        <div className="status-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', marginBottom: '30px' }}>
+                                <div className="status-card" style={{ padding: '20px', border: '1px solid #eee', borderRadius: '8px', textAlign: 'center', backgroundColor: '#f8f9fa' }}>
+                                        <p style={{ fontSize: '13px', color: '#666' }}>이번 달 정산 예정액</p>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#333' }}>2,037,000원</h3>
+                                </div>
+                                <div className="status-card" style={{ padding: '20px', border: '1px solid #eee', borderRadius: '8px', textAlign: 'center' }}>
+                                        <p style={{ fontSize: '13px', color: '#666' }}>올해 누적 정산액</p>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0' }}>15,420,000원</h3>
+                                </div>
+                                <div className="status-card" style={{ padding: '20px', border: '1px solid #eee', borderRadius: '8px', textAlign: 'center' }}>
+                                        <p style={{ fontSize: '13px', color: '#666' }}>적용 수수료율</p>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#666' }}>3%</h3>
+                                </div>
+                        </div>
+
+                        {/* 필터 및 엑셀 다운로드 영역 */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                        <input type="month" style={{ padding: '6px', borderRadius: '4px', border: '1px solid #ddd' }} />
+                                        <button className="btn-dark" style={{ padding: '6px 12px', fontSize: '13px', borderRadius: '4px' }}>조회</button>
+                                </div>
+                                <button style={{ padding: '6px 12px', fontSize: '13px', borderRadius: '4px', border: '1px solid #2e7d32', color: '#2e7d32', background: 'none', cursor: 'pointer' }}>
+                                        Excel 다운로드
+                                </button>
+                        </div>
+
+                        {/* 정산 상세 테이블 */}
+                        <div className="recent-orders">
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                                        <thead>
+                                                <tr style={{ borderBottom: '2px solid #333', textAlign: 'left', backgroundColor: '#fafafa' }}>
+                                                        <th style={{ padding: '12px' }}>정산일(예정)</th>
+                                                        <th>총 매출액</th>
+                                                        <th>서비스 수수료</th>
+                                                        <th style={{ color: '#d32f2f' }}>실지급액</th>
+                                                        <th style={{ textAlign: 'center' }}>지급 상태</th>
+                                                </tr>
+                                        </thead>
+                                        <tbody>
+                                                {settlementData.map(item => (
+                                                        <tr key={item.id} style={{ borderBottom: '1px solid #eee' }}>
+                                                                <td style={{ padding: '15px 12px' }}>{item.date}</td>
+                                                                <td>{item.amount}원</td>
+                                                                <td style={{ color: '#999' }}>- {item.fee}원</td>
+                                                                <td style={{ fontWeight: 'bold' }}>{item.net}원</td>
+                                                                <td style={{ textAlign: 'center' }}>
+                                                                        <span style={{
+                                                                                background: item.status === '입금대기' ? '#fff3e0' : '#e8f5e9',
+                                                                                color: item.status === '입금대기' ? '#ef6c00' : '#2e7d32',
+                                                                                padding: '4px 8px',
+                                                                                borderRadius: '4px',
+                                                                                fontSize: '12px',
+                                                                                fontWeight: '500'
+                                                                        }}>
+                                                                                {item.status}
+                                                                        </span>
+                                                                </td>
+                                                        </tr>
+                                                ))}
+                                        </tbody>
+                                </table>
+                        </div>
+
+                        {/* 안내 문구 */}
+                        <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '6px', fontSize: '12px', color: '#777' }}>
+                                <p>• 정산은 매월 15일과 말일에 진행됩니다.</p>
+                                <p>• 실지급액은 총 매출액에서 플랫폼 수수료(3%)를 제외한 금액입니다.</p>
+                                <p>• 정산 관련 문의는 고객센터를 이용해 주세요.</p>
                         </div>
                 </div>
         );
@@ -303,12 +519,13 @@ const MyPage = () => {
                 if (isCorporate) {
                         switch (activeMenu) {
                                 case '판매 현황':
-                                        return <SalesStatus />; // 새로 만드실 컴포넌트
+                                        return <SalesStatus />;
                                 case '상품 등록/관리':
-                                        return <ProductManagement />; // 새로 만드실 컴포넌트
+                                        return <ProductManagement />;
+                                case '정산내역' :
+                                        return <SettlementHistory />;
                                 case '고객 문의 관리':
                                         return <InquiryList inquiries={inquiries} isCorp={true} />;
-                                // 기존 InquiryList를 재사용하되, 기업용임을 알려주는 props 전달 가능
                                 default:
                                         return <div className="empty-state">준비 중인 기업 기능입니다.</div>;
                         }
