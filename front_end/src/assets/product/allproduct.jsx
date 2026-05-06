@@ -34,36 +34,60 @@ function AllProduct() {
                 <div className="p-menu" onClick={() => toggleMenu("storage")}>수납가구</div>
                 {openMenu === "storage" && (
                     <div className="submenu">
-                        <Link to="">책장</Link>
-                        <Link to="">수납장</Link>
-                        <Link to="">옷장</Link>
+                        <Link to="/categoryproduct">책장</Link>
+                        <Link to="/categoryproduct">수납장</Link>
+                        <Link to="/categoryproduct">옷장</Link>
                     </div>
                 )}
 
                 <div className="p-menu" onClick={() => toggleMenu("bed")}>침대 / 매트리스</div>
                 {openMenu === "bed" && (
                     <div className="submenu">
-                        <Link to="">싱글 침대</Link>
-                        <Link to="">퀸 침대</Link>
-                        <Link to="">매트리스</Link>
+                        <Link to="/categoryproduct">싱글 침대</Link>
+                        <Link to="/categoryproduct">퀸 침대</Link>
+                        <Link to="/categoryproduct">매트리스</Link>
                     </div>
                 )}
 
                 <div className="p-menu" onClick={() => toggleMenu("sofa")}>소파 / 암체어</div>
                 {openMenu === "sofa" && (
                     <div className="submenu">
-                        <Link to="">2인용 소파</Link>
-                        <Link to="">3인용 소파</Link>
-                        <Link to="">암체어</Link>
+                        <Link to="/categoryproduct">2인용 소파</Link>
+                        <Link to="/categoryproduct">3인용 소파</Link>
+                        <Link to="/categoryproduct">암체어</Link>
                     </div>
                 )}
 
-                <div className="p-menu" onClick={() => toggleMenu("table")}>식탁 / 테이블 /의자</div>
+                <div className="p-menu" onClick={() => toggleMenu("table")}>식탁 / 테이블 / 의자</div>
                 {openMenu === "table" && (
                     <div className="submenu">
-                        <Link to="">식탁</Link>
-                        <Link to="">거실용 테이블</Link>
-                        <Link to="">의자</Link>
+                        <Link to="/categoryproduct">식탁</Link>
+                        <Link to="/categoryproduct">거실용 테이블</Link>
+                        <Link to="/categoryproduct">의자</Link>
+                    </div>
+                )}
+                <div className="p-menu" onClick={() => toggleMenu("chair")}>책상 / 사무용 의자</div>
+                {openMenu === "chair" && (
+                    <div className="submenu">
+                        <Link to="/categoryproduct">책상/컴퓨터 책상</Link>
+                        <Link to="/categoryproduct">의자/사무실의자</Link>
+                        <Link to="/categoryproduct">책상/의자 세트</Link>
+                    </div>
+                )}
+                <div className="p-menu" onClick={() => toggleMenu("light")}>조명</div>
+                {openMenu === "light" && (
+                    <div className="submenu">
+                        <Link to="/categoryproduct">일반 조명</Link>
+                        <Link to="/categoryproduct">시스템 조명</Link>
+                        <Link to="/categoryproduct">장식조명</Link>
+                    </div>
+                )}
+                <div className="p-menu" onClick={() => toggleMenu("bathroom")}>욕실</div>
+                {openMenu === "bathroom" && (
+                    <div className="submenu">
+                        <Link to="/categoryproduct">욕실 벽수납장</Link>
+                        <Link to="/categoryproduct">욕실 세면대하부장</Link>
+                        <Link to="/categoryproduct">욕실 거울</Link>
                     </div>
                 )}
             </div>

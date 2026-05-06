@@ -358,10 +358,14 @@ function ProductDetail() {
                                 )}
 
                                 {activeTab === "qna" && (
-                                        <div style={{ padding: "40px 0", textAlign: "center" }}>
+                                        <div style={{ padding: "40px 0", textAlign: "center" ,minHeight:'700px'}}>
                                                 <div style={{ textAlign: 'left', margin: '20px 0' }}>
                                                         <h3>문의사항</h3>
-                                                        <div style={{ float: 'right', margin: '30px 10px' }}>
+                                                        <p style={{color:'#686868'}}>
+                                                           * 상품에 관한 문의가 아닌 배송 / 결제 / 교환 / 반품에 대한 문의는 서비스지원 &gt; 1:1문의 를 이용해 주시기 바랍니다.<br/>
+                                                           *  본인 외 타인이 볼 수 있는 공간으로 개인정보 유출의 위험이 있으므로 개인정보 보호로 인해 개인정보가 기재된 게시글은 통보 없이 삭제될 수 있습니다.
+                                                        </p>
+                                                        <div style={{ float: 'right', margin: '20px 10px' }}>
                                                                 <button id="p-qnaBtn" style={{ margin: '10px', padding: '10px' }}
                                                                         onClick={() => setOpenQna(true)}>
                                                                         상품문의
@@ -449,8 +453,6 @@ function ProductDetail() {
                                                                 <select style={{ width: "100%", padding: "10px", marginTop: "5px" }}>
                                                                         <option>문의 유형 선택</option>
                                                                         <option>상품 문의</option>
-                                                                        <option>배송 문의</option>
-                                                                        <option>기타</option>
                                                                 </select>
                                                         </div>
 
