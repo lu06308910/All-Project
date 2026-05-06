@@ -58,6 +58,7 @@
         color: black;
         width: 70px;
         padding: 5px;
+        border: 1px solid;
 }
 /* 캘린더 */
 .calendar{
@@ -133,4 +134,17 @@
         width: 120px;
         height: 100px;
         overflow: hidden;
+}
+/* 세로줄 */
+.v-line {
+  border-left: 2px solid #cccc;
+  height: 20px;
+}
+/* 주소입력창(구매페이지) */
+.c-code{
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        width: 40%;
 }
