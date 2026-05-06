@@ -10,6 +10,7 @@ import Mypage from './assets/pages/mypage';
 import Manager from './assets/manager/Manager';
 import AllRroduct from './assets/product/allproduct';
 import ProductDetail from './assets/product/ProductDetail';
+import CategoryProduct from './assets/product/CategoryProduct';
 
 import Space from './assets/product/space';
 import Sale from './assets/product/sale';
@@ -38,6 +39,7 @@ function App() {
           <Route path='/productDetail' element={<ProductDetail />}></Route>
           <Route path='/spaceproduct' element={<Space />}></Route>
           <Route path='/sale' element={<Sale />}></Route>
+          <Route path='/categoryproduct' element={<CategoryProduct />}></Route>
           <Route path='/qna' element={<Qna />}></Route>
           <Route path='/qna/write' element={<QnaWrite />}></Route>
           <Route path='/qna/noticelist' element={<NoticeList />}></Route>
