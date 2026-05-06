@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import './../css/gayoung.css'
 import React, { useState } from "react";
 
@@ -263,12 +264,18 @@ function Basket() {
                                 </div>
                                 <hr/>
                                 <div style={{display:'flex', justifyContent:'center', gap:'30px', marginTop:'30px'}}>
-                                        <button className='button3' style={{backgroundColor:'black', color:'white', width:'150px'}}>
-                                                선택상품주문
-                                        </button>
-                                        <button className='button3' style={{backgroundColor:'#CEB99C', color:'white', width:'150px', border:'1px solid #CEB99C'}}>
-                                                전체상품주문
-                                        </button>
+                                        <Link to ='/parchase'>
+                                                <button className='button3' style={{backgroundColor:'black', color:'white', width:'150px'}}>
+                                                        선택상품주문
+                                                </button>
+                                        </Link>
+                                        <Link to ='/parchase'>
+                                                <button className='button3'
+                                                        style={{backgroundColor:'#CEB99C', color:'white', width:'150px', border:'1px solid #CEB99C'}}
+                                                >
+                                                        전체상품주문
+                                                </button>
+                                        </Link>
                                 </div>
                                 <div style={{backgroundColor:'#eeeeee', padding:'50px', marginTop:'30px'}}>
                                         <span style={{fontWeight:'600'}}>장바구니 유의사항</span>
