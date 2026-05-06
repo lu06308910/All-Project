@@ -315,7 +315,9 @@ const ProductManagement = () => {
                                                 </button>
                                         ))}
                                 </div>
-                                <button className="btn-dark" style={{ padding: '8px 20px', borderRadius: '4px' }}>+ 새 상품 등록</button>
+                                <button className="btn-dark" style={{ padding: '8px 20px', borderRadius: '4px' }}
+                                 onClick={()=>{location.href="/mypage/addproduct"}}>+ 새 상품 등록
+                                </button>
                         </div>
 
                         <div className="recent-orders">
