@@ -115,7 +115,7 @@ function Basket() {
                                                         <span>주문완료</span>
                                                 </div>
                                         </div>
-                                        <h4 style={{textAlign:'center', marginTop:'50px'}}>총 {checkedItems.length}개의 상품이 담겨 있습니다.</h4>
+                                        <h4 style={{textAlign:'center', marginTop:'50px'}}>총 {cartList.length}개의 상품이 담겨 있습니다.</h4>
                                         <div style={{marginTop:'50px', marginLeft:'30px'}}>
                                                 <button className='button3' style={{marginRight:'10px'}} onClick={toggleAllCheck}>
                                                         {cartList.length > 0 && cartList.every(item => item.checked) ? '전체 해제' : '전체 선택'}
