@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './../css/kdh.css';
 
+// ----------------------------------------- 일반 사용자 -------------------------------------------
 /* 주문내역 */
 const OrderHistory = ({ orders }) => {
         if (!orders || orders.length === 0) {
@@ -157,7 +158,6 @@ const InquiryList = ({ inquiries }) => {
 
         return (
                 <>
-
                         <hr />
                         {inquiries.map((q) => (
                                 <div className="order-item" key={q.id} style={{ cursor: 'pointer' }}>
@@ -192,12 +192,142 @@ const InquiryList = ({ inquiries }) => {
         );
 };
 
-/** 마이페이지 컴포넌트 **/
-const MyPage = () => {
-        const [userName] = useState("db데이터_로그인이름"); //
-        const [activeMenu, setActiveMenu] = useState('주문내역');
-        const [sideMenus] = useState(['주문내역', '취소/반품/교환 내역', '찜', '이벤트', '문의 내역']);
+// ----------------------------------------- 기업 -------------------------------------------
+/* 판매 현황  */
+const SalesStatus = () => {
+        const [salesSummary] = useState({
+                todaySales: "1,150,000",
+                monthlySales: "28,400,000",
+                pendingDelivery: 3,
+                returnRequests: 1
+        });
 
+        return (
+                <div className="sales-status-container">
+                        {/* 요약 카드 섹션 */}
+                        <div className="status-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginBottom: '30px' }}>
+                                <div className="status-card" style={{ padding: '20px', border: '1px solid #eee', borderRadius: '8px', textAlign: 'center' }}>
+                                        <p style={{ fontSize: '13px', color: '#666' }}>오늘의 매출</p>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0' }}>{salesSummary.todaySales}원</h3>
+                                </div>
+                                <div className="status-card" style={{ padding: '20px', border: '1px solid #eee', borderRadius: '8px', textAlign: 'center' }}>
+                                        <p style={{ fontSize: '13px', color: '#666' }}>이달의 누적 매출</p>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0' }}>{salesSummary.monthlySales}원</h3>
+                                </div>
+                                <div className="status-card" style={{ padding: '20px', border: '1px solid #eee', borderRadius: '8px', textAlign: 'center' }}>
+                                        <p style={{ fontSize: '13px', color: '#666' }}>배송 준비 중</p>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#2196F3' }}>{salesSummary.pendingDelivery}건</h3>
+                                </div>
+                                <div className="status-card" style={{ padding: '20px', border: '1px solid #eee', borderRadius: '8px', textAlign: 'center' }}>
+                                        <p style={{ fontSize: '13px', color: '#666' }}>반품/교환 요청</p>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#f44336' }}>{salesSummary.returnRequests}건</h3>
+                                </div>
+                        </div>
+
+                        {/* 최근 주문 목록 표 */}
+                        <div className="recent-orders">
+                                <h4 style={{ marginBottom: '15px' }}>최근 주문 내역</h4>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                                        <thead>
+                                                <tr style={{ borderBottom: '2px solid #333', textAlign: 'left' }}>
+                                                        <th style={{ padding: '12px' }}>주문번호</th>
+                                                        <th>상품명</th>
+                                                        <th>주문자</th>
+                                                        <th>결제금액</th>
+                                                        <th>상태</th>
+                                                </tr>
+                                        </thead>
+                                        <tbody>
+                                                <tr style={{ borderBottom: '1px solid #eee' }}>
+                                                        <td style={{ padding: '12px' }}>20260506-001</td>
+                                                        <td>크로켓 2000 거실장</td>
+                                                        <td>김*호</td>
+                                                        <td>230,000원</td>
+                                                        <td><span className="status-badge" style={{ background: '#e3f2fd', color: '#1976d2', padding: '2px 6px', borderRadius: '4px', fontSize: '12px' }}>결제완료</span></td>
+                                                </tr>
+                                                {/* 추가 데이터 반복 */}
+                                        </tbody>
+                                </table>
+                        </div>
+                </div>
+        );
+};
+
+/* 상품 등록/관리 (기업용) */
+const ProductManagement = () => {
+        const [products, setProducts] = useState([
+                { id: 1, name: "크로켓 2000 거실장", stock: 15, price: "230,000", status: "판매중" },
+                { id: 2, name: "심플 라인 소파", stock: 5, price: "450,000", status: "품절임박" }
+        ]);
+
+        return (
+                <div className="product-mgmt-container">
+                        <div className="mgmt-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                                <div className="search-bar">
+                                        <input type="text" placeholder="상품명 검색" style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
+                                </div>
+                                <button className="btn-dark" style={{ padding: '8px 20px', borderRadius: '4px' }}>+ 새 상품 등록</button>
+                        </div>
+
+                        <div className="product-list">
+                                {products.map(product => (
+                                        <div key={product.id} className="order-item" style={{ padding: '20px', marginBottom: '10px', border: '1px solid #eee' }}>
+                                                <div className="item-info">
+                                                        <span style={{ fontSize: '12px', color: '#888' }}>상품번호: {product.id}</span>
+                                                        <h3 className="product-name">{product.name}</h3>
+                                                        <p className="product-price">{product.price}원 | 재고: {product.stock}개</p>
+                                                </div>
+                                                <div className="btn-group" style={{ flexDirection: 'row', gap: '10px' }}>
+                                                        <button className="btn-light" style={{ width: '80px' }}>수정</button>
+                                                        <button className="btn-light" style={{ width: '80px', color: 'red' }}>삭제</button>
+                                                </div>
+                                        </div>
+                                ))}
+                        </div>
+                </div>
+        );
+};
+
+
+const MyPage = () => {
+
+        // 로그인 조건 : true - 기업 / false - 일반
+        const [isCorporate] = useState(true);
+        const [userName] = useState(isCorporate ? "DB(기업)" : "DB(일반)"); //
+
+        const [activeMenu, setActiveMenu] = useState(isCorporate ? '판매 현황' : '주문내역');
+
+        /* 마이페이지 컴포넌트 */
+        const renderContent = () => {
+                // 기업용 메뉴
+                if (isCorporate) {
+                        switch (activeMenu) {
+                                case '판매 현황':
+                                        return <SalesStatus />; // 새로 만드실 컴포넌트
+                                case '상품 등록/관리':
+                                        return <ProductManagement />; // 새로 만드실 컴포넌트
+                                case '고객 문의 관리':
+                                        return <InquiryList inquiries={inquiries} isCorp={true} />;
+                                // 기존 InquiryList를 재사용하되, 기업용임을 알려주는 props 전달 가능
+                                default:
+                                        return <div className="empty-state">준비 중인 기업 기능입니다.</div>;
+                        }
+                }
+
+                // 일반 사용자용 메뉴
+                switch (activeMenu) {
+                        case '주문내역': return <OrderHistory orders={orders} />;
+                        case '취소/반품/교환 내역': return <CancelHistory cancelItems={cancelItems} />;
+                        case '찜': return <WishList wishItems={wishItems} onDelete={handleDeleteWish} onDeleteAll={handleDeleteAllWish} />;
+                        case '문의 내역': return <InquiryList inquiries={inquiries} />;
+                        default: return <div className="empty-state">준비 중인 페이지입니다.</div>;
+                }
+        };
+
+        const userMenus = ['주문내역', '취소/반품/교환 내역', '찜', '이벤트', '문의 내역'];
+        const corpMenus = ['판매 현황', '상품 등록/관리', '정산 내역', '고객 문의 관리'];
+
+        const sideMenus = isCorporate ? corpMenus : userMenus;
 
         const [orders] = useState([
                 { id: 1, brand: "CANVAS", name: "크로켓 2000 거실장", price: "230,000", rating: "★★★☆☆", status: "배송 중", deliveryDate: "26.04.27", deliveryStatus: "도착(예정)" }
@@ -242,28 +372,7 @@ const MyPage = () => {
                 }
         ]);
 
-        // 메뉴에 따른 콘텐츠 렌더링 함수
-        const renderContent = () => {
-                switch (activeMenu) {
-                        case '주문내역':
-                                return <OrderHistory orders={orders} />;
-                        case '취소/반품/교환 내역':
-                                return <CancelHistory cancelItems={cancelItems} />;
-                        case '찜':
-                                return (
-                                        <WishList
-                                                wishItems={wishItems}
-                                                onDelete={handleDeleteWish}
-                                                onDeleteAll={handleDeleteAllWish}
-                                        />
-                                );
-                        case '문의 내역':
-                                return <InquiryList inquiries={inquiries} />;
-                        default:
-                                return <div className="empty-state">준비 중인 페이지입니다: {activeMenu}</div>;
-                }
-        };
-
+        // --------------------------------------------------마이스토어 공통 ---------------------------------------
         return (
                 <div className="mypage-container">
                         <h1 className="mypage-title">마이스토어({userName} 님)</h1>
@@ -274,14 +383,30 @@ const MyPage = () => {
                                         <div className="settings-icon"><a href="">⚙️</a></div>
                                 </div>
                                 <div className="info-stats">
-                                        <div className="stat-item">
-                                                <div className="stat-label">총구매 금액 〉</div>
-                                                <div className="stat-value">--원</div>
-                                        </div>
-                                        <div className="stat-item">
-                                                <div className="stat-label">쿠폰 〉</div>
-                                                <div className="stat-value">보유쿠폰 : --장</div>
-                                        </div>
+                                        {isCorporate ? (
+                                                // 기업용 스탯
+                                                <>
+                                                        <div className="stat-item">
+                                                                <div className="stat-label">오늘의 주문 〉</div>
+                                                                <div className="stat-value">5건</div>
+                                                        </div>
+                                                        <div className="stat-item">
+                                                                <div className="stat-label">미답변 문의 〉</div>
+                                                                <div className="stat-value" style={{ color: 'red' }}>2건</div>
+                                                        </div>
+                                                </>
+                                        ) : (
+                                                <>
+                                                        <div className="stat-item">
+                                                                <div className="stat-label">총구매 금액 〉</div>
+                                                                <div className="stat-value">--원</div>
+                                                        </div>
+                                                        <div className="stat-item">
+                                                                <div className="stat-label">쿠폰 〉</div>
+                                                                <div className="stat-value">보유쿠폰 : --장</div>
+                                                        </div>
+                                                </>
+                                        )}
                                 </div>
                         </section>
 
