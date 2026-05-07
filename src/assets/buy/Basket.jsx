@@ -77,7 +77,7 @@ function Basket() {
                         return;
                 }
 
-                if(window.confirm("선택할 상품을 장바구니에서 삭제하시겠습니까?")){
+                if(window.confirm("선택한 상품을 장바구니에서 삭제하시겠습니까?")){
                         setCartList(remainingItems);
                 }
         }
