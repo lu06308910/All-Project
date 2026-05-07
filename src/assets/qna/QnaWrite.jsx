@@ -99,7 +99,7 @@ function QnaWrite() {
                                         style={{ width: '18px', height: '18px'}}
                                 />
                                 <label htmlFor="agree" style={{ fontSize: '15px', cursor: 'pointer' }}>
-                                        (필수) 개인정보 수집 및 이용에 동의합니다.
+                                        개인정보 수집 및 이용에 동의합니다.
                                 </label>
                                 </div>
 

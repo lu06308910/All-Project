@@ -51,6 +51,15 @@
         width: 50px;
         padding: 5px;
 }
+.button3{
+        font-size: 0.8em;
+        background-color: white;
+        text-align: center;
+        color: black;
+        width: 70px;
+        padding: 5px;
+        border: 1px solid;
+}
 /* 캘린더 */
 .calendar{
         padding: 2px;
@@ -80,4 +89,62 @@
         border-radius: 10px;
         padding: 5px 10px;
         font-size: 0.9em;
+}
+
+.stepper-container {
+  display: flex;
+  justify-content: space-evenly;
+  position: relative; /* 이제 active-line의 기준점이 됩니다 */
+  width: 100%;
+  margin: 50px auto;
+  align-items: center;
+}
+/* 배경 회색 선 */
+.stepper-container::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #ccc;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+/* 활성화 검은 선 */
+.stepper-line-active {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  height: 2px;
+  background-color: #000000;
+  z-index: 2;
+}
+
+.stepper-container > div {
+  position: relative;
+  z-index: 3;
+  background-color: white;
+}
+
+.img-basket{
+        margin-top: 10px;
+        width: 120px;
+        height: 100px;
+        overflow: hidden;
+}
+/* 세로줄 */
+.v-line {
+  border-left: 2px solid #cccc;
+  height: 20px;
+}
+/* 주소입력창(구매페이지) */
+.c-code{
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        width: 40%;
 }
