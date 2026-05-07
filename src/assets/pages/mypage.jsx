@@ -316,7 +316,7 @@ const ProductManagement = () => {
                                         ))}
                                 </div>
                                 <button className="btn-dark" style={{ padding: '8px 20px', borderRadius: '4px' }}
-                                        onClick={() => { location.href = "/mypage/addproduct" }}>+ 새 상품 등록
+                                 onClick={()=>{location.href="/mypage/addproduct"}}>+ 새 상품 등록
                                 </button>
                         </div>
 
@@ -524,7 +524,7 @@ const MyPage = () => {
                                         return <SalesStatus />;
                                 case '상품 등록/관리':
                                         return <ProductManagement />;
-                                case '정산내역':
+                                case '정산내역' :
                                         return <SettlementHistory />;
                                 case '고객 문의 관리':
                                         return <InquiryList inquiries={inquiries} isCorp={true} />;

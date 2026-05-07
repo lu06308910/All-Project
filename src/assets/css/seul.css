@@ -54,6 +54,11 @@
   color: #000;
 }
 
+.submenu a.active {
+  font-weight: bold;
+  color: #000;
+  text-decoration: underline;
+}
 
 
 /* ----------------------- */
@@ -103,6 +108,10 @@
   /* 대호 추가(부드럽게 열리기) */
   animation: fadeInUp 0.5s ease-out forwards;
 }
+.product-card a{
+  text-decoration: none;
+  color: #000;
+}
  
 @keyframes fadeInUp {
   from {
@@ -141,6 +150,7 @@
   font-weight: bold;
   margin-top: 10px;
 }
+
 
 /* 제품 정보 영역 크기 통일 */
 .product-info {
@@ -325,5 +335,257 @@
 .qna-menu a:hover {
   color: #000;
 }
+/* ----------------------- */
+/* 상품 상세페이지 */  
+/* ----------------------- */
 
+.product-detail-container {
+  width: 90%;
+  margin: 0 auto;
+}
 
+.breadcrumb {
+  font-size: 14px;
+  color: #777;
+  margin: 40px 0;
+}
+
+.product-wrapper {
+  display: flex;
+  gap: 40px;
+}
+
+.image-section {
+  width: 60%;
+  display: flex;
+  gap: 20px;
+}
+
+.thumb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.thumb-img {
+  width: 80px;
+  border: 1px solid #eee;
+  cursor: pointer;
+}
+
+.main-img-box {
+  flex: 1;
+}
+
+.main-img {
+  width: 100%;
+}
+
+.info-section {
+  width: 35%;
+  height: 60%;
+  border: 1px solid #eee;
+  padding: 20px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.97); /* 약간 불투명 */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12); /* 부드러운 그림자 */
+}
+
+.price {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.option-box select {
+  width: 100%;
+  padding: 8px;     
+  margin: 8px 0;
+  height: 38px;  
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.count-box {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 999px; /* 완전 둥글게 */
+  width: 90px;
+  height: 34px;
+  justify-content: space-between;
+  padding: 0 8px;
+  background: #fff;
+}
+
+.count-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #555;
+  width: 24px;
+  height: 24px;
+}
+.count-btn:hover {
+  color: #000;
+}
+
+.count-number {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.buy-btn {
+  margin-top: 20px;
+  padding: 20px;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.tab-menu {
+  display: flex;
+  margin-top: 50px;
+  border-bottom: 1px solid #ddd;
+  
+}
+
+.tab-menu div {
+  padding: 15px 30px;
+  cursor: pointer;
+  font-weight: 500;
+  margin: 0px auto ; 
+}
+
+.detail-content {
+    max-height: 500px;   /* 처음 보이는 높이 (조절 가능) */
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+}
+
+/* 펼침 상태 */
+.detail-content.open {
+    max-height: none;    /* 펼치면 전체 다 보이기 */
+}
+
+/* 흐림 그라데이션 오버레이 */
+.detail-fade {
+    position: relative;
+    margin-top: -120px;         /* 상황에 맞게 조절해서 이미지 절반 위에 덮기 */
+    height: 120px;              /* 그라데이션 높이 */
+    background: linear-gradient(
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 1) 100%
+    );
+    pointer-events: none;       /* 버튼 클릭 방해하지 않도록 */
+}
+
+/* 버튼 스타일 */
+.detail-toggle-btn {
+  padding: 12px 40px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+}
+.add-option-btn {
+    padding: 8px 14px;
+    background: #000;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.add-option-btn:hover {
+    background: #444;
+}
+
+.detail-toggle-btn:hover {
+  background: #f5f5f5;
+}
+
+.tab-menu {
+    display: flex;
+    gap: 20px;
+    font-size: 18px;
+    margin-top: 50px;
+    cursor: pointer;
+}
+
+.tab-menu div.active {
+    font-weight: bold;
+    border-bottom: 2px solid #000;
+}
+
+/*--------- 리뷰-----------*/
+.review-imageBox {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+}
+
+.review-imageBox img {
+  width: calc(25% - 10px);  
+  height: 200px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* 리뷰버튼 활성화 */
+.sort-btns button {
+  padding: 8px 15px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  border-radius: 30px;
+}
+
+.sort-btns button.active  ,#p-qnaBtn{
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+/* 모달 배경 */
+.zoom-modal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(2px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.zoom-content {
+  position: relative;
+}
+
+.zoom-img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+}
+
+.close-btn {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+}
