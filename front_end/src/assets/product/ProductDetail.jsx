@@ -7,9 +7,36 @@ function ProductDetail() {
         const [count, setCount] = useState(1);
         const [showDetail, setShowDetail] = useState(false);
 
+        // 상품이미지 배열
+        const images = [
+                "/p1.png",
+                "/p2.png",
+                "/p3.png"
+        ];
+
+        // 메인 상품 이미지 상태
+        const [mainImage, setMainImage] = useState(images[0]);
+
         //  탭 메뉴 선택
         const [activeTab, setActiveTab] = useState("detail");
         // detail | related | review | qna
+
+        // 좋아요 상태 저장
+        const productId = 1;
+        const [likedItems, setLikedItems] = useState([]);
+        const toggleMenu = (menuName) => {
+                setOpenMenu(openMenu === menuName ? null : menuName);
+        };
+        // 좋아요 클릭
+        const handleLike = (id) => {
+
+                if (likedItems.includes(id)) {
+                        setLikedItems(likedItems.filter((item) => item !== id));
+                } else {
+                        setLikedItems([...likedItems, id]);
+                }
+
+        };
 
         // 선택한 옵션값
         const [color, setColor] = useState("");
@@ -60,6 +87,7 @@ function ProductDetail() {
         };
         // 상품문의
         const [openQna, setOpenQna] = useState(false);
+        const [openAnswer, setOpenAnswer] = useState(null);
 
         return (
                 <div className="product-detail-container">
@@ -73,14 +101,31 @@ function ProductDetail() {
 
                                 {/* 왼쪽 이미지 영역 */}
                                 <div className="image-section">
+
+                                        {/* 썸네일 리스트 */}
                                         <div className="thumb-list">
-                                                <img src="public/p1.png" alt="" className="thumb-img" />
-                                                <img src="public/p1.png" alt="" className="thumb-img" />
-                                                <img src="public/p1.png" alt="" className="thumb-img" />
+
+                                                {images.map((img, index) => (
+                                                        <img
+                                                                key={index}
+                                                                src={img}
+                                                                alt=""
+                                                                className="thumb-img"
+                                                                onClick={() => setMainImage(img)}
+                                                        />
+                                                ))}
+
                                         </div>
+
+                                        {/* 메인 이미지 */}
                                         <div className="main-img-box">
-                                                <img src="public/p1.png" alt="" className="main-img" />
+                                                <img
+                                                        src={mainImage}
+                                                        alt=""
+                                                        className="main-img"
+                                                />
                                         </div>
+
                                 </div>
 
                                 {/* 오른쪽 상품 정보 */}
@@ -88,9 +133,24 @@ function ProductDetail() {
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                 <h3>BILLY 빌리, 120cm</h3>
                                                 <span>
-                                                        <Link to="">
-                                                                <img style={{ width: '30px', height: '30px', cursor: 'pointer' }} src="public/like.png" />
-                                                        </Link>
+                                                        <img
+                                                                src={
+                                                                        likedItems.includes(productId)
+                                                                                ? "public/like2.png"
+                                                                                : "public/like.png"
+                                                                }
+                                                                alt="like"
+                                                                onClick={(e) => {
+                                                                        e.preventDefault(); // Link 이동 방지
+                                                                        handleLike(productId);
+                                                                }}
+                                                                style={{
+                                                                        width: "30px",
+                                                                        height: "30px",
+                                                                        cursor: "pointer"
+                                                                }}
+                                                        />
+
                                                 </span>
                                         </div>
 
@@ -109,13 +169,17 @@ function ProductDetail() {
                                         <div className="option-box">
                                                 <select value={color} onChange={(e) => setColor(e.target.value)}>
                                                         <option value="">색상 선택</option>
-                                                        <option value="내츄럴">내츄럴</option>
+                                                        <option value="화이트">화이트</option>
                                                         <option value="브라운">브라운</option>
+                                                        <option value="블루">블루</option>
                                                 </select>
 
                                                 <select value={extraOption} onChange={(e) => setExtraOption(e.target.value)}>
-                                                        <option value="">옵션 선택</option>
-                                                        <option value="기본 옵션">기본 옵션</option>
+                                                        <option value="">사이즈 선택</option>
+                                                        <option value="S">S</option>
+                                                        <option value="M">M(+100,000원)</option>
+                                                        <option value="L">L(+200,000원)</option>
+
                                                 </select>
                                         </div>
                                         <div className="count-add-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '10px 0' }}>
@@ -234,9 +298,29 @@ function ProductDetail() {
                                         <div style={{ padding: "40px 0", textAlign: "center" }}>
                                                 <Carousel
                                                         indicators={false} // 하단 점 숨기기
-                                                        interval={null}    // 자동 재생 끄기 (화살표로만 조작)
-                                                        variant="dark"     // 화살표 색상을 어둡게 (배경이 밝을 때)
+                                                        interval={null}    // 자동 재생 끄기 (화살표로만 조작)                                                       
+                                                        prevIcon={
+                                                                <span
+                                                                        className="carousel-control-prev-icon"
+                                                                        style={{
+                                                                                filter: "brightness(0)",
+                                                                                width: "40px",
+                                                                                height: "40px",
+                                                                        }}
+                                                                />
+                                                        }
+                                                        nextIcon={
+                                                                <span
+                                                                        className="carousel-control-next-icon"
+                                                                        style={{
+                                                                                filter: "brightness(0)",
+                                                                                width: "40px",
+                                                                                height: "40px",
+                                                                        }}
+                                                                />
+                                                        }
                                                 >
+
                                                         {productChunks.map((chunk, index) => (
                                                                 <Carousel.Item key={index}>
                                                                         <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', padding: '0 50px', marginTop: '100px', marginBottom: '100px' }}>
@@ -329,7 +413,9 @@ function ProductDetail() {
                                                                 }}>
                                                                         <p style={{ color: '#7a7a7a', margin: '0px' }}>상품옵션 : 내추럴,기본옵션</p>
                                                                         <div>★★★★★</div>
+                                                                        <p style={{ margin: '0' }}>이*</p>
                                                                         <p>생각보다 튼튼하고 깔끔한 느낌이에요! 추천드려요 ㅎㅎ</p>
+                                                                        <p style={{ color: '#7a7a7a', margin: '0px' }}>2025.08.11 11:50</p>
                                                                 </div>
 
                                                                 <div style={{
@@ -339,7 +425,9 @@ function ProductDetail() {
                                                                 }}>
                                                                         <p style={{ color: '#7a7a7a', margin: '0px' }}>상품옵션 : 내추럴,기본옵션</p>
                                                                         <div>★★★★☆</div>
+                                                                        <p style={{ margin: '0' }}>박*지</p>
                                                                         <p>생각보다 작은 편이에요. 그래도 만족하고 있어요.</p>
+                                                                        <p style={{ color: '#7a7a7a', margin: '0px' }}>2025.08.11 11:50</p>
                                                                 </div>
                                                         </div>
                                                 )}
@@ -358,12 +446,12 @@ function ProductDetail() {
                                 )}
 
                                 {activeTab === "qna" && (
-                                        <div style={{ padding: "40px 0", textAlign: "center" ,minHeight:'700px'}}>
+                                        <div style={{ padding: "40px 0", textAlign: "center", minHeight: '700px' }}>
                                                 <div style={{ textAlign: 'left', margin: '20px 0' }}>
                                                         <h3>문의사항</h3>
-                                                        <p style={{color:'#686868'}}>
-                                                           * 상품에 관한 문의가 아닌 배송 / 결제 / 교환 / 반품에 대한 문의는 서비스지원 &gt; 1:1문의 를 이용해 주시기 바랍니다.<br/>
-                                                           *  본인 외 타인이 볼 수 있는 공간으로 개인정보 유출의 위험이 있으므로 개인정보 보호로 인해 개인정보가 기재된 게시글은 통보 없이 삭제될 수 있습니다.
+                                                        <p style={{ color: '#686868' }}>
+                                                                * 상품에 관한 문의가 아닌 배송 / 결제 / 교환 / 반품에 대한 문의는 서비스지원 &gt; 1:1문의 를 이용해 주시기 바랍니다.<br />
+                                                                *  본인 외 타인이 볼 수 있는 공간으로 개인정보 유출의 위험이 있으므로 개인정보 보호로 인해 개인정보가 기재된 게시글은 통보 없이 삭제될 수 있습니다.
                                                         </p>
                                                         <div style={{ float: 'right', margin: '20px 10px' }}>
                                                                 <button id="p-qnaBtn" style={{ margin: '10px', padding: '10px' }}
@@ -384,19 +472,128 @@ function ProductDetail() {
                                                         </thead>
 
                                                         <tbody>
-                                                                <tr style={{ borderBottom: '1px solid #eee', height: '48px' }}>
-                                                                        <td>12</td>
-                                                                        <td style={{ textAlign: 'left', paddingLeft: '60px', fontWeight: 'bold' }}>상품문의[답변완료]</td>
-                                                                        <td>이*</td>
-                                                                        <td>2025.04.13</td>
-                                                                </tr>
 
-                                                                <tr style={{ borderBottom: '1px solid #eee', height: '48px' }}>
-                                                                        <td>11</td>
-                                                                        <td style={{ textAlign: 'left', paddingLeft: '60px', fontWeight: 'bold' }}>어떤 재질인지 궁금합니다.[답변완료]</td>
-                                                                        <td>김*철</td>
-                                                                        <td>2025.04.10</td>
-                                                                </tr>
+                                                                {/* 첫 번째 문의 */}
+                                                                <>
+                                                                        <tr
+                                                                                style={{
+                                                                                        borderBottom: '1px solid #eee',
+                                                                                        height: '48px',
+                                                                                        cursor: 'pointer'
+                                                                                }}
+                                                                                onClick={() =>
+                                                                                        setOpenAnswer(openAnswer === 1 ? null : 1)
+                                                                                }
+                                                                        >
+                                                                                <td>12</td>
+
+                                                                                <td
+                                                                                        style={{
+                                                                                                textAlign: 'left',
+                                                                                                paddingLeft: '60px',
+                                                                                                fontWeight: 'bold'
+                                                                                        }}
+                                                                                >
+                                                                                        상품문의 [답변완료]
+                                                                                </td>
+
+                                                                                <td>이*</td>
+                                                                                <td>2025.04.13</td>
+                                                                        </tr>
+
+                                                                        {openAnswer === 1 && (
+                                                                                <tr>
+                                                                                        <td
+                                                                                                colSpan="4"
+                                                                                                style={{
+                                                                                                        background: '#f8f8f8',
+                                                                                                        textAlign: 'left',
+                                                                                                        padding: '25px 60px',
+                                                                                                        lineHeight: '1.8'
+                                                                                                }}
+                                                                                        >
+                                                                                                <div style={{ marginBottom: '20px' }}>
+                                                                                                        <strong>Q.</strong>
+                                                                                                        <p style={{ marginTop: '10px' }}>
+                                                                                                                상품 사이즈가 어떻게 되나요?
+                                                                                                        </p>
+                                                                                                </div>
+
+                                                                                                <div>
+                                                                                                        <strong>A.</strong>
+                                                                                                        <p style={{ marginTop: '10px' }}>
+                                                                                                                안녕하세요 고객님 🙂
+                                                                                                                <br />
+                                                                                                                해당 상품의 사이즈는
+                                                                                                                1200 x 400 x 1800(mm) 입니다.
+                                                                                                                <br />
+                                                                                                                감사합니다.
+                                                                                                        </p>
+                                                                                                </div>
+                                                                                        </td>
+                                                                                </tr>
+                                                                        )}
+                                                                </>
+
+                                                                {/* 두 번째 문의 */}
+                                                                <>
+                                                                        <tr
+                                                                                style={{
+                                                                                        borderBottom: '1px solid #eee',
+                                                                                        height: '48px',
+                                                                                        cursor: 'pointer'
+                                                                                }}
+                                                                                onClick={() =>
+                                                                                        setOpenAnswer(openAnswer === 2 ? null : 2)
+                                                                                }
+                                                                        >
+                                                                                <td>11</td>
+
+                                                                                <td
+                                                                                        style={{
+                                                                                                textAlign: 'left',
+                                                                                                paddingLeft: '60px',
+                                                                                                fontWeight: 'bold'
+                                                                                        }}
+                                                                                >
+                                                                                        어떤 재질인지 궁금합니다. [답변완료]
+                                                                                </td>
+
+                                                                                <td>김*철</td>
+                                                                                <td>2025.04.10</td>
+                                                                        </tr>
+
+                                                                        {openAnswer === 2 && (
+                                                                                <tr>
+                                                                                        <td
+                                                                                                colSpan="4"
+                                                                                                style={{
+                                                                                                        background: '#f8f8f8',
+                                                                                                        textAlign: 'left',
+                                                                                                        padding: '25px 60px',
+                                                                                                        lineHeight: '1.8'
+                                                                                                }}
+                                                                                        >
+                                                                                                <div style={{ marginBottom: '20px' }}>
+                                                                                                        <strong>Q.</strong>
+                                                                                                        <p style={{ marginTop: '10px' }}>
+                                                                                                                어떤 소재로 만들어졌나요?
+                                                                                                        </p>
+                                                                                                </div>
+
+                                                                                                <div>
+                                                                                                        <strong>A.</strong>
+                                                                                                        <p style={{ marginTop: '10px' }}>
+                                                                                                                MDF + PB 소재로 제작되었습니다.
+                                                                                                                <br />
+                                                                                                                상세페이지 하단에서도 확인 가능합니다 🙂
+                                                                                                        </p>
+                                                                                                </div>
+                                                                                        </td>
+                                                                                </tr>
+                                                                        )}
+                                                                </>
+
                                                         </tbody>
                                                 </table>
                                         </div>
