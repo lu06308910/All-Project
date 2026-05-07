@@ -51,7 +51,7 @@ function App() {
           <Route path='/basket' element={<Basket />}></Route>
           <Route path='/parchase' element={<Parchase />}></Route>
         </Route>
-        <Route path='/manager' element={<Manager />}></Route>
+        
       </Routes>
     </BrowserRouter>
   )
