@@ -18,6 +18,7 @@ import Sale from './assets/product/sale';
 import Qna from './assets/qna/Qna';
 import QnaWrite from './assets/qna/QnaWrite';
 import NoticeList from './assets/qna/NoticeList';
+import NoticeView from './assets/qna/NoticeView';
 import Basket from './assets/buy/Basket';
 import Parchase from './assets/buy/Parchase';
 import Finalbuy from './assets/buy/Finalbuy';
@@ -47,11 +48,12 @@ function App() {
           <Route path='/qna' element={<Qna />}></Route>
           <Route path='/qna/write' element={<QnaWrite />}></Route>
           <Route path='/qna/noticelist' element={<NoticeList />}></Route>
+          <Route path='/qna/noticeview' element={<NoticeView />}></Route>
           <Route path='/basket' element={<Basket />}></Route>
           <Route path='/parchase' element={<Parchase />}></Route>
           <Route path='/finalcheck' element={<Finalbuy />}></Route>
         </Route>
-        <Route path='/manager' element={<Manager />}></Route>
+        
       </Routes>
     </BrowserRouter>
   )

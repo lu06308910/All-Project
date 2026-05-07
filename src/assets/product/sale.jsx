@@ -79,9 +79,8 @@ function sale(){
                                 </div>
                                 {/* 상품 리스트 슬라이더 */}
                                 <Carousel 
-                                        indicators={false} // 하단 점 숨기기
-                                        interval={null}    // 자동 재생 끄기 (화살표로만 조작)
-                                        variant="dark"     // 화살표 색상을 어둡게 (배경이 밝을 때)
+                                        indicators={false}
+                                        interval={null}
                                 >
                                         {productChunks.map((chunk, index) => (
                                         <Carousel.Item key={index}>
