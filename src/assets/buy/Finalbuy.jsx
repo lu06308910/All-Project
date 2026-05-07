@@ -51,9 +51,11 @@ function Finalbuy(){
                                 </div>
                                 <h4 style={{textAlign:'center', marginTop:'50px'}}>결제가 완료 되었습니다.</h4>
                                 <div style={{marginTop:'50px', marginBottom:'100px', display:'flex', justifyContent:'center'}}>
-                                        <button className='button3' style={{marginRight:'10px', width:'100px'}}>
-                                                메인 페이지
-                                        </button>
+                                        <Link to='/'>
+                                                <button className='button3' style={{marginRight:'10px', width:'100px'}}>
+                                                        메인 페이지
+                                                </button>
+                                        </Link>
                                         <Link to='/mypage'>
                                                 <button className='button3' style={{width:'100px'}}>마이스토어</button>
                                         </Link>
