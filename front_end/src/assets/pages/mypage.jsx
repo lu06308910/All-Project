@@ -294,7 +294,7 @@ const ProductManagement = () => {
                                         <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#f44336' }}>1건</h3>
                                 </div>
                                 <button className="btn-dark" style={{ padding: '8px 20px', borderRadius: '4px' }}
-                                 onClick={()=>{location.href="/mypage/addproduct"}}>+ 새 상품 등록
+                                        onClick={() => { location.href = "/mypage/addproduct" }}>+ 새 상품 등록
                                 </button>
                         </div>
 
@@ -473,7 +473,7 @@ const SettlementHistory = () => {
                                                 </tr>
                                         </thead>
                                         <tbody>
-                                                {settlementData.map(item => (
+                                                {settlementData.map((item) => (
                                                         <tr key={item.id} style={{ borderBottom: '1px solid #eee' }}>
                                                                 <td style={{ padding: '15px 12px' }}>{item.date}</td>
                                                                 <td>{item.amount}원</td>
@@ -511,7 +511,7 @@ const SettlementHistory = () => {
 const MyPage = () => {
 
         // 로그인 조건 : true - 기업 / false - 일반
-        const [isCorporate] = useState(true);
+        const [isCorporate] = useState();
         const [userName] = useState(isCorporate ? "DB(기업)" : "DB(일반)"); //
 
         const [activeMenu, setActiveMenu] = useState(isCorporate ? '판매 현황' : '주문내역');
@@ -525,7 +525,7 @@ const MyPage = () => {
                                         return <SalesStatus />;
                                 case '상품 등록/관리':
                                         return <ProductManagement />;
-                                case '정산내역' :
+                                case '정산내역':
                                         return <SettlementHistory />;
                                 case '고객 문의 관리':
                                         return <InquiryList inquiries={inquiries} isCorp={true} />;

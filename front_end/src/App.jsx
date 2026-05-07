@@ -46,9 +46,10 @@ function App() {
           <Route path='/qna/write' element={<QnaWrite />}></Route>
           <Route path='/qna/noticelist' element={<NoticeList />}></Route>
           <Route path='/basket' element={<Basket />}></Route>
+          <Route path='/manager' element={<Manager />}></Route>
 
         </Route>
-        <Route path='/manager' element={<Manager />}></Route>
+        
       </Routes>
     </BrowserRouter>
   )
