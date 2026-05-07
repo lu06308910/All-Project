@@ -7,23 +7,26 @@ function Login() {
         const navigate = useNavigate();
 
         // 상태 관리 통합
-        const [formData, setFormData] = useState({ userid: '', userpwd: '' });
+        const [formData, setFormData] = useState({
+                userType: 'PERSONAL', // 기본값: 일반 회원
+                userid: '',
+                userpwd: ''
+        });
+
         const [messages, setMessages] = useState({
                 idMsg: { text: '', isError: false },
                 pwdMsg: { text: '', isError: false }
         });
 
-        // 입력 핸들러 및 유효성 검사
+        // 유효성 검사
         const loginFormRender = (e) => {
                 const { name, value } = e.target;
                 setFormData(prev => ({ ...prev, [name]: value }));
 
-                // 유효성 검사 로직
                 if (name === 'userid') {
                         const reg = /^[A-Za-z0-9]{5,10}$/;
                         setMessages(prev => ({
                                 ...prev,
-                                // 삼항연산자
                                 idMsg: reg.test(value)
                                         ? { text: '사용 가능한 아이디 형식입니다.', isError: false }
                                         : { text: '아이디는 5~10자의 영문/숫자만 가능합니다.', isError: true }
@@ -39,7 +42,7 @@ function Login() {
                 }
         };
 
-        // **로그인 실행 (Spring Boot API 호출)
+        // 로그인 실행(db후 마무리)
         const loginStart = async (e) => {
                 e.preventDefault();
 
@@ -49,16 +52,15 @@ function Login() {
                 }
 
                 try {
-                        // Spring Boot 서버 주소로 변경하세요 (예: http://localhost:8080/api/login)
+                        // formData에 userType이 포함되어 서버로 전송됩니다.
                         const response = await axios.post('/api/member/login', formData);
 
                         if (response.data.status === 'success') {
-                                // Spring에서 보낸 유저 정보와 토큰 등을 저장
                                 sessionStorage.setItem('user', JSON.stringify(response.data.user));
                                 sessionStorage.setItem('isLoggedIn', 'true');
 
                                 alert(`${response.data.user.username}님, 환영합니다!`);
-                                navigate("/"); // 페이지 이동
+                                navigate("/");
                         } else {
                                 alert(response.data.message || "로그인 정보를 확인해주세요.");
                         }
@@ -76,13 +78,31 @@ function Login() {
                                         <h2 className="title-main">SIGN IN</h2>
                                 </div>
 
+                                <div className="user-type-tab">
+                                        <button
+                                                type="button"
+                                                className={formData.userType === 'PERSONAL' ? 'active' : ''}
+                                                onClick={() => setFormData({ ...formData, userType: 'PERSONAL' })}
+                                        >
+                                                일반 회원
+                                        </button>
+                                        <button
+                                                type="button"
+                                                className={formData.userType === 'BUSINESS' ? 'active' : ''}
+                                                onClick={() => setFormData({ ...formData, userType: 'BUSINESS' })}
+                                        >
+                                                기업 회원
+                                        </button>
+                                </div>
+
                                 <form onSubmit={loginStart} className="login-form">
                                         <div className="input-group">
                                                 <p>ID</p>
                                                 <input
                                                         type="text"
                                                         name="userid"
-                                                        placeholder="아이디를 입력하세요"
+                                                        // 탭 선택에 따른 동적 placeholder
+                                                        placeholder={formData.userType === 'BUSINESS' ? "기업 아이디를 입력하세요" : "아이디를 입력하세요"}
                                                         value={formData.userid}
                                                         onChange={loginFormRender}
                                                 />
@@ -112,7 +132,8 @@ function Login() {
                                         <button type="submit" className="login-submit-btn">Login</button>
 
                                         <div className="auth-helper">
-                                                <a href="#!">ID | PASSWORD 찾기</a>
+                                                <a href="/member/findmember">ID | PASSWORD 찾기</a>
+                                                <span className="divider"></span>
                                                 <Link to="/member/signup">회원가입</Link>
                                         </div>
 
