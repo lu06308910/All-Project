@@ -52,6 +52,7 @@ function App() {
           <Route path='/basket' element={<Basket />}></Route>
           <Route path='/parchase' element={<Parchase />}></Route>
           <Route path='/finalcheck' element={<Finalbuy />}></Route>
+          <Route path='/manager' element={<Manager />}></Route>
         </Route>
         
       </Routes>
