@@ -173,11 +173,11 @@ function Manager(){
         };
 
         const Reservation =()=>(
-                <div>
+                <div style={{display: 'flex', flexDirection: 'column', width:'100%'}}>
                         <h4 style={{textAlign:'left', fontWeight:'600'}}>예약 게시글 목록</h4>
                         <hr/>
                         <button className='button' style={{border:'1px solid blue', backgroundColor:'blue', marginLeft:'10px'}}>선택삭제</button> 
-                        <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
+                        <table className="table table-bordered" style={{width:'100%', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
                                 <thead>
                                         <tr style={{fontSize:'0.8em'}}>
                                                 <th style={{backgroundColor:'#eeeeee'}}>일괄삭제</th>
@@ -196,7 +196,11 @@ function Manager(){
                                                                 <input type="checkbox" aria-label="항목 선택" />
                                                         </td>
                                                         <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.category}</td>
-                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.subject}</td>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
+                                                                <div style={{width:'100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                                                                        {item.subject}
+                                                                </div>
+                                                        </td>
                                                         <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.writedate}</td>
                                                         <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.updatedate}</td>
                                                         <td>
@@ -226,11 +230,11 @@ function Manager(){
                 </div>
         )
         const Event = () =>(
-                <div>
+                <div style={{display: 'flex', flexDirection: 'column', width:'100%'}}>
                         <h4 style={{textAlign:'left', fontWeight:'600'}}>진행 중인 이벤트</h4>
                         <hr/>
                         <button className='button' style={{border:'1px solid blue', backgroundColor:'blue', marginLeft:'10px'}}>선택삭제</button> 
-                        <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
+                        <table className="table table-bordered" style={{width:'100%', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
                                 <thead>
                                         <tr style={{fontSize:'0.8em'}}>
                                                 <th style={{backgroundColor:'#eeeeee'}}>일괄삭제</th>
@@ -253,7 +257,10 @@ function Manager(){
                                                                 />
                                                         </td>
                                                         <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.category}</td>
-                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.subject}</td>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
+                                                                <div style={{width:'100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                                                                        {item.subject}
+                                                                </div></td>
                                                         <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.startdate}</td>
                                                         <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.finaldate}</td>
                                                         <td>
@@ -288,7 +295,7 @@ function Manager(){
                         >
                                 선택삭제
                         </button> 
-                        <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
+                        <table className="table table-bordered" style={{width:'100%', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
                                 <thead>
                                         <tr style={{fontSize:'0.8em'}}>
                                                 <th style={{backgroundColor:'#eeeeee'}}>일괄삭제</th>
@@ -307,7 +314,11 @@ function Manager(){
                                                                 <input type="checkbox" aria-label="항목 선택" />
                                                         </td>
                                                         <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.category}</td>
-                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.subject}</td>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
+                                                                <div style={{width:'100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                                                                        {item.subject}
+                                                                </div>
+                                                        </td>
                                                         <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.startdate}</td>
                                                         <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.enddate}</td>
                                                         <td>
@@ -785,10 +796,10 @@ function Manager(){
                                 )}
                                 {/* 상품관리 페이지 */}
                                 {activeMenu == '상품 관리' && (
-                                        <div>
+                                        <div style={{display: 'flex', flexDirection: 'column', width:'80%'}}>
                                                 <div className='category-content'>
                                                         {/* 상품검색 */}
-                                                        <h4 style={{textAlign:'left', fontWeight:'600'}}>상품 검색</h4>
+                                                        <h4 style={{textAlign:'left', fontWeight:'600px'}}>상품 검색</h4>
                                                         <hr/>
                                                         <div style={{textAlign:'left', width:'500px'}}>
                                                                 <div style={{display: 'flex', justifyContent: 'space-between', gap:'10px'}}>
@@ -839,7 +850,7 @@ function Manager(){
                                                                 <button className='button' style={{border:'1px solid blue', backgroundColor:'blue'}}>상품등록</button>  
                                                         </div>
                                                         
-                                                        <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
+                                                        <table className="table table-bordered" style={{width:'100%', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
                                                                 <thead>
                                                                         <tr style={{fontSize:'0.8em'}}>
                                                                                 <th style={{backgroundColor:'#eeeeee'}}>일괄삭제</th>
