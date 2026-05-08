@@ -148,3 +148,7 @@
         margin-bottom: 10px;
         width: 40%;
 }
+.real-dark-border, 
+.real-dark-border .col {
+    border-color: #000000 !important;
+}

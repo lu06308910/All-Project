@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import './../css/gayoung.css'
 import './../css/top.css'
+import './../css/kdh.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
 import { Line, Doughnut } from 'react-chartjs-2';
@@ -28,17 +29,65 @@ ChartJS.register(
 
 function Manager(){
 
+        //게시글관리
+        const preevents = [
+                { id: 1, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", finaldate: "2026-06-04", state:"공개" },
+                { id: 2, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", finaldate: "2026-06-04", state:"공개" },
+                { id: 3, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-04-28", finaldate: "2026-05-04", state:"비공개" }
+        ];
+        const resevents = [
+                { id: 1, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", writedate: "2026-05-28", updatedate: "2026-06-04", state:"미공개" },
+                { id: 2, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", writedate: "2026-05-28", updatedate: "2026-06-04", state:"미공개" },
+                { id: 3, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", writedate: "2026-04-28", updatedate: "2026-05-04", state:"공개" }
+        ];
+        const endevents = [
+                { id: 1, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", enddate: "2026-06-04", state:"비공개" },
+                { id: 2, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", enddate: "2026-06-04", state:"비공개" },
+                { id: 3, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-04-28", enddate: "2026-05-04", state:"공개" }
+        ];
+        // 유저명
+        const users = [
+                { id: 1, name: '김수한무', userid: 'kimsuhan1', email: 'kimsuhan1@gmail.com', tel: '010-1214-8354', writedate:'2026-02-01', manage:'활동 중' },
+                { id: 2, name: '김수한무', userid: 'kimsuhan1', email: 'kimsuhan1@gmail.com', tel: '010-1214-8354', writedate:'2026-02-01', manage:'탈퇴' },
+        ]
+        const companys = [
+                { id: 1, name: '기업명1', userid: 'company123', email: 'company1@gmail.com', tel: '010-5252-8354', writedate:'2026-04-01', manage:'활동 중' },
+                { id: 2, name: '기업명2', userid: 'company456', email: 'company4@gmail.com', tel: '010-8282-8354', writedate:'2025-05-01', manage:'탈퇴' },
+        ]
+        //상품관리
+        const products =[
+                {id:1, comname:"기업명1", category:'야외 〉조경', title:'상품명1', cost:'2,555,000원', stock:'152', state:'판매 중', writedate:'2023-09-26' },
+                {id:2, comname:"기업명1", category:'야외 〉조경', title:'상품명1', cost:'2,555,000원', stock:'0', state:'품절', writedate:'2023-09-26' },
+        ]
+        //문의
+        const ask = [
+                { id: 1, subject: '🔒사고 싶은 옷이 찜목록에서 삭제됐어요.', username: '김희*', writedate: '2026-04-26', state: '답변 미작성', answer: null},
+                { id: 2, subject: '🔒사고 싶은 옷이 찜목록에서 삭제됐어요.', username: '안승*', writedate: '2026-04-25', state: '답변 완료', answer:"안녕하세요, 고객님. CANVAS를 이용해 주셔서 감사합니다. 해당 상품은 현재 시즌 종료로 인해 데이터가 삭제되었습니다. 불편을 드려 죄송합니다."},
+        ]
+
+        const tonggyea = [
+                {id:1, writedate:'2026-01-22', code:'L001', category:"야외 〉조경", title:'나무원목의자', comname:'기업명1', cost:'70,000', stock:'15', deliver:'69,000', susuryo:'151,600'},
+                {id:1, writedate:'2026-01-22', code:'L001', category:"야외 〉조경", title:'나무원목의자', comname:'기업명1', cost:'70,000', stock:'15', deliver:'69,000', susuryo:'151,600'}
+        ]
+
         const [showMore, setShowMore] = useState(false);
         const [activeMenu, setActiveMenu] = useState('대시보드');
         const [isPostOpen, setIsPostOpen] = useState(false);
         const [modalOpen, setModalOpen] = useState(false);
         const [chartOpen, setChartOpen] = useState(false);
         const [currentPage, setCurrentPage] = useState(1);
+        const [currentPage2, setCurrentPage2] = useState(1);
         const [openId, setOpenId] = useState(null); // 현재 열려있는 게시글의 ID 저장
+        //선택 변수 저장
+        const [selectedItems, setSelectedItems] = useState({});
 
         const postsPerPage = 10;
         const totalPosts=30;
         const totalPages = Math.ceil(totalPosts / postsPerPage);
+
+        const postsPerPage2 = 5;
+        const totalPosts2=10;
+        const totalPages2 = Math.ceil(totalPosts2 / postsPerPage2);
 
         const indexOfLastPost = currentPage * postsPerPage;
         const indexOfFirstPost = indexOfLastPost - postsPerPage;
@@ -51,10 +100,31 @@ function Manager(){
                 }
         };
 
-        // 유저명
-        const users = [
-                { id: 1, name: '김수한무', userid: 'kimsuhan1', email: 'kimsuhan1@gmail.com', tel: '010-1214-8354', writedate:'2026-02-01', manage:'alive' },
-        ]
+        const paginate2 = (pageNumber2, e) => {
+                e.preventDefault(); // 클릭 시 페이지 새로고침 방지
+                if (pageNumber2 >= 1 && pageNumber2 <= totalPages2) {
+                        setCurrentPage2(pageNumber2);
+                }
+        };
+
+        //체크박스 변경 핸들러
+        const handleCheck = (menu, id) => {
+                setSelectedItems(prev => {
+                        const currentSet = new Set(prev[menu] || []);
+                        if (currentSet.has(id)) currentSet.delete(id);
+                        else currentSet.add(id);
+                        return { ...prev, [menu]: Array.from(currentSet) };
+                });
+        };
+
+        const deleteSelected = (menu) => {
+                const targets = selectedItems[menu] || [];
+                if(targets.length==0) return alert("삭제할 항목을 선택해 주세요.");
+                if(window.confirm(`선택한 ${targets.length}개의 항목을 삭제하시겠습니까?`)){
+                        console.log(`${menu}에서 삭제할 선택지들:`, targets);
+                        setSelectedItems(prev=>({ ...prev, [menu]:[]}));
+                }
+        }
 
         // 더보기
         const visibleUsers = showMore ? users : users.slice(0, 4);
@@ -106,6 +176,7 @@ function Manager(){
                 <div>
                         <h4 style={{textAlign:'left', fontWeight:'600'}}>예약 게시글 목록</h4>
                         <hr/>
+                        <button className='button' style={{border:'1px solid blue', backgroundColor:'blue', marginLeft:'10px'}}>선택삭제</button> 
                         <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
                                 <thead>
                                         <tr style={{fontSize:'0.8em'}}>
@@ -118,26 +189,37 @@ function Manager(){
                                                 <th style={{backgroundColor:'#eeeeee'}}>목록 수정/삭제</th>
                                         </tr>
                                 </thead>
-                                <tbody>
-                                        <tr>
-                                                <td style={{fontSize:'0.8em'}}>
-                                                        <input type="checkbox" aria-label="항목 선택" />
-                                                </td>
-                                                <td style={{fontSize:'0.8em'}}>전체</td>
-                                                <td style={{fontSize:'0.8em'}}>전품목 10퍼센트 할인 행사</td>
-                                                <td style={{fontSize:'0.8em'}}>2026-04-22</td>
-                                                <td style={{fontSize:'0.8em'}}>2026-05-04</td>
-                                                <td style={{fontSize:'0.8em'}}>미공개</td>
-                                                <td>
-                                                        <button className='button2' style={{marginRight:'10px'}}>수정</button>
-                                                        <button className='button2'>삭제</button>
-                                                </td>
-                                        </tr>
-                                </tbody>
+                                {resevents.map((item)=>(
+                                        <tbody key={item.id}>
+                                                <tr>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
+                                                                <input type="checkbox" aria-label="항목 선택" />
+                                                        </td>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.category}</td>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.subject}</td>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.writedate}</td>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.updatedate}</td>
+                                                        <td>
+                                                                <span style={{
+                                                                        background: item.state == '미공개' ? '#ffebee' : '#e3f2fd',
+                                                                        color: item.state == '미공개' ? '#c62828' : '#1976d2',
+                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
+                                                                        textAlign: 'center', verticalAlign: 'middle'
+                                                                }}>
+                                                                        {item.state}
+                                                                </span>
+                                                        </td>
+                                                        <td>
+                                                                <button className='button2' style={{marginRight:'10px'}}>수정</button>
+                                                                <button className='button2'>삭제</button>
+                                                        </td>
+                                                </tr>
+                                        </tbody>
+                                ))}
                         </table>
-                        <div style={{display: 'flex', justifyContent: 'space-between', width:'94%'}}>
-                                <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}} onClick={() => setShowMore(!showMore)}>
-                                        {showMore ? "접기" : "더보기"}
+                        <div style={{display: 'flex', justifyContent: 'space-between', width:'100%'}}>
+                                <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
+                                        더보기
                                 </button>
                                 <button className='button' style={{border:'1px solid blue', backgroundColor:'blue'}}>게시글등록</button>
                         </div>
@@ -147,6 +229,7 @@ function Manager(){
                 <div>
                         <h4 style={{textAlign:'left', fontWeight:'600'}}>진행 중인 이벤트</h4>
                         <hr/>
+                        <button className='button' style={{border:'1px solid blue', backgroundColor:'blue', marginLeft:'10px'}}>선택삭제</button> 
                         <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
                                 <thead>
                                         <tr style={{fontSize:'0.8em'}}>
@@ -159,31 +242,52 @@ function Manager(){
                                                 <th style={{backgroundColor:'#eeeeee'}}>목록 수정/삭제</th>
                                         </tr>
                                 </thead>
-                                <tbody>
-                                        <tr>
-                                                <td style={{fontSize:'0.8em'}}>
-                                                        <input type="checkbox" aria-label="항목 선택" />
-                                                </td>
-                                                <td style={{fontSize:'0.8em'}}>전체</td>
-                                                <td style={{fontSize:'0.8em'}}>사면 살수록 이득이 되는 전폭 세일 행사</td>
-                                                <td style={{fontSize:'0.8em'}}>2026-04-25</td>
-                                                <td style={{fontSize:'0.8em'}}>2026-05-30</td>
-                                                <td style={{fontSize:'0.8em'}}>공개</td>
-                                                <td>
-                                                        <button className='button2' style={{marginRight:'10px'}}>수정</button>
-                                                        <button className='button2'>삭제</button>
-                                                </td>
-                                        </tr>
-                                </tbody>
+                                {preevents.map((item)=>(
+                                        <tbody key={item.id}>
+                                                <tr>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
+                                                                <input type="checkbox"
+                                                                        aria-label="항목 선택"
+                                                                        checked={(selectedItems['게시글 관리']||[]).includes(item.id)}
+                                                                        onChange={()=>handleCheck('게시글 관리', item.id)}
+                                                                />
+                                                        </td>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.category}</td>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.subject}</td>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.startdate}</td>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.finaldate}</td>
+                                                        <td>
+                                                                <span style={{
+                                                                        background: item.state == '비공개' ? '#ffebee' : '#e3f2fd',
+                                                                        color: item.state == '비공개' ? '#c62828' : '#1976d2',
+                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
+                                                                        textAlign: 'center', verticalAlign: 'middle'
+                                                                }}>
+                                                                        {item.state}
+                                                                </span>
+                                                        </td>
+                                                        <td>
+                                                                <button className='button2' style={{marginRight:'10px'}}>수정</button>
+                                                                <button className='button2'>삭제</button>
+                                                        </td>
+                                                </tr>
+                                        </tbody>
+                                ))}
                         </table>
-                        <div style={{display: 'flex', justifyContent: 'space-between', width:'94%'}}>
-                                <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}} onClick={() => setShowMore(!showMore)}>
-                                        {showMore ? "접기" : "더보기"}
+                        <div style={{display: 'flex', justifyContent: 'space-between', width:'100%'}}>
+                                <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
+                                        더보기
                                 </button>
                                 <button className='button' style={{border:'1px solid blue', backgroundColor:'blue'}}>게시글등록</button>
                         </div>
                         <h4 style={{textAlign:'left', fontWeight:'600'}}>마무리 된 이벤트</h4>
                         <hr/>
+                        <button className='button' style={{
+                                border:'1px solid blue', backgroundColor:'blue', marginLeft:'10px'}}
+                                onClick={()=>deleteSelected('게시글 관리')}
+                        >
+                                선택삭제
+                        </button> 
                         <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
                                 <thead>
                                         <tr style={{fontSize:'0.8em'}}>
@@ -196,26 +300,37 @@ function Manager(){
                                                 <th style={{backgroundColor:'#eeeeee'}}>목록 수정/삭제</th>
                                         </tr>
                                 </thead>
-                                <tbody>
-                                        <tr>
-                                                <td style={{fontSize:'0.8em'}}>
-                                                        <input type="checkbox" aria-label="항목 선택" />
-                                                </td>
-                                                <td style={{fontSize:'0.8em'}}>전체</td>
-                                                <td style={{fontSize:'0.8em'}}>사면 살수록 이득이 되는 전폭 세일 행사</td>
-                                                <td style={{fontSize:'0.8em'}}>2026-03-15</td>
-                                                <td style={{fontSize:'0.8em'}}>2026-04-25</td>
-                                                <td style={{fontSize:'0.8em'}}>미공개</td>
-                                                <td>
-                                                        <button className='button2' style={{marginRight:'10px'}}>수정</button>
-                                                        <button className='button2'>삭제</button>
-                                                </td>
-                                        </tr>
-                                </tbody>
+                                {endevents.map((item)=>(
+                                        <tbody key={item}>
+                                                <tr>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
+                                                                <input type="checkbox" aria-label="항목 선택" />
+                                                        </td>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.category}</td>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.subject}</td>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.startdate}</td>
+                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.enddate}</td>
+                                                        <td>
+                                                                <span style={{
+                                                                        background: item.state == '비공개' ? '#ffebee' : '#e3f2fd',
+                                                                        color: item.state == '비공개' ? '#c62828' : '#1976d2',
+                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
+                                                                        textAlign: 'center', verticalAlign: 'middle'
+                                                                }}>
+                                                                        {item.state}
+                                                                </span>
+                                                        </td>
+                                                        <td>
+                                                                <button className='button2' style={{marginRight:'10px'}}>수정</button>
+                                                                <button className='button2'>삭제</button>
+                                                        </td>
+                                                </tr>
+                                        </tbody>
+                                ))}
                         </table>
-                        <div style={{display: 'flex', justifyContent: 'space-between', width:'94%'}}>
-                                <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}} onClick={() => setShowMore(!showMore)}>
-                                        {showMore ? "접기" : "더보기"}
+                        <div style={{display: 'flex', justifyContent: 'space-between', width:'100%'}}>
+                                <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
+                                        더보기
                                 </button>
                                 <button className='button' style={{border:'1px solid blue', backgroundColor:'blue'}}>게시글등록</button>
                         </div>
@@ -258,12 +373,35 @@ function Manager(){
                                 </tbody>
                         </table>
                         <nav>
-                                <ul className="pagination">
-                                        <li><a className='paging-text' href="#">≪</a></li>
-                                        <li><a className='paging-active-text' href="#">1</a></li>
-                                        <li><a className='paging-text' href="#">2</a></li>
-                                        <li><a className='paging-text' href="#">3</a></li>
-                                        <li><a className='paging-text' href="#">≫</a></li>
+                                <ul className="pagination" style={{marginTop:'20px'}}>
+                                        <li>
+                                                <a className='paging-text' href="#" onClick={(e) => paginate2(currentPage2 - 1, e)} 
+                                                        style={{ textDecoration: 'none', color: currentPage2 === 1 ? '#ccc' : '#333' }}>
+                                                                ≪
+                                                </a>
+                                        </li>
+                                        {Array.from({ length: totalPages2 }, (_, i) => i + 1).map((num) => (
+                                                <li key={num}>
+                                                        <a 
+                                                                href="#"
+                                                                onClick={(e) => paginate2(num, e)}
+                                                                className={currentPage2 === num ? 'paging-active-text' : 'paging-text'}
+                                                                style={{
+                                                                        textDecoration: 'none',
+                                                                        fontWeight: currentPage2 === num ? 'bold' : 'normal',
+                                                                        color: currentPage2 === num ? '#000' : '#888'
+                                                                }}
+                                                        >
+                                                        {num}
+                                                        </a>
+                                                </li>
+                                                ))}
+                                        <li>
+                                                <a className='paging-text' href="#" onClick={(e) => paginate(currentPage2 + 1, e)}
+                                                style={{ textDecoration: 'none', color: currentPage2 === totalPages2 ? '#ccc' : '#333' }}>
+                                                        ≫
+                                                </a>
+                                        </li>
                                 </ul>
                         </nav>
                 </div>
@@ -371,20 +509,6 @@ function Manager(){
                         <Doughnut data={data} options={ChartData.options} />
                 </div>
         )
-
-        // chartlist를 no로 적용되게 해야 한다
-        // const deleteSelected = () => {
-        //         const remainingItems = cartList.filter(item=>!item.checked);
-
-        //         if(remainingItems.length== cartList.length){
-        //                 alert("삭제할 항목을 선택해 주세요.")
-        //                 return;
-        //         }
-
-        //         if(window.confirm("선택한 항목을 장바구니에서 삭제하시겠습니까?")){
-        //                 setCartList(remainingItems);
-        //         }
-        // }
         
         return(
                 <div className='inner-container'>
@@ -470,11 +594,11 @@ function Manager(){
                                                 </div>
                                                 <h4 style={{marginTop:'60px', textAlign:'left', fontWeight:'600'}}>상위 리스트</h4>
                                                 <hr/>
-                                                <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em'}}>
+                                                <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center'}}>
                                                         <div className="col p-2">인기 상품 TOP 5</div>
                                                         <div className="col p-2">조회수 TOP 5</div>
                                                 </div>
-                                                <div className="row" style={{fontSize:'0.8em'}}>
+                                                <div className="row" style={{fontSize:'0.8em', textAlign:'center'}}>
                                                         <div className="col p-2">게시글(상품) 이름</div>
                                                         <div className="col p-2">게시글(상품) 이름</div>
                                                 </div>
@@ -491,8 +615,9 @@ function Manager(){
                                                                         <button className="search-icon"></button>
                                                                 </div>
                                                         </div>
+                                                        <hr />
                                                         <div className="row border real-dark-border mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                <div className="col-1 border-start">번호</div>
+                                                                <div className="col-1 border-start">일괄탈퇴</div>
                                                                 <div className="col-2 border-start">아이디</div>
                                                                 <div className="col-2 border-start">성명</div>
                                                                 <div className="col-2 border-start">이메일</div>
@@ -500,16 +625,24 @@ function Manager(){
                                                                 <div className="col-2 border-start">가입일</div>
                                                                 <div className="col-1 border-start">관리</div>
                                                         </div>
-                                                        {users.map((user)=>(
-                                                                <div className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                        <div className="col-1 border-start">{user.id}</div>
-                                                                        <div className="col-2 border-start">{user.userid}</div>
-                                                                        <div className="col-2 border-start">{user.name}</div>
-                                                                        <div className="col-2 border-start">{user.email}</div>
-                                                                        <div className="col-2 border-start">{user.tel}</div>
-                                                                        <div className="col-2 border-start">{user.writedate}</div>
-                                                                        <div className="col-1 border-start">{user.manage}</div>
-                                                                </div>
+                                                        {users
+                                                                .filter(user=>user.manage !=='탈퇴')
+                                                                .map((user)=>(
+                                                                        <div key={user} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                                <div className="col-1 border-start" style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
+                                                                                                <input type="checkbox" aria-label="항목 선택" />
+                                                                                </div>
+                                                                                <div className="col-2 border-start">{user.userid}</div>
+                                                                                <div className="col-2 border-start">{user.name}</div>
+                                                                                <div className="col-2 border-start">{user.email}</div>
+                                                                                <div className="col-2 border-start">{user.tel}</div>
+                                                                                <div className="col-2 border-start">{user.writedate}</div>
+                                                                                <div className="col-1 border-start" style={{
+                                                                                        background: user.manage == '탈퇴' ? '#ffebee' : '#e3f2fd',
+                                                                                        color: user.manage == '탈퇴' ? '#c62828' : '#1976d2',
+                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                                }}>{user.manage}</div>
+                                                                        </div>
                                                         ))}
                                                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
                                                                 <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}} onClick={() => setShowMore(!showMore)}>
@@ -526,6 +659,7 @@ function Manager(){
                                                                         <button className="search-icon"></button>
                                                                 </div>
                                                         </div>
+                                                        <hr />
                                                         <div className="row border real-dark-border mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
                                                                 <div className="col-1 border-start">번호</div>
                                                                 <div className="col-2 border-start">아이디</div>
@@ -535,18 +669,26 @@ function Manager(){
                                                                 <div className="col-2 border-start">가입일</div>
                                                                 <div className="col-1 border-start">관리</div>
                                                         </div>
-                                                        <div className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                <div className="col-1 border-start">*번호</div>
-                                                                <div className="col-2 border-start">*아이디</div>
-                                                                <div className="col-2 border-start">*성명</div>
-                                                                <div className="col-2 border-start">*이메일</div>
-                                                                <div className="col-2 border-start">*연락처</div>
-                                                                <div className="col-2 border-start">*가입일</div>
-                                                                <div className="col-1 border-start">*관리</div>
-                                                        </div>
-                                                        <p style={{marginTop:'20px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em', padding:'5px'}}>
+                                                        {users
+                                                                .filter(user=>user.manage =='탈퇴')
+                                                                .map((user)=>(
+                                                                        <div key={user} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                                <div className="col-1 border-start">{user.id}</div>
+                                                                                <div className="col-2 border-start">{user.userid}</div>
+                                                                                <div className="col-2 border-start">{user.name}</div>
+                                                                                <div className="col-2 border-start">{user.email}</div>
+                                                                                <div className="col-2 border-start">{user.tel}</div>
+                                                                                <div className="col-2 border-start">{user.writedate}</div>
+                                                                                <div className="col-1 border-start" style={{
+                                                                                        background: user.manage == '탈퇴' ? '#ffebee' : '#e3f2fd',
+                                                                                        color: user.manage == '탈퇴' ? '#c62828' : '#1976d2',
+                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                                }}>{user.manage}</div>
+                                                                        </div>
+                                                        ))}
+                                                        <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
                                                                 더보기
-                                                        </p>
+                                                        </button>
                                                 </div>
                                         </div>
                                 )}
@@ -562,6 +704,7 @@ function Manager(){
                                                                         <button className="search-icon"></button>
                                                                 </div>
                                                         </div>
+                                                        <hr />
                                                         <div className="row border real-dark-border mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
                                                                 <div className="col-1 border-start">번호</div>
                                                                 <div className="col-2 border-start">아이디</div>
@@ -571,19 +714,29 @@ function Manager(){
                                                                 <div className="col-2 border-start">가입일</div>
                                                                 <div className="col-1 border-start">관리</div>
                                                         </div>
-                                                        <div className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                <div className="col-1 border-start">*번호</div>
-                                                                <div className="col-2 border-start">*아이디</div>
-                                                                <div className="col-2 border-start">*성명</div>
-                                                                <div className="col-2 border-start">*이메일</div>
-                                                                <div className="col-2 border-start">*연락처</div>
-                                                                <div className="col-2 border-start">*가입일</div>
-                                                                <div className="col-1 border-start">*관리</div>
-                                                        </div>
+                                                        {companys
+                                                                .filter(company=>company.manage !=='탈퇴')
+                                                                .map((company)=>(
+                                                                        <div key={company} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                                <div className="col-1 border-start" style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
+                                                                                                <input type="checkbox" aria-label="항목 선택" />
+                                                                                </div>
+                                                                                <div className="col-2 border-start">{company.userid}</div>
+                                                                                <div className="col-2 border-start">{company.name}</div>
+                                                                                <div className="col-2 border-start">{company.email}</div>
+                                                                                <div className="col-2 border-start">{company.tel}</div>
+                                                                                <div className="col-2 border-start">{company.writedate}</div>
+                                                                                <div className="col-1 border-start" style={{
+                                                                                        background: company.manage == '탈퇴' ? '#ffebee' : '#e3f2fd',
+                                                                                        color: company.manage == '탈퇴' ? '#c62828' : '#1976d2',
+                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                                }}>{company.manage}</div>
+                                                                        </div>
+                                                        ))}
                                                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                                                                <div style={{marginTop:'20px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
+                                                                <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
                                                                         더보기
-                                                                </div>
+                                                                </button>
                                                                 <button className='button' style={{marginTop:'20px', border:'1px solid blue', backgroundColor:'blue'}}>탈퇴처리</button>
                                                         </div>
                                                 </div>
@@ -595,6 +748,7 @@ function Manager(){
                                                                         <button className="search-icon"></button>
                                                                 </div>
                                                         </div>
+                                                        <hr />
                                                         <div className="row border real-dark-border mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
                                                                 <div className="col-1 border-start">번호</div>
                                                                 <div className="col-2 border-start">아이디</div>
@@ -604,19 +758,27 @@ function Manager(){
                                                                 <div className="col-2 border-start">가입일</div>
                                                                 <div className="col-1 border-start">관리</div>
                                                         </div>
-                                                        <div className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                <div className="col-1 border-start">*번호</div>
-                                                                <div className="col-2 border-start">*아이디</div>
-                                                                <div className="col-2 border-start">*성명</div>
-                                                                <div className="col-2 border-start">*이메일</div>
-                                                                <div className="col-2 border-start">*연락처</div>
-                                                                <div className="col-2 border-start">*가입일</div>
-                                                                <div className="col-1 border-start">*관리</div>
-                                                        </div>
+                                                        {companys
+                                                                .filter(company=>company.manage =='탈퇴')
+                                                                .map((company)=>(
+                                                                        <div key={company} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                                <div className="col-1 border-start">{company.id}</div>
+                                                                                <div className="col-2 border-start">{company.userid}</div>
+                                                                                <div className="col-2 border-start">{company.name}</div>
+                                                                                <div className="col-2 border-start">{company.email}</div>
+                                                                                <div className="col-2 border-start">{company.tel}</div>
+                                                                                <div className="col-2 border-start">{company.writedate}</div>
+                                                                                <div className="col-1 border-start" style={{
+                                                                                        background: company.manage == '탈퇴' ? '#ffebee' : '#e3f2fd',
+                                                                                        color: company.manage == '탈퇴' ? '#c62828' : '#1976d2',
+                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                                }}>{company.manage}</div>
+                                                                        </div>
+                                                        ))}
                                                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                                                                <div style={{marginTop:'20px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
+                                                                <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
                                                                         더보기
-                                                                </div>
+                                                                </button>
                                                         </div>
                                                 </div>
                                         </div>
@@ -672,7 +834,11 @@ function Manager(){
                                                         {/* 상품 목록 */}
                                                         <h4 style={{textAlign:'left', fontWeight:'600', marginTop:'20px'}}>상품 목록</h4>
                                                         <hr/>
-                                                        <button className='button' style={{marginLeft:'920px', border:'1px solid blue', backgroundColor:'blue'}}>상품등록</button>
+                                                        <div style={{display: 'flex', justifyContent: 'space-between', width:'100%'}}>
+                                                                <button className='button' style={{border:'1px solid blue', backgroundColor:'blue', marginLeft:'10px'}}>선택삭제</button> 
+                                                                <button className='button' style={{border:'1px solid blue', backgroundColor:'blue'}}>상품등록</button>  
+                                                        </div>
+                                                        
                                                         <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
                                                                 <thead>
                                                                         <tr style={{fontSize:'0.8em'}}>
@@ -681,28 +847,41 @@ function Manager(){
                                                                                 <th style={{backgroundColor:'#eeeeee'}}>카테고리</th>
                                                                                 <th style={{backgroundColor:'#eeeeee'}}>상품명</th>
                                                                                 <th style={{backgroundColor:'#eeeeee'}}>판매가</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>재고</th>
                                                                                 <th style={{backgroundColor:'#eeeeee'}}>등록일</th>
+                                                                                <th style={{backgroundColor:'#eeeeee'}}>재고</th>
+                                                                                <th style={{backgroundColor:'#eeeeee'}}>상태</th>
                                                                                 <th style={{backgroundColor:'#eeeeee'}}>목록 수정/삭제</th>
                                                                         </tr>
                                                                 </thead>
-                                                                <tbody>
-                                                                        <tr>
-                                                                                <td style={{fontSize:'0.8em'}}>
-                                                                                        <input type="checkbox" aria-label="항목 선택" />
-                                                                                </td>
-                                                                                <td style={{fontSize:'0.8em'}}>기업명</td>
-                                                                                <td style={{fontSize:'0.8em'}}>카테고리</td>
-                                                                                <td style={{fontSize:'0.8em'}}>상품명</td>
-                                                                                <td style={{fontSize:'0.8em'}}>판매가</td>
-                                                                                <td style={{fontSize:'0.8em'}}>재고</td>
-                                                                                <td style={{fontSize:'0.8em'}}>등록일</td>
-                                                                                <td>
-                                                                                        <button className='button2' style={{marginRight:'10px'}}>수정</button>
-                                                                                        <button className='button2'>삭제</button>
-                                                                                </td>
-                                                                        </tr>
-                                                                </tbody>
+                                                                {products.map((pd)=>(
+                                                                        <tbody key={pd.id}>
+                                                                                <tr>
+                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
+                                                                                                <input type="checkbox" aria-label="항목 선택" />
+                                                                                        </td>
+                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.comname}</td>
+                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.category}</td>
+                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.title}</td>
+                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.cost}</td>
+                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.writedate}</td>
+                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.stock}</td>
+                                                                                        <td style={{textAlign: 'center', verticalAlign: 'middle'}}>
+                                                                                                <div className="col-7" style={{
+                                                                                                        display: 'inline-block', width: 'auto',
+                                                                                                        background: pd.state == '품절' ? '#ffebee' : '#e3f2fd',
+                                                                                                        color: pd.state == '품절' ? '#c62828' : '#1976d2',
+                                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                                                }}>
+                                                                                                      {pd.state}  
+                                                                                                </div>
+                                                                                        </td>
+                                                                                        <td>
+                                                                                                <button className='button2' style={{marginRight:'10px'}}>수정</button>
+                                                                                                <button className='button2'>삭제</button>
+                                                                                        </td>
+                                                                                </tr>
+                                                                        </tbody>
+                                                                ))}
                                                         </table>
                                                 </div>
                                         </div>
@@ -736,40 +915,53 @@ function Manager(){
                                                                 </div>
                                                         </div>
                                                         <hr/>
-                                                        <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center'}}>
-                                                                <div className="col p-2">번호</div>
-                                                                <div className="col p-2">제목</div>
-                                                                <div className="col p-2">작성자</div>
-                                                                <div className="col p-2">작성일</div>
-                                                                <div className="col p-2">수정/삭제</div>
+                                                        <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                <div className="col-1">번호</div>
+                                                                <div className="col-5">제목</div>
+                                                                <div className="col-1">작성자</div>
+                                                                <div className="col-2">작성일</div>
+                                                                <div className="col-1">답변 상태</div>
+                                                                <div className="col-2">수정/삭제</div>
                                                         </div>
-                                                        <div className="row" style={{textAlign:'center'}}>
-                                                                <div className="col p-2" style={{fontSize:'0.8em'}}>1</div>
-                                                                <div className="col p-2" onClick={() => handleToggle(1)} style={{fontSize:'0.8em'}}>
-                                                                        <div>🔒사고 싶은 옷이 찜목록에서 삭제됐어요.</div>
-                                                                </div>
-                                                                <div className="col p-2" style={{fontSize:'0.8em'}}>김희*</div>
-                                                                <div className="col p-2" style={{fontSize:'0.8em'}}>2026-04-26</div>
-                                                                <div className="col p-2">
-                                                                        <button className='button2' style={{marginRight:'10px'}}>수정</button>
-                                                                        <button className='button2'>삭제</button>
-                                                                </div>
-                                                        </div>
-                                                        {/* 답변 창: openId가 현재 행의 ID와 일치할 때만 렌더링 */}
-                                                        {openId === 1 && (
-                                                                <div className="answer-box" style={{
-                                                                backgroundColor: '#f9f9f9',
-                                                                padding: '20px',
-                                                                fontSize: '0.8em',
-                                                                borderTop: '1px solid #eee',
-                                                                textAlign: 'left'
-                                                                }}>
-                                                                        <span style={{ color: '#ff6b6b', fontWeight: 'bold' }}>A.</span>
-                                                                        <div style={{ whiteSpace: 'pre-wrap', fontSize: '1em', lineHeight: '1.6' }}>
-                                                                                {`안녕하세요, 고객님. CANVAS를 이용해 주셔서 감사합니다. 해당 상품은 현재 시즌 종료로 인해 데이터가 삭제되었습니다. 불편을 드려 죄송합니다.`}
+                                                        {ask.map(ask=>(
+                                                                <div key={ask.id}>
+                                                                        <div className="row" style={{textAlign:'center', alignItems:'center'}}>
+                                                                                <div className="col-1" style={{fontSize:'0.8em'}}>{ask.id}</div>
+                                                                                <div className="col-5" onClick={() => handleToggle(ask.id)} style={{fontSize:'0.8em'}}>
+                                                                                        <div>{ask.subject}</div>
+                                                                                </div>
+                                                                                <div className="col-1" style={{fontSize:'0.8em'}}>{ask.username}</div>
+                                                                                <div className="col-2" style={{fontSize:'0.8em'}}>{ask.writedate}</div>
+                                                                                <div className="col-1" style={{
+                                                                                        background: ask.state == '답변 미작성' ? '#ffebee' : '#e3f2fd',
+                                                                                        color: ask.state == '답변 미작성' ? '#c62828' : '#1976d2',
+                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                                }}>{ask.state}</div>
+                                                                                <div className="col-2">
+                                                                                        <button className='button2' style={{marginRight:'10px'}}>수정</button>
+                                                                                        <button className='button2'>삭제</button>
+                                                                                </div>
                                                                         </div>
+                                                                
+                                                                        {/* 답변 창: openId가 현재 행의 ID와 일치할 때만 렌더링 */}
+                                                                        {openId === ask.id && (
+                                                                                <div className="answer-box" style={{
+                                                                                        backgroundColor: '#f9f9f9',
+                                                                                        padding: '20px',
+                                                                                        fontSize: '0.8em',
+                                                                                        borderTop: '1px solid #eee',
+                                                                                        textAlign: 'left',
+                                                                                        width:'70%',
+                                                                                        margin:'0 auto'
+                                                                                }}>
+                                                                                        <span style={{ color: '#ff6b6b', fontWeight: 'bold' }}>A.</span>
+                                                                                        <div style={{ whiteSpace: 'pre-wrap', fontSize: '1em', lineHeight: '1.6' }}>
+                                                                                                {ask.answer == null || ask.answer == '' ? "답변을 등록 중입니다." : ask.answer}
+                                                                                        </div>
+                                                                                </div>
+                                                                        )}
                                                                 </div>
-                                                        )}
+                                                        ))}
                                                         {/* 페이징 */}
                                                         <nav>
                                                                 <ul className="pagination" style={{marginTop:'20px'}}>
@@ -859,22 +1051,24 @@ function Manager(){
                                                                                 <th style={{backgroundColor:'#eeeeee'}}>상세보기</th>
                                                                         </tr>
                                                                 </thead>
-                                                                <tbody>
-                                                                        <tr>
-                                                                                <td style={{fontSize:'0.8em'}}>2026-01-22</td>
-                                                                                <td style={{fontSize:'0.8em'}}>L001</td>
-                                                                                <td style={{fontSize:'0.8em'}}>야외 〉조경</td>
-                                                                                <td style={{fontSize:'0.8em'}}>나무원목의자</td>
-                                                                                <td style={{fontSize:'0.8em'}}>기업명1</td>
-                                                                                <td style={{fontSize:'0.8em'}}>70,000</td>
-                                                                                <td style={{fontSize:'0.8em'}}>15</td>
-                                                                                <td style={{fontSize:'0.8em'}}>69,000</td>
-                                                                                <td style={{fontSize:'0.8em'}}>151,600</td>
-                                                                                <td>
-                                                                                        <button className='button' onClick={()=>setModalOpen(true)}>상세보기</button>
-                                                                                </td>
-                                                                        </tr>
-                                                                </tbody>
+                                                                {tonggyea.map((item)=>(
+                                                                        <tbody>
+                                                                                <tr>
+                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.writedate}</td>
+                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.code}</td>
+                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.category}</td>
+                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.title}</td>
+                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.comname}</td>
+                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.cost}</td>
+                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.stock}</td>
+                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.deliver}</td>
+                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.susuryo}</td>
+                                                                                        <td>
+                                                                                                <button className='button' onClick={()=>setModalOpen(true)}>상세보기</button>
+                                                                                        </td>
+                                                                                </tr>
+                                                                        </tbody>
+                                                                ))}
                                                         </table>
                                                 </div>
                                         </div>
@@ -882,7 +1076,7 @@ function Manager(){
                                 {modalOpen && (
                                         <>
                                                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999 }} onClick={() => setModalOpen(false)} />
-                                                <BuyTag />
+                                                <BuyTag/>
                                         </>
                                 )}
                                 {chartOpen && (
