@@ -99,7 +99,7 @@ const MyPage = () => {
                         <section className="info-box">
                                 <div className="profile-header">
                                         <div className="nickname-link">db데이터_로그인닉네임 님 〉</div>
-                                        <div className="settings-icon"><a href="">⚙️</a></div>
+                                        <div className="settings-icon"><a href="/member/memberedit">⚙️</a></div>
                                 </div>
                                 <div className="info-stats">
                                         {isCorporate ? (
@@ -297,44 +297,80 @@ const WishList = ({ wishItems, onDelete, onDeleteAll }) => {
 };
 
 /** 문의 내역 컴포넌트 **/
-const InquiryList = ({ inquiries }) => {
-        if (!inquiries || inquiries.length === 0) {
-                return <div className="empty-state">작성한 문의 내역이 없습니다.</div>;
-        }
+const InquiryList = ({ inquiries, isCorp }) => {
+        // 현재 어떤 문의가 열려 있는지 저장하는 상태 (열린게 없으면 null)
+        const [expandedId, setExpandedId] = useState(null);
+
+        // 제목 클릭 시 실행될 함수
+        const toggleInquiry = (id) => {
+                // 이미 열려있는걸 다시 누르면 닫고(null), 아니면 해당 id를 저장
+                setExpandedId(expandedId === id ? null : id);
+        };
 
         return (
-                <>
-                        <hr />
-                        {inquiries.map((q) => (
-                                <div className="order-item" key={q.id} style={{ cursor: 'pointer' }}>
-                                        {/* 문의 유형 및 상태 */}
-                                        <div className="item-info" style={{ flex: '0 0 120px' }}>
-                                                <span style={{
-                                                        fontSize: '12px',
-                                                        padding: '4px 8px',
-                                                        borderRadius: '4px',
-                                                        backgroundColor: q.answered ? '#e8f5e9' : '#f5f5f5',
-                                                        color: q.answered ? '#2e7d32' : '#888',
-                                                        fontWeight: 'bold'
-                                                }}>
-                                                        {q.answered ? '답변완료' : '답변대기'}
-                                                </span>
-                                                <p style={{ marginTop: '10px', color: '#666', fontSize: '13px' }}>{q.category}</p>
-                                        </div>
+                <div className="content-area">
+                        <table className="management-table">
+                                <thead>
+                                        <tr>
+                                                <th style={{ width: '8%' }}>번호</th>
+                                                <th style={{ width: '12%' }}>카테고리</th>
+                                                <th>제목</th>
+                                                <th style={{ width: '12%' }}>작성자</th>
+                                                <th style={{ width: '15%' }}>작성일</th>
+                                                <th style={{ width: '12%', textAlign: 'center' }}>상태</th>
+                                        </tr>
+                                </thead>
+                                        {inquiries.map((inquiry) => (
+                                                <tbody key={inquiry.id}>
+                                                        {/* 사용자 질문내용 */}
+                                                        <tr
+                                                                onClick={() => toggleInquiry(inquiry.id)}
+                                                                style={{ cursor: 'pointer' }}
+                                                        >
+                                                                <td>{inquiry.id}</td>
+                                                                <td><span className="category-tag">{inquiry.category}</span></td>
+                                                                <td className="inquiry-title-cell">
+                                                                        {inquiry.title}
+                                                                </td>
+                                                                <td className="writer-name">{inquiry.writer || "김대호"}</td>
+                                                                <td>{inquiry.date}</td>
+                                                                <td className="text-center">
+                                                                        <span className={`status-badge ${inquiry.answered ? 'complete' : 'waiting'}`}>
+                                                                                {inquiry.answered ? "답변완료" : "답변대기"}
+                                                                        </span>
+                                                                </td>
+                                                        </tr>
 
-                                        {/* 문의 제목 및 날짜 */}
-                                        <div className="item-info" style={{ flex: 1 }}>
-                                                <h3 className="product-name" style={{ fontSize: '16px' }}>{q.title}</h3>
-                                                <p className="my-date">{q.date}</p>
-                                        </div>
-
-                                        {/* 우측 버튼 */}
-                                        <div className="btn-group">
-                                                <button className="btn-light">상세보기</button>
-                                        </div>
-                                </div>
-                        ))}
-                </>
+                                                        {/* 클릭 시 나타나는 하부 답변내용 */}
+                                                        {expandedId === inquiry.id && (
+                                                                <tr className="inquiry-detail-row">
+                                                                        <td colSpan="6">
+                                                                                <div className="detail-content">
+                                                                                        <div className="question-box">
+                                                                                                <strong>Q. 문의 내용</strong>
+                                                                                                <p>{inquiry.content || "문의 상세 내용 데이터가 여기에 표시됩니다."}</p>
+                                                                                        </div>
+                                                                                        {inquiry.answered && (
+                                                                                                <div className="answer-box">
+                                                                                                        <strong>A. 답변 내용</strong>
+                                                                                                        <p>{inquiry.answer || "안녕하세요 고객님, 문의하신 내용에 대한 답변입니다..."}</p>
+                                                                                                        <small>답변일: 2026-05-08</small>
+                                                                                                </div>
+                                                                                        )}
+                                                                                        {isCorp && !inquiry.answered && (
+                                                                                                <div className="admin-reply-box">
+                                                                                                        <textarea placeholder="답변을 입력해주세요."></textarea>
+                                                                                                        <button className="btn-dark">답변 등록</button>
+                                                                                                </div>
+                                                                                        )}
+                                                                                </div>
+                                                                        </td>
+                                                                </tr>
+                                                        )}
+                                                </tbody>
+                                        ))}
+                        </table>
+                </div>
         );
 };
 
@@ -635,7 +671,7 @@ const SettlementHistory = ({ products }) => {
                                                                                 <span className="id-text">NO.{item.id}2026</span><br />
                                                                                 <small>2026-05-07</small>
                                                                         </td>
-                                                                        <td className="product-info">
+                                                                        <td>
                                                                                 <strong>{item.name}</strong>
                                                                         </td>
                                                                         <td>{price.toLocaleString()}원</td>
