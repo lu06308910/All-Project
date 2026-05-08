@@ -53,10 +53,7 @@ function App() {
           <Route path='/qna/noticeview' element={<NoticeView />}></Route>
           <Route path='/basket' element={<Basket />}></Route>
           <Route path='/parchase' element={<Parchase />}></Route>
-<<<<<<< HEAD
-=======
           <Route path='/finalcheck' element={<Finalbuy />}></Route>
->>>>>>> 132e6d3097fb5eee9f92c2d4a315d1c365b2387d
           <Route path='/manager' element={<Manager />}></Route>
         </Route>
 
