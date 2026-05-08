@@ -45,6 +45,21 @@ const MyPage = () => {
         const [orders] = useState([
                 { id: 1, brand: "CANVAS", name: "크로켓 2000 거실장", price: "230,000", rating: "★★★☆☆", status: "배송 중", deliveryDate: "26.04.27", deliveryStatus: "도착(예정)" }
         ]);
+        const totalAmount = orders.reduce((sum, order) => {
+                const price = typeof order.price === 'string'
+                        ? parseInt(order.price.replace(/,/g, ""))
+                        : order.price;
+                return sum + (price || 0);
+        }, 0);
+
+        // 배송 중 건수
+        const deliveryCount = orders.filter(order => order.status === "배송 중").length;
+
+        // 작성할 리뷰)
+        const reviewCount = 5;
+
+        // 기업용을 위한 임시 데이터 (상단 기업용 UI에서 item.cancelCount 에러 방지)
+        const corpStats = { cancelCount: 0 };
         const [cancelItems] = useState([
                 { id: 101, brand: "CANVAS", name: "크로켓 2000 거실장[1200 / 1500 / 2000]", option: "월넛 / 1200cm / 1개", price: "230,000", status: "취소 완료", date: "26.04.11(토)" },
                 { id: 102, brand: "CANVAS", name: "크로켓 2000 거실장[1200 / 1500 / 2000]", option: "월넛 / 1200cm / 1개", price: "230,000", status: "반품 신청", date: "26.04.11(토)" },
@@ -110,19 +125,39 @@ const MyPage = () => {
                                                                 <div className="stat-value">5건</div>
                                                         </div>
                                                         <div className="stat-item">
+                                                                <div className="stat-label">취소/반품 〉</div>
+                                                                <div className="stat-value" style={{ color: item.cancelCount > 0 ? 'red' : 'inherit' }}>0건</div>
+                                                        </div>
+                                                        <div className="stat-item">
                                                                 <div className="stat-label">미답변 문의 〉</div>
-                                                                <div className="stat-value" style={{ color: 'red' }}>2건</div>
+                                                                <div className="stat-value" style={{ color: 'red' }}>{corpStats.cancelCount}건</div>
                                                         </div>
                                                 </>
                                         ) : (
                                                 <>
-                                                        <div className="stat-item">
+                                                        <div className="stat-item" onClick={() => setActiveMenu('주문내역')}>
                                                                 <div className="stat-label">총구매 금액 〉</div>
-                                                                <div className="stat-value">--원</div>
+                                                                <div className="stat-value">
+                                                                        {totalAmount.toLocaleString()}원
+                                                                </div>
                                                         </div>
+
+                                                        {/* 2. 배송 중: 현재 가장 궁금한 정보 (실시간성) */}
+                                                        <div className="stat-item" >
+                                                                <div className="stat-label">배송 중 〉</div>
+                                                                <div className="stat-value">
+                                                                        <span style={{ color: deliveryCount > 0 ? '#2c2c2e' : '#ccc' }}>
+                                                                                {deliveryCount}건
+                                                                        </span>
+                                                                </div>
+                                                        </div>
+
+                                                        {/* 3. 작성할 리뷰: 재방문 및 참여 유도 */}
                                                         <div className="stat-item">
-                                                                <div className="stat-label">쿠폰 〉</div>
-                                                                <div className="stat-value">보유쿠폰 : --장</div>
+                                                                <div className="stat-label">작성할 리뷰 〉</div>
+                                                                <div className="stat-value" style={{ color: reviewCount > 0 ? '#ffc107' : '#ccc' }}>
+                                                                        {reviewCount}건
+                                                                </div>
                                                         </div>
                                                 </>
                                         )}
@@ -161,6 +196,13 @@ const OrderHistory = ({ orders }) => {
         if (!orders || orders.length === 0) {
                 return <div className="empty-state">주문한 상품이 없습니다.</div>;
         }
+        const totalAmount = orders ? orders.reduce((sum, item) => {
+                // 혹시 price가 문자열일 수도 있으니 숫자로 바꿔서 더해줍니다.
+                const price = typeof item.price === 'string'
+                        ? parseInt(item.price.replace(/[^0-9]/g, ""))
+                        : item.price;
+                return sum + (price || 0);
+        }, 0) : 0;
 
         // 1. 모달 열림 상태와 선택된 주문 정보를 담을 State
         const [selectedOrder, setSelectedOrder] = useState(null);
@@ -170,6 +212,7 @@ const OrderHistory = ({ orders }) => {
 
         return (
                 <>
+
                         <div className="search-bar">
                                 <input type="text" placeholder="검색할 상품을 입력해주세요." />
                                 <button className="search-icon"></button>
@@ -315,7 +358,21 @@ const WishList = ({ wishItems, onDelete, onDeleteAll }) => {
         if (!wishItems || wishItems.length === 0) {
                 return <div className="empty-state">찜한 상품 목록이 없습니다.</div>;
         }
+        // 장바구니 클릭 핸들러
+        const handleAddToCart = (item) => {
+                // 실제 프로젝트라면 여기서 API를 호출해 DB에 저장하겠죠?
+                // 일단은 알림창으로 성공 여부를 보여줍니다.
+                const confirmMove = window.confirm(
+                        `${item.name} 상품이 장바구니에 담겼습니다.\n장바구니로 이동하시겠습니까?`
+                );
 
+                if (confirmMove) {
+                        window.location.href = '/basket/';
+                }
+
+                // 부모 컴포넌트에서 장바구니 상태를 관리한다면 함수 실행
+                if (onAddToCart) onAddToCart(item);
+        };
         return (
                 <>
                         <div className="wish-control-bar">
@@ -345,7 +402,6 @@ const WishList = ({ wishItems, onDelete, onDeleteAll }) => {
                         {wishItems.map((item) => (
                                 <div className="order-item" key={item.id}>
                                         <div className="item-img"></div>
-
                                         <div className="item-info">
                                                 <span className="brand-name">{item.brand}</span>
                                                 <h3 className="product-name">{item.name}</h3>
@@ -353,7 +409,8 @@ const WishList = ({ wishItems, onDelete, onDeleteAll }) => {
                                         </div>
 
                                         <div className="btn-group">
-                                                <button className="btn-dark" style={{ width: '110px', borderRadius: '4px' }}>장바구니 담기</button>
+                                                <button className="btn-dark" style={{ width: '110px', borderRadius: '4px' }}
+                                                        onClick={() => { handleAddToCart(item) }}>장바구니 담기</button>
                                                 <button
                                                         className="btn-light"
                                                         style={{ width: '110px', marginTop: '6px', fontSize: '12px', color: '#888' }}
