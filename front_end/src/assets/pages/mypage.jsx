@@ -4,7 +4,7 @@ import './../css/kdh.css';
 const MyPage = () => {
 
         // 로그인 조건 : true - 기업 / false - 일반
-        const [isCorporate] = useState(true);
+        const [isCorporate] = useState(false);
         const [userName] = useState(isCorporate ? "DB(기업)" : "DB(일반)"); //
 
         const [activeMenu, setActiveMenu] = useState(isCorporate ? '판매 현황' : '주문내역');
@@ -162,6 +162,12 @@ const OrderHistory = ({ orders }) => {
                 return <div className="empty-state">주문한 상품이 없습니다.</div>;
         }
 
+        // 1. 모달 열림 상태와 선택된 주문 정보를 담을 State
+        const [selectedOrder, setSelectedOrder] = useState(null);
+
+        // 상세 내역 닫기 함수
+        const closeModal = () => setSelectedOrder(null);
+
         return (
                 <>
                         <div className="search-bar">
@@ -179,7 +185,10 @@ const OrderHistory = ({ orders }) => {
                                         </div>
                                         <div className="btn-group">
                                                 <span style={{ color: '#ffc107' }}>{item.rating}</span>
-                                                <button className="btn-light">후기작성</button>
+                                                <button className="btn-light"
+                                                        onClick={() => {
+                                                                window.location.href = '/productDetail/'
+                                                        }}>후기작성</button>
                                         </div>
                                         <div className="btn-group">
                                                 <span className="status-text">{item.status}</span>
@@ -189,10 +198,42 @@ const OrderHistory = ({ orders }) => {
                                                 <span style={{ fontSize: '12px', textAlign: 'center' }}>
                                                         {item.deliveryDate}<br />{item.deliveryStatus}
                                                 </span>
-                                                <button className="btn-dark">상세보기</button>
+                                                <button className="btn-dark"
+                                                        onClick={() => {
+                                                                console.log("클릭한 아이템", item);
+                                                                setSelectedOrder(item)
+                                                        }}>
+                                                        상세보기
+                                                </button>
                                         </div>
                                 </div>
                         ))}
+                        {/* 2. 모달 조건부 렌더링 (selectedOrder가 있을 때만 표시) */}
+                        {selectedOrder && (
+                                <div className="modal-overlay" onClick={closeModal}>
+                                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                                                <div className="modal-header">
+                                                        <h2>주문 상세 내역</h2>
+                                                        <button className="close-btn" onClick={closeModal}>&times;</button>
+                                                </div>
+                                                <div className="modal-body">
+                                                        <section>
+                                                                <h4>결제 정보</h4>
+                                                                <p>결제수단: {selectedOrder.paymentMethod || '신용카드'}</p>
+                                                                <p>결제금액: {selectedOrder.price}원</p>
+                                                                <p>결제일시: {selectedOrder.orderDate || '2026-05-08'}</p>
+                                                        </section>
+                                                        <hr />
+                                                        <section>
+                                                                <h4>배송지 정보</h4>
+                                                                <p>받는분: 김대호</p>
+                                                                <p>주소: 서울특별시 강남구</p>
+                                                        </section>
+                                                </div>
+                                        </div>
+                                </div>
+                        )}
+
                 </>
         );
 };
@@ -201,6 +242,10 @@ const CancelHistory = ({ cancelItems }) => {
         if (!cancelItems || cancelItems.length === 0) {
                 return <div className="empty-state">취소/반품/교환 내역이 없습니다.</div>;
         }
+
+        const [selectedCancel, setSelectedCancel] = useState(null);
+
+        const closeModal = () => setSelectedCancel(null);
 
         return (
                 <>
@@ -228,12 +273,39 @@ const CancelHistory = ({ cancelItems }) => {
 
                                         <div className="btn-group">
                                                 <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{item.date}</span>
-                                                <button className="btn-light" style={{ border: '1px solid #333' }}>
+                                                <button className="btn-light" style={{ border: '1px solid #333' }}
+                                                        onClick={() => { setSelectedCancel(item) }}>
                                                         {item.status.split(' ')[0]} 상세보기
                                                 </button>
                                         </div>
                                 </div>
                         ))}
+                        {/*  취소 상세 보기 */}
+                        {selectedCancel && (
+                                <div className="modal-overlay" onClick={closeModal}>
+                                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                                                <div className="modal-header">
+                                                        <h2>{selectedCancel.status} 상세 내역</h2>
+                                                        <button className="close-btn" onClick={closeModal}>&times;</button>
+                                                </div>
+                                                <div className="modal-body">
+                                                        <section>
+                                                                <h4>{selectedCancel.status} 정보</h4>
+                                                                <p>접수일시: {selectedCancel.date}</p>
+                                                                {/* 취소 사유가 데이터에 없다면 기본 문구 출력 */}
+                                                                <p>접수사유: {selectedCancel.reason || '단순 변심'}</p>
+                                                                <p>처리상태: <span style={{ color: '#d9534f' }}>{selectedCancel.status}</span></p>
+                                                        </section>
+                                                        <hr />
+                                                        <section>
+                                                                <h4>환불 예상 정보</h4>
+                                                                <p>환불수단: {selectedCancel.paymentMethod || '신용카드 취소'}</p>
+                                                                <p>환불금액: <strong>{selectedCancel.price}원</strong></p>
+                                                        </section>
+                                                </div>
+                                        </div>
+                                </div>
+                        )}
                 </>
         );
 };
@@ -320,55 +392,55 @@ const InquiryList = ({ inquiries, isCorp }) => {
                                                 <th style={{ width: '12%', textAlign: 'center' }}>상태</th>
                                         </tr>
                                 </thead>
-                                        {inquiries.map((inquiry) => (
-                                                <tbody key={inquiry.id}>
-                                                        {/* 사용자 질문내용 */}
-                                                        <tr
-                                                                onClick={() => toggleInquiry(inquiry.id)}
-                                                                style={{ cursor: 'pointer' }}
-                                                        >
-                                                                <td>{inquiry.id}</td>
-                                                                <td><span className="category-tag">{inquiry.category}</span></td>
-                                                                <td className="inquiry-title-cell">
-                                                                        {inquiry.title}
-                                                                </td>
-                                                                <td className="writer-name">{inquiry.writer || "김대호"}</td>
-                                                                <td>{inquiry.date}</td>
-                                                                <td className="text-center">
-                                                                        <span className={`status-badge ${inquiry.answered ? 'complete' : 'waiting'}`}>
-                                                                                {inquiry.answered ? "답변완료" : "답변대기"}
-                                                                        </span>
+                                {inquiries.map((inquiry) => (
+                                        <tbody key={inquiry.id}>
+                                                {/* 사용자 질문내용 */}
+                                                <tr
+                                                        onClick={() => toggleInquiry(inquiry.id)}
+                                                        style={{ cursor: 'pointer' }}
+                                                >
+                                                        <td>{inquiry.id}</td>
+                                                        <td><span className="category-tag">{inquiry.category}</span></td>
+                                                        <td className="inquiry-title-cell">
+                                                                {inquiry.title}
+                                                        </td>
+                                                        <td className="writer-name">{inquiry.writer || "김대호"}</td>
+                                                        <td>{inquiry.date}</td>
+                                                        <td className="text-center">
+                                                                <span className={`status-badge ${inquiry.answered ? 'complete' : 'waiting'}`}>
+                                                                        {inquiry.answered ? "답변완료" : "답변대기"}
+                                                                </span>
+                                                        </td>
+                                                </tr>
+
+                                                {/* 클릭 시 나타나는 하부 답변내용 */}
+                                                {expandedId === inquiry.id && (
+                                                        <tr className="inquiry-detail-row">
+                                                                <td colSpan="6">
+                                                                        <div className="detail-content">
+                                                                                <div className="question-box">
+                                                                                        <strong>Q. 문의 내용</strong>
+                                                                                        <p>{inquiry.content || "문의 상세 내용 데이터가 여기에 표시됩니다."}</p>
+                                                                                </div>
+                                                                                {inquiry.answered && (
+                                                                                        <div className="answer-box">
+                                                                                                <strong>A. 답변 내용</strong>
+                                                                                                <p>{inquiry.answer || "안녕하세요 고객님, 문의하신 내용에 대한 답변입니다..."}</p>
+                                                                                                <small>답변일: 2026-05-08</small>
+                                                                                        </div>
+                                                                                )}
+                                                                                {isCorp && !inquiry.answered && (
+                                                                                        <div className="admin-reply-box">
+                                                                                                <textarea placeholder="답변을 입력해주세요."></textarea>
+                                                                                                <button className="btn-dark">답변 등록</button>
+                                                                                        </div>
+                                                                                )}
+                                                                        </div>
                                                                 </td>
                                                         </tr>
-
-                                                        {/* 클릭 시 나타나는 하부 답변내용 */}
-                                                        {expandedId === inquiry.id && (
-                                                                <tr className="inquiry-detail-row">
-                                                                        <td colSpan="6">
-                                                                                <div className="detail-content">
-                                                                                        <div className="question-box">
-                                                                                                <strong>Q. 문의 내용</strong>
-                                                                                                <p>{inquiry.content || "문의 상세 내용 데이터가 여기에 표시됩니다."}</p>
-                                                                                        </div>
-                                                                                        {inquiry.answered && (
-                                                                                                <div className="answer-box">
-                                                                                                        <strong>A. 답변 내용</strong>
-                                                                                                        <p>{inquiry.answer || "안녕하세요 고객님, 문의하신 내용에 대한 답변입니다..."}</p>
-                                                                                                        <small>답변일: 2026-05-08</small>
-                                                                                                </div>
-                                                                                        )}
-                                                                                        {isCorp && !inquiry.answered && (
-                                                                                                <div className="admin-reply-box">
-                                                                                                        <textarea placeholder="답변을 입력해주세요."></textarea>
-                                                                                                        <button className="btn-dark">답변 등록</button>
-                                                                                                </div>
-                                                                                        )}
-                                                                                </div>
-                                                                        </td>
-                                                                </tr>
-                                                        )}
-                                                </tbody>
-                                        ))}
+                                                )}
+                                        </tbody>
+                                ))}
                         </table>
                 </div>
         );
