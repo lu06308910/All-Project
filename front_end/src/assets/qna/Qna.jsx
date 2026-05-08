@@ -55,7 +55,7 @@ function Qna() {
                                         paddingBottom: '10px',
                                         marginBottom: '20px'
                                 }}>
-                                        <h2 style={{ margin: 0 }}>자주 묻는 질문</h2>
+                                        <h2 style={{ margin: 0,fontSize: '24px'}}>자주 묻는 질문</h2>
                                 </div>
 
                                 {/* 검색창 + 버튼 */}

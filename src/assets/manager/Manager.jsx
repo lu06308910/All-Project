@@ -673,9 +673,9 @@ function Manager(){
                                                         <h4 style={{textAlign:'left', fontWeight:'600', marginTop:'20px'}}>상품 목록</h4>
                                                         <hr/>
                                                         <button className='button' style={{marginLeft:'920px', border:'1px solid blue', backgroundColor:'blue'}}>상품등록</button>
-                                                        <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px', fontSize:'0.8em'}}>
+                                                        <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
                                                                 <thead>
-                                                                        <tr>
+                                                                        <tr style={{fontSize:'0.8em'}}>
                                                                                 <th style={{backgroundColor:'#eeeeee'}}>일괄삭제</th>
                                                                                 <th style={{backgroundColor:'#eeeeee'}}>기업명</th>
                                                                                 <th style={{backgroundColor:'#eeeeee'}}>카테고리</th>
@@ -688,15 +688,15 @@ function Manager(){
                                                                 </thead>
                                                                 <tbody>
                                                                         <tr>
-                                                                                <td>
+                                                                                <td style={{fontSize:'0.8em'}}>
                                                                                         <input type="checkbox" aria-label="항목 선택" />
                                                                                 </td>
-                                                                                <td>기업명</td>
-                                                                                <td>카테고리</td>
-                                                                                <td>상품명</td>
-                                                                                <td>판매가</td>
-                                                                                <td>재고</td>
-                                                                                <td>등록일</td>
+                                                                                <td style={{fontSize:'0.8em'}}>기업명</td>
+                                                                                <td style={{fontSize:'0.8em'}}>카테고리</td>
+                                                                                <td style={{fontSize:'0.8em'}}>상품명</td>
+                                                                                <td style={{fontSize:'0.8em'}}>판매가</td>
+                                                                                <td style={{fontSize:'0.8em'}}>재고</td>
+                                                                                <td style={{fontSize:'0.8em'}}>등록일</td>
                                                                                 <td>
                                                                                         <button className='button2' style={{marginRight:'10px'}}>수정</button>
                                                                                         <button className='button2'>삭제</button>

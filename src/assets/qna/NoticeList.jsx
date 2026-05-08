@@ -56,10 +56,16 @@ function NoticeList() {
 
             <tbody>
               <tr style={{ borderBottom: '1px solid #eee', height: '48px' }}>
-                <td>6253</td><td>CANVAS</td><td>[정기점검 발표] 20년 03월 ... 교육기관 일정 안내</td><td>2020.04.13</td>
+                <td>6253</td>
+                <td>CANVAS</td>
+                <td><Link to="/qna/noticeview" style={{textDecoration:'none',color:'black'}}>[정기점검 발표] 20년 03월 ... 교육기관 일정 안내</Link></td>
+                <td>2020.04.13</td>
               </tr>
               <tr style={{ borderBottom: '1px solid #eee', height: '48px' }}>
-                <td>6252</td><td>CANVAS</td><td>전달 이용약관 변경 (2020. 04. 15)</td><td>2020.04.08</td>
+                <td>6252</td>
+                <td>CANVAS</td>
+                <td><Link to="/qna/noticeview" style={{textDecoration:'none',color:'black'}}>전달 이용약관 변경 (2020. 04. 15)</Link></td>
+                <td>2020.04.08</td>
               </tr>
             </tbody>
           </table>
