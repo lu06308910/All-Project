@@ -18,13 +18,13 @@ function Footer() {
 
                                         <div className="footer-links">
                                                 <div className="link-group">
-                                                        <h4>Service</h4>
+                                                        <span>Service</span>
                                                         <Link to="/">모든 상품</Link>
                                                         <Link to="/">공간별 추천</Link>
                                                         <Link to="/">할인 상품</Link>
                                                 </div>
                                                 <div className="link-group">
-                                                        <h4>Support</h4>
+                                                        <span>Support</span>
                                                         <Link to="/">서비스지원</Link>
                                                         <Link to="/">이용약관</Link>
                                                         <Link to="/">개인정보처리방침</Link>
@@ -39,10 +39,11 @@ function Footer() {
                                                 <span>대표이사: 김대호</span>
                                                 <span>사업자등록번호: 000-00-00000</span>
                                                 <span>주소: 서울특별시 어딘가 구석진 개발실</span>
+                                                <span>
+                                                        &copy; {new Date().getFullYear()} CANVAS. All rights reserved.
+                                                </span>
                                         </div>
-                                        <p className="copyright">
-                                                &copy; {new Date().getFullYear()} CANVAS. All rights reserved.
-                                        </p>
+
                                 </div>
 
                         </div>
