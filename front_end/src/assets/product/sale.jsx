@@ -86,7 +86,7 @@ function sale(){
                                         <Carousel.Item key={index}>
                                                 <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', padding: '0 50px', marginTop:'100px', marginBottom:'100px' }}>
                                                 {chunk.map((item) => (
-                                                        <Link to="" className="product-link" key={item.id} style={{ textDecoration: 'none', color: 'inherit', width: '25%' }}>
+                                                        <Link to="/productDetail" className="product-link" key={item.id} style={{ textDecoration: 'none', color: 'inherit', width: '25%' }}>
                                                         <div className="product-card">
                                                                 <div className="product-img">
                                                                 <img src={item.img} alt={item.title} style={{ width: '100%' }} />
