@@ -4,6 +4,7 @@ import Top from './assets/pages/Top';
 import Home from './assets/pages/Home';
 import Login from './assets/pages/login';
 import Member from './assets/pages/member';
+import MemberEdit from './assets/pages/memberEdit';
 import FindMember from './assets/pages/findmember';
 import Mypage from './assets/pages/mypage';
 import AddProduct from './assets/pages/AddProduct';
@@ -21,6 +22,7 @@ import NoticeList from './assets/qna/NoticeList';
 import NoticeView from './assets/qna/NoticeView';
 import Basket from './assets/buy/Basket';
 import Parchase from './assets/buy/Parchase';
+import Finalbuy from './assets/buy/Finalbuy';
 
 function App() {
 
@@ -37,6 +39,7 @@ function App() {
           <Route path='/login' element={<Login />}></Route>
           <Route path='/member/signup' element={<Member />}></Route>
           <Route path='/member/findmember' element={<FindMember />}></Route>
+          <Route path='/member/memberedit' element={<MemberEdit />}></Route>
           <Route path='/mypage' element={<Mypage />}></Route>
           <Route path='/mypage/addproduct' element={<AddProduct />}></Route>
           <Route path='/allproduct' element={<AllRroduct />}></Route>
@@ -50,8 +53,13 @@ function App() {
           <Route path='/qna/noticeview' element={<NoticeView />}></Route>
           <Route path='/basket' element={<Basket />}></Route>
           <Route path='/parchase' element={<Parchase />}></Route>
+<<<<<<< HEAD
+=======
+          <Route path='/finalcheck' element={<Finalbuy />}></Route>
+>>>>>>> 132e6d3097fb5eee9f92c2d4a315d1c365b2387d
+          <Route path='/manager' element={<Manager />}></Route>
         </Route>
-        
+
       </Routes>
     </BrowserRouter>
   )

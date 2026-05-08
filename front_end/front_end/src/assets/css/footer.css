@@ -1,111 +1,94 @@
 /* footer.css */
 .footer-container {
-        width: 100%;
-        background-color: #f8f9fa;
-        border-top: 1px solid #eee;
-        padding: 20px 0;
-        margin-top: auto;
-        /* 상단 콘텐츠가 적어도 푸터를 바닥으로 밀어냄 */
+    width: 100%;
+    /* 1. 완전 블랙보다 부드러운 딥 그레이 (#25252b 정도로 약간의 푸른기 추가 권장) */
+    background-color: #25252c; 
+    border-top: 1px solid #3a3a3c; 
+    padding: 50px 0; 
+    margin-top: auto;
 }
 
 .footer-content {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px; 
 }
 
 .footer-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: cneter;
-        width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center; 
+    width: 100%;
 }
 
 .footer-brand {
-        display: flex;
-<<<<<<< HEAD
-        align-items: center;
-=======
-        dlign-items: center;
->>>>>>> 91f5c7b30aa69ba582f0def97ea8746b0a0bc108
-        gap: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 .footer-logo {
-        font-size: 18px;
-        font-weight: 900;
-        color: #333;
-        margin-bottom: 0;
+    font-size: 30px;
+    font-weight: 900;
+    color: #ececec; 
+    margin-bottom: 0;
+    letter-spacing: 1px;
 }
 
 .footer-desc {
-        font-size: 12px;
-        color: #888;
-        border-left: 1px solid #ddd;
-        padding-left: 15px
+    font-size: 12px;
+    color: #a1a1a6; 
+    border-left: 1px solid #48484a;
+    padding-left: 15px;
 }
 
 .footer-links {
-        display: flex;
-        gap: 30px;
+    display: flex;
+    gap: 30px;
 }
 
 .link-group {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
 }
-
-.link-group h4 {
-        display: none;
+.link-group span{
+        font-size: 14px;
+        color:#d1d1d6;
 }
 
 .link-group a {
-        text-decoration: none;
-        font-size: 13px;
-        color: #666;
-        font-weight: 500;
-        transition: color 0.2s;
+    text-decoration: none;
+    font-size: 13px;
+    color: #d1d1d6; 
+    font-weight: 500;
+    transition: all 0.2s;
 }
 
 .link-group a:hover {
-        color: #000;
+    color: #ffffff;
 }
 
 /* 하단 정보 영역 */
 .footer-bottom {
-        border-top: 1px solid #eee;
-        padding-top: 15px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    border-top: 1px solid #4c4c4e; 
+    padding-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .company-info {
-        display: flex;
-        gap: 12px;
-        font-size: 12px;
-        color: #888;
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: #86868b;
 }
 
-.company-info span:last-child::after {
-        content: "";
-}
-
-.copyright {
-        font-size: 12px;
-        color: #bbb;
-}
-
-/* 반응형 모바일 대응 */
-@media (max-width: 768px) {
-        .footer-top {
-                flex-direction: column;
-                gap: 40px;
-        }
-
-        .footer-links {
-                gap: 30px;
-        }
+.company-info span:not(:last-child)::after {
+    content: "|";
+    margin-left: 12px;
+    font-size: 10px;
+    color: #48484a;
 }

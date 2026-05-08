@@ -15,14 +15,13 @@
 .category-mana{
         background-color: #333333;
         width: 15%;
-        height: 800px;
+        min-height: 800px;
         text-align: left;
         margin-left: 15px;
         padding-top: 30px;
 }
 .category-content{
         flex: 1;
-        height: 800px;
         padding: 20px;
 }
 /* 메뉴 셀렉 후 */

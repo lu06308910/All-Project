@@ -255,7 +255,7 @@ function Parchase(){
                                 </div>
                                 <hr/>
                                 <div style={{textDecoration:'underline', textAlign:'right'}}>주문 취소</div>
-                                <div style={{backgroundColor:'#EDEDED', padding:'40px'}}>
+                                <div style={{backgroundColor:'#EDEDED', padding:'40px', marginTop:'50px'}}>
                                         <div style={{padding:'40px', backgroundColor:'white', borderRadius:'20px'}}>
                                                 <div style={{display:'flex'}}>
                                                         <h4 style={{fontWeight:'600', color:'red'}}>*</h4>
@@ -267,16 +267,17 @@ function Parchase(){
                                                         <div>
                                                                 <div style={{display:'flex', justifyContent: 'left', alignItems: 'center'}}>
                                                                         <input type="radio" name="addressType" value="saved" onChange={handleRadioChange}/>
-                                                                        <p>배송지(선택)</p>
+                                                                        <span style={{marginLeft:'3px'}}>배송지(선택)</span>
                                                                 </div>
                                                                 <div>기존 주소</div>
-                                                                <div style={{display:'flex', justifyContent: 'left', alignItems: 'center'}}>
+                                                                <div style={{display:'flex', justifyContent: 'left', alignItems: 'center', marginTop:'5px'}}>
                                                                         <input type="radio" name="addressType" value="new" onChange={handleRadioChange}/>
-                                                                        <p>배송지(선택)</p>
+                                                                        <span style={{marginLeft:'3px'}}>배송지(선택)</span>
                                                                 </div>
                                                                 <div>
                                                                         <div className="c-code">
-                                                                                <input type="text" name="zipcode" placeholder="배송지를 입력하세요." value={formData.zipcode} disabled={!isAddressEditable} readOnly />
+                                                                                <input type="text" className="c-code" name="zipcode" placeholder="배송지를 입력하세요." value={formData.zipcode} disabled={!isAddressEditable}
+                                                                                style={{width:'50%'}} readOnly />
                                                                         </div>
                                                                         <input type="text" className="c-code" name="address" placeholder="기본 주소" value={formData.address} disabled={!isAddressEditable}  readOnly/>
                                                                         <br/>
@@ -290,10 +291,10 @@ function Parchase(){
                                                         {/* 배송요청사항 */}
                                                         <div style={{marginTop:'20px', display:'flex', flexDirection: 'column',
                                                                                         justifyContent: 'center'}}>
-                                                                <p>배송 요청사항</p>
+                                                                <span>배송 요청사항</span>
                                                                 <select className="cat1"
                                                                         onChange={handleSelectChange}
-                                                                        style={{width:'430px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px'}}
+                                                                        style={{width:'50%', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px'}}
                                                                 >
                                                                                 <option value="null">요청사항 없음.</option>
                                                                                 <option value="category">문앞에 배송해 주세요.</option>
@@ -303,7 +304,7 @@ function Parchase(){
                                                                 {isDirectInput&&(
                                                                         <input type='text' placeholder='배송요청사항을 입력해 주세요.' value={deliveryMsg}
                                                                                 onChange={(e)=>setDeliveryMsg(e.target.value)}
-                                                                                style={{width: '430px', padding: '3px', borderRadius: '5px',
+                                                                                style={{width: '50%', padding: '3px', borderRadius: '5px',
                                                                                         border: '1px solid #000000', fontSize: '0.8em', marginTop:'10px'
                                                                                 }}
                                                                         />
@@ -315,7 +316,7 @@ function Parchase(){
                                                                 <span>받는 사람</span>
                                                         </div>
                                                         <input type='text' placeholder='이름을 입력해 주세요.'
-                                                                style={{width: '430px', padding: '3px', borderRadius: '5px',
+                                                                style={{width: '50%', padding: '3px', borderRadius: '5px',
                                                                         border: '1px solid #000000', fontSize: '0.8em', marginTop:'10px'
                                                                 }}
                                                         />
@@ -324,7 +325,7 @@ function Parchase(){
                                                                 <span>배송 연락용 전화번호</span>
                                                         </div>
                                                         <input type='text' placeholder='010-xxxx-xxxx'
-                                                                style={{width: '430px', padding: '3px', borderRadius: '5px',
+                                                                style={{width: '50%', padding: '3px', borderRadius: '5px',
                                                                         border: '1px solid #000000', fontSize: '0.8em', marginTop:'10px'
                                                                 }}
                                                         />
@@ -332,7 +333,7 @@ function Parchase(){
                                                                 <span>추가 전화번호(선택)</span>
                                                         </div>
                                                         <input type='text' placeholder='전화번호를 입력하세요.'
-                                                                style={{width: '430px', padding: '3px', borderRadius: '5px',
+                                                                style={{width: '50%', padding: '3px', borderRadius: '5px',
                                                                         border: '1px solid #000000', fontSize: '0.8em', marginTop:'10px'
                                                                 }}
                                                         />
@@ -340,7 +341,7 @@ function Parchase(){
                                         </div>
                                         <Link to={'/finalcheck'}>
                                                 <button type="button" className="button" style={{
-                                                        width:'80px', backgroundColor:'blue', border:'1px solid blue', marginLeft:'1050px',
+                                                        width:'80px', backgroundColor:'blue', border:'1px solid blue', marginLeft:'90%',
                                                         marginTop:'20px'}}
                                                 >결제 진행</button>
                                         </Link>
