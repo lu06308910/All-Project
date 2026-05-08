@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 function Parchase(){
 
@@ -29,8 +30,40 @@ function Parchase(){
         // 최종 결제 예정 금액
         const totalPayment = totalProductPrice - totalDiscount + totalDelivery;
 
+        // 주소입력창 라디오버튼 상태 확인 변수
+        const [isAddressEditable, setIsAddressEditable] = useState(false);
+
+        // 직접 요청사항 변수
+        const [isDirectInput, setIsDirectInput] = useState(false);
+        const [deliveryMsg, setDeliveryMsg] = useState("");
+        
+        // 요청사항 핸들러
+        const handleSelectChange = (e) => {
+        if (e.target.value === "direct") {
+                setIsDirectInput(true);
+        } else {
+                setIsDirectInput(false);
+                setDeliveryMsg(""); // 다른 옵션 선택 시 입력 내용 초기화
+        }
+        };
+
+        // 라디오 버튼 변경 핸들러
+        const handleRadioChange = (e) => {
+                const { value } = e.target;
+
+                if (value === "new") {
+                        setIsAddressEditable(true);
+                } else {
+                        setIsAddressEditable(false);
+                }
+        };
+
         // ── 카카오 우편번호 API 실행 함수 ──
         const handleAddressSearch = () => {
+                if (!isAddressEditable) {
+                        alert("배송지 선택을 먼저 해주세요.");
+                        return;
+                }
                 new window.daum.Postcode({
                         oncomplete: function (data) {
                                 let fullAddr = data.address;
@@ -69,7 +102,7 @@ function Parchase(){
                 <>
                         <div className="footer-container" style={{backgroundColor:'white'}}>
                                 <div>
-                                        <h3 style={{fontWeight:'600'}}>장바구니</h3>
+                                        <h3 style={{fontWeight:'600'}}>결제 진행</h3>
                                         <div style={{ position: 'relative' }}>
                                         <div className='stepper-line-active' style={{ width: '50%' }}></div>
                                         <div className="stepper-container">
@@ -229,30 +262,88 @@ function Parchase(){
                                                         <h4 style={{fontWeight:'600'}}>배송지 입력</h4>
                                                 </div>
                                                 <hr />
-                                                <div>
+                                                <div style={{marginLeft:'40px'}}>
                                                         {/* 주소 필드 */}
                                                         <div>
                                                                 <div style={{display:'flex', justifyContent: 'left', alignItems: 'center'}}>
-                                                                        <input type="radio" name="addressType" value="saved" />
+                                                                        <input type="radio" name="addressType" value="saved" onChange={handleRadioChange}/>
                                                                         <p>배송지(선택)</p>
                                                                 </div>
                                                                 <div>기존 주소</div>
                                                                 <div style={{display:'flex', justifyContent: 'left', alignItems: 'center'}}>
-                                                                        <input type="radio" name="addressType" value="saved" />
+                                                                        <input type="radio" name="addressType" value="new" onChange={handleRadioChange}/>
                                                                         <p>배송지(선택)</p>
                                                                 </div>
                                                                 <div>
                                                                         <div className="c-code">
-                                                                                <input type="text" name="zipcode" placeholder="배송지를 입력하세요." value={formData.zipcode} readOnly />
+                                                                                <input type="text" name="zipcode" placeholder="배송지를 입력하세요." value={formData.zipcode} disabled={!isAddressEditable} readOnly />
                                                                         </div>
-                                                                        <input type="text" className="c-code" name="address" placeholder="기본 주소" value={formData.address} readOnly/>
+                                                                        <input type="text" className="c-code" name="address" placeholder="기본 주소" value={formData.address} disabled={!isAddressEditable}  readOnly/>
                                                                         <br/>
-                                                                        <input type="text" className="c-code" name="address_detail" placeholder="상세 주소" value={formData.address_detail} onChange={handleChange} style={{marginTop:'-25px'}}/>
-                                                                        <button type="button" className="button" onClick={handleAddressSearch} style={{width:'100px'}}>우편번호 찾기</button>
+                                                                        <input type="text" className="c-code" name="address_detail" placeholder="상세 주소" value={formData.address_detail} disabled={!isAddressEditable} onChange={handleChange} style={{marginTop:'-25px'}}/>
+                                                                        <button type="button" className="button" onClick={handleAddressSearch} style={{width:'100px', 
+                                                                                opacity: isAddressEditable ? 1 : 0.5,
+                                                                                cursor: isAddressEditable ? 'pointer' : 'not-allowed'}}
+                                                                        >우편번호 찾기</button>
                                                                 </div>
                                                         </div>
+                                                        {/* 배송요청사항 */}
+                                                        <div style={{marginTop:'20px', display:'flex', flexDirection: 'column',
+                                                                                        justifyContent: 'center'}}>
+                                                                <p>배송 요청사항</p>
+                                                                <select className="cat1"
+                                                                        onChange={handleSelectChange}
+                                                                        style={{width:'430px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px'}}
+                                                                >
+                                                                                <option value="null">요청사항 없음.</option>
+                                                                                <option value="category">문앞에 배송해 주세요.</option>
+                                                                                <option value="category">배송 시 벨 눌러주세요.</option>
+                                                                                <option value="direct">직접 기입하기</option>
+                                                                </select>
+                                                                {isDirectInput&&(
+                                                                        <input type='text' placeholder='배송요청사항을 입력해 주세요.' value={deliveryMsg}
+                                                                                onChange={(e)=>setDeliveryMsg(e.target.value)}
+                                                                                style={{width: '430px', padding: '3px', borderRadius: '5px',
+                                                                                        border: '1px solid #000000', fontSize: '0.8em', marginTop:'10px'
+                                                                                }}
+                                                                        />
+                                                                )}
+                                                        </div>
+                                                        {/* 받는사람 연락처 */}
+                                                        <div style={{marginTop:'20px'}}>
+                                                                <span style={{color:'red'}}>*</span>
+                                                                <span>받는 사람</span>
+                                                        </div>
+                                                        <input type='text' placeholder='이름을 입력해 주세요.'
+                                                                style={{width: '430px', padding: '3px', borderRadius: '5px',
+                                                                        border: '1px solid #000000', fontSize: '0.8em', marginTop:'10px'
+                                                                }}
+                                                        />
+                                                        <div style={{marginTop:'20px'}}>
+                                                                <span style={{color:'red'}}>*</span>
+                                                                <span>배송 연락용 전화번호</span>
+                                                        </div>
+                                                        <input type='text' placeholder='010-xxxx-xxxx'
+                                                                style={{width: '430px', padding: '3px', borderRadius: '5px',
+                                                                        border: '1px solid #000000', fontSize: '0.8em', marginTop:'10px'
+                                                                }}
+                                                        />
+                                                        <div style={{marginTop:'20px'}}>
+                                                                <span>추가 전화번호(선택)</span>
+                                                        </div>
+                                                        <input type='text' placeholder='전화번호를 입력하세요.'
+                                                                style={{width: '430px', padding: '3px', borderRadius: '5px',
+                                                                        border: '1px solid #000000', fontSize: '0.8em', marginTop:'10px'
+                                                                }}
+                                                        />
                                                 </div>
                                         </div>
+                                        <Link to={'/finalcheck'}>
+                                                <button type="button" className="button" style={{
+                                                        width:'80px', backgroundColor:'blue', border:'1px solid blue', marginLeft:'1050px',
+                                                        marginTop:'20px'}}
+                                                >결제 진행</button>
+                                        </Link>
                                 </div>
 
                         </div>
