@@ -27,11 +27,42 @@ ChartJS.register(
 );
 
 function Manager(){
-        
+
+        const [showMore, setShowMore] = useState(false);
         const [activeMenu, setActiveMenu] = useState('대시보드');
         const [isPostOpen, setIsPostOpen] = useState(false);
         const [modalOpen, setModalOpen] = useState(false);
         const [chartOpen, setChartOpen] = useState(false);
+        const [currentPage, setCurrentPage] = useState(1);
+        const [openId, setOpenId] = useState(null); // 현재 열려있는 게시글의 ID 저장
+
+        const postsPerPage = 10;
+        const totalPosts=30;
+        const totalPages = Math.ceil(totalPosts / postsPerPage);
+
+        const indexOfLastPost = currentPage * postsPerPage;
+        const indexOfFirstPost = indexOfLastPost - postsPerPage;
+
+        // 페이지 이동 함수
+        const paginate = (pageNumber, e) => {
+                e.preventDefault(); // 클릭 시 페이지 새로고침 방지
+                if (pageNumber >= 1 && pageNumber <= totalPages) {
+                        setCurrentPage(pageNumber);
+                }
+        };
+
+        // 유저명
+        const users = [
+                { id: 1, name: '김수한무', userid: 'kimsuhan1', email: 'kimsuhan1@gmail.com', tel: '010-1214-8354', writedate:'2026-02-01', manage:'alive' },
+        ]
+
+        // 더보기
+        const visibleUsers = showMore ? users : users.slice(0, 4);
+
+        const handleToggle = (id) => {
+                // 이미 열려있는 걸 다시 누르면 닫고(null), 아니면 해당 ID를 엽니다.
+                setOpenId(openId === id ? null : id);
+        };
 
         const menus = ['대시보드', '회원 관리', '기업 관리', '상품 관리', '게시글 관리', '문의 관리', '통계'];
         const submenus= ['-예약', '-이벤트 관리']
@@ -39,13 +70,45 @@ function Manager(){
                 setActiveCategory(CategoryName);
         }
 
+        //날짜 변수
+        const [startDate, setStartDate] = useState('');
+        const [endDate, setEndDate] = useState('');
+
+        const handleDatePreset = (period, value) => {
+                const today = new Date();
+                const start = new Date();
+
+                // 종료일은 언제나 오늘
+                setEndDate(formatDate(today));
+
+                // 기간 설정
+                if(period === 'day'){
+                        // 당일: 시작일도 오늘
+                        setStartDate(formatDate(today));
+                }else if(period === 'week'){
+                        start.setDate(today.getDate() - 7);
+                        setStartDate(formatDate(start));
+                }else if(period === 'month'){
+                        start.setMonth(today.getMonth() - value);
+                        setStartDate(formatDate(start));
+                }else if(period === 'year'){
+                        start.setFullYear(today.getFullYear() - 1);
+                        setStartDate(formatDate(start));
+                }
+        };
+
+        // 날짜를 YYYY-MM-DD 형식으로 변환하는 보조 함수
+        const formatDate = (date) => {
+                return date.toISOString().split('T')[0];
+        };
+
         const Reservation =()=>(
                 <div>
                         <h4 style={{textAlign:'left', fontWeight:'600'}}>예약 게시글 목록</h4>
                         <hr/>
-                        <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px', fontSize:'0.8em'}}>
+                        <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
                                 <thead>
-                                        <tr>
+                                        <tr style={{fontSize:'0.8em'}}>
                                                 <th style={{backgroundColor:'#eeeeee'}}>일괄삭제</th>
                                                 <th style={{backgroundColor:'#eeeeee'}}>카테고리</th>
                                                 <th style={{backgroundColor:'#eeeeee'}}>이벤트명</th>
@@ -57,14 +120,14 @@ function Manager(){
                                 </thead>
                                 <tbody>
                                         <tr>
-                                                <td>
+                                                <td style={{fontSize:'0.8em'}}>
                                                         <input type="checkbox" aria-label="항목 선택" />
                                                 </td>
-                                                <td>전체</td>
-                                                <td>전품목 10퍼센트 할인 행사</td>
-                                                <td>2026-04-22</td>
-                                                <td>2026-05-04</td>
-                                                <td>미공개</td>
+                                                <td style={{fontSize:'0.8em'}}>전체</td>
+                                                <td style={{fontSize:'0.8em'}}>전품목 10퍼센트 할인 행사</td>
+                                                <td style={{fontSize:'0.8em'}}>2026-04-22</td>
+                                                <td style={{fontSize:'0.8em'}}>2026-05-04</td>
+                                                <td style={{fontSize:'0.8em'}}>미공개</td>
                                                 <td>
                                                         <button className='button2' style={{marginRight:'10px'}}>수정</button>
                                                         <button className='button2'>삭제</button>
@@ -73,10 +136,10 @@ function Manager(){
                                 </tbody>
                         </table>
                         <div style={{display: 'flex', justifyContent: 'space-between', width:'94%'}}>
-                                <div style={{textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
-                                        더보기
-                                </div>
-                                <button className='button'>게시글등록</button>
+                                <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}} onClick={() => setShowMore(!showMore)}>
+                                        {showMore ? "접기" : "더보기"}
+                                </button>
+                                <button className='button' style={{border:'1px solid blue', backgroundColor:'blue'}}>게시글등록</button>
                         </div>
                 </div>
         )
@@ -84,9 +147,9 @@ function Manager(){
                 <div>
                         <h4 style={{textAlign:'left', fontWeight:'600'}}>진행 중인 이벤트</h4>
                         <hr/>
-                        <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px', fontSize:'0.8em'}}>
+                        <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
                                 <thead>
-                                        <tr>
+                                        <tr style={{fontSize:'0.8em'}}>
                                                 <th style={{backgroundColor:'#eeeeee'}}>일괄삭제</th>
                                                 <th style={{backgroundColor:'#eeeeee'}}>카테고리</th>
                                                 <th style={{backgroundColor:'#eeeeee'}}>이벤트명</th>
@@ -98,14 +161,14 @@ function Manager(){
                                 </thead>
                                 <tbody>
                                         <tr>
-                                                <td>
+                                                <td style={{fontSize:'0.8em'}}>
                                                         <input type="checkbox" aria-label="항목 선택" />
                                                 </td>
-                                                <td>전체</td>
-                                                <td>사면 살수록 이득이 되는 전폭 세일 행사</td>
-                                                <td>2026-04-25</td>
-                                                <td>2026-05-30</td>
-                                                <td>공개</td>
+                                                <td style={{fontSize:'0.8em'}}>전체</td>
+                                                <td style={{fontSize:'0.8em'}}>사면 살수록 이득이 되는 전폭 세일 행사</td>
+                                                <td style={{fontSize:'0.8em'}}>2026-04-25</td>
+                                                <td style={{fontSize:'0.8em'}}>2026-05-30</td>
+                                                <td style={{fontSize:'0.8em'}}>공개</td>
                                                 <td>
                                                         <button className='button2' style={{marginRight:'10px'}}>수정</button>
                                                         <button className='button2'>삭제</button>
@@ -114,16 +177,16 @@ function Manager(){
                                 </tbody>
                         </table>
                         <div style={{display: 'flex', justifyContent: 'space-between', width:'94%'}}>
-                                <div style={{textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
-                                        더보기
-                                </div>
-                                <button className='button'>게시글등록</button>
+                                <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}} onClick={() => setShowMore(!showMore)}>
+                                        {showMore ? "접기" : "더보기"}
+                                </button>
+                                <button className='button' style={{border:'1px solid blue', backgroundColor:'blue'}}>게시글등록</button>
                         </div>
                         <h4 style={{textAlign:'left', fontWeight:'600'}}>마무리 된 이벤트</h4>
                         <hr/>
-                        <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px', fontSize:'0.8em'}}>
+                        <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
                                 <thead>
-                                        <tr>
+                                        <tr style={{fontSize:'0.8em'}}>
                                                 <th style={{backgroundColor:'#eeeeee'}}>일괄삭제</th>
                                                 <th style={{backgroundColor:'#eeeeee'}}>카테고리</th>
                                                 <th style={{backgroundColor:'#eeeeee'}}>이벤트명</th>
@@ -135,14 +198,14 @@ function Manager(){
                                 </thead>
                                 <tbody>
                                         <tr>
-                                                <td>
+                                                <td style={{fontSize:'0.8em'}}>
                                                         <input type="checkbox" aria-label="항목 선택" />
                                                 </td>
-                                                <td>전체</td>
-                                                <td>사면 살수록 이득이 되는 전폭 세일 행사</td>
-                                                <td>2026-03-15</td>
-                                                <td>2026-04-25</td>
-                                                <td>미공개</td>
+                                                <td style={{fontSize:'0.8em'}}>전체</td>
+                                                <td style={{fontSize:'0.8em'}}>사면 살수록 이득이 되는 전폭 세일 행사</td>
+                                                <td style={{fontSize:'0.8em'}}>2026-03-15</td>
+                                                <td style={{fontSize:'0.8em'}}>2026-04-25</td>
+                                                <td style={{fontSize:'0.8em'}}>미공개</td>
                                                 <td>
                                                         <button className='button2' style={{marginRight:'10px'}}>수정</button>
                                                         <button className='button2'>삭제</button>
@@ -151,10 +214,10 @@ function Manager(){
                                 </tbody>
                         </table>
                         <div style={{display: 'flex', justifyContent: 'space-between', width:'94%'}}>
-                                <div style={{textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
-                                        더보기
-                                </div>
-                                <button className='button'>게시글등록</button>
+                                <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}} onClick={() => setShowMore(!showMore)}>
+                                        {showMore ? "접기" : "더보기"}
+                                </button>
+                                <button className='button' style={{border:'1px solid blue', backgroundColor:'blue'}}>게시글등록</button>
                         </div>
                 </div>
         )
@@ -308,6 +371,20 @@ function Manager(){
                         <Doughnut data={data} options={ChartData.options} />
                 </div>
         )
+
+        // chartlist를 no로 적용되게 해야 한다
+        // const deleteSelected = () => {
+        //         const remainingItems = cartList.filter(item=>!item.checked);
+
+        //         if(remainingItems.length== cartList.length){
+        //                 alert("삭제할 항목을 선택해 주세요.")
+        //                 return;
+        //         }
+
+        //         if(window.confirm("선택한 항목을 장바구니에서 삭제하시겠습니까?")){
+        //                 setCartList(remainingItems);
+        //         }
+        // }
         
         return(
                 <div className='inner-container'>
@@ -387,7 +464,11 @@ function Manager(){
                                                                 />
                                                         </div>
                                                 </div>
-                                                <h4 style={{textAlign:'left', fontWeight:'600'}}>상위 리스트</h4>
+                                                <div style={{marginTop:'20px', display: 'flex', gap: '20px', alignItems: 'center'}}>
+                                                                <div style={{marginLeft:'215px'}}>CANVAS 전체 매출 현황</div>
+                                                                <div style={{marginLeft:'400px'}}>기업 매출 상위 분포도</div>
+                                                </div>
+                                                <h4 style={{marginTop:'60px', textAlign:'left', fontWeight:'600'}}>상위 리스트</h4>
                                                 <hr/>
                                                 <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em'}}>
                                                         <div className="col p-2">인기 상품 TOP 5</div>
@@ -410,29 +491,31 @@ function Manager(){
                                                                         <button className="search-icon"></button>
                                                                 </div>
                                                         </div>
-                                                        <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em'}}>
-                                                                <div className="col p-2">번호</div>
-                                                                <div className="col p-2">아이디</div>
-                                                                <div className="col p-2">성명</div>
-                                                                <div className="col p-2">이메일</div>
-                                                                <div className="col p-2">연락처</div>
-                                                                <div className="col p-2">가입일</div>
-                                                                <div className="col p-2">관리</div>
+                                                        <div className="row border real-dark-border mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                <div className="col-1 border-start">번호</div>
+                                                                <div className="col-2 border-start">아이디</div>
+                                                                <div className="col-2 border-start">성명</div>
+                                                                <div className="col-2 border-start">이메일</div>
+                                                                <div className="col-2 border-start">연락처</div>
+                                                                <div className="col-2 border-start">가입일</div>
+                                                                <div className="col-1 border-start">관리</div>
                                                         </div>
-                                                        <div className="row" style={{fontSize:'0.8em'}}>
-                                                                <div className="col p-2">*번호</div>
-                                                                <div className="col p-2">*아이디</div>
-                                                                <div className="col p-2">*성명</div>
-                                                                <div className="col p-2">*이메일</div>
-                                                                <div className="col p-2">*연락처</div>
-                                                                <div className="col p-2">*가입일</div>
-                                                                <div className="col p-2">*관리</div>
-                                                        </div>
-                                                        <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                                                                <div style={{textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
-                                                                        더보기
+                                                        {users.map((user)=>(
+                                                                <div className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                        <div className="col-1 border-start">{user.id}</div>
+                                                                        <div className="col-2 border-start">{user.userid}</div>
+                                                                        <div className="col-2 border-start">{user.name}</div>
+                                                                        <div className="col-2 border-start">{user.email}</div>
+                                                                        <div className="col-2 border-start">{user.tel}</div>
+                                                                        <div className="col-2 border-start">{user.writedate}</div>
+                                                                        <div className="col-1 border-start">{user.manage}</div>
                                                                 </div>
-                                                                <button className='button'>탈퇴처리</button>
+                                                        ))}
+                                                        <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                                                                <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}} onClick={() => setShowMore(!showMore)}>
+                                                                        {showMore ? "접기" : "더보기"}
+                                                                </button>
+                                                                <button className='button' style={{marginTop:'20px', border:'1px solid blue', backgroundColor:'blue'}}>탈퇴처리</button>
                                                         </div>
                                                 </div>
                                                 <div className='category-content'>
@@ -443,25 +526,25 @@ function Manager(){
                                                                         <button className="search-icon"></button>
                                                                 </div>
                                                         </div>
-                                                        <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em'}}>
-                                                                <div className="col p-2">번호</div>
-                                                                <div className="col p-2">아이디</div>
-                                                                <div className="col p-2">성명</div>
-                                                                <div className="col p-2">이메일</div>
-                                                                <div className="col p-2">연락처</div>
-                                                                <div className="col p-2">가입일</div>
-                                                                <div className="col p-2">관리</div>
+                                                        <div className="row border real-dark-border mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                <div className="col-1 border-start">번호</div>
+                                                                <div className="col-2 border-start">아이디</div>
+                                                                <div className="col-2 border-start">성명</div>
+                                                                <div className="col-2 border-start">이메일</div>
+                                                                <div className="col-2 border-start">연락처</div>
+                                                                <div className="col-2 border-start">가입일</div>
+                                                                <div className="col-1 border-start">관리</div>
                                                         </div>
-                                                        <div className="row" style={{fontSize:'0.8em'}}>
-                                                                <div className="col p-2">*번호</div>
-                                                                <div className="col p-2">*아이디</div>
-                                                                <div className="col p-2">*성명</div>
-                                                                <div className="col p-2">*이메일</div>
-                                                                <div className="col p-2">*연락처</div>
-                                                                <div className="col p-2">*가입일</div>
-                                                                <div className="col p-2">*관리</div>
+                                                        <div className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                <div className="col-1 border-start">*번호</div>
+                                                                <div className="col-2 border-start">*아이디</div>
+                                                                <div className="col-2 border-start">*성명</div>
+                                                                <div className="col-2 border-start">*이메일</div>
+                                                                <div className="col-2 border-start">*연락처</div>
+                                                                <div className="col-2 border-start">*가입일</div>
+                                                                <div className="col-1 border-start">*관리</div>
                                                         </div>
-                                                        <p style={{textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
+                                                        <p style={{marginTop:'20px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em', padding:'5px'}}>
                                                                 더보기
                                                         </p>
                                                 </div>
@@ -479,29 +562,29 @@ function Manager(){
                                                                         <button className="search-icon"></button>
                                                                 </div>
                                                         </div>
-                                                        <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em'}}>
-                                                                <div className="col p-2">번호</div>
-                                                                <div className="col p-2">아이디</div>
-                                                                <div className="col p-2">성명</div>
-                                                                <div className="col p-2">이메일</div>
-                                                                <div className="col p-2">연락처</div>
-                                                                <div className="col p-2">가입일</div>
-                                                                <div className="col p-2">관리</div>
+                                                        <div className="row border real-dark-border mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                <div className="col-1 border-start">번호</div>
+                                                                <div className="col-2 border-start">아이디</div>
+                                                                <div className="col-2 border-start">성명</div>
+                                                                <div className="col-2 border-start">이메일</div>
+                                                                <div className="col-2 border-start">연락처</div>
+                                                                <div className="col-2 border-start">가입일</div>
+                                                                <div className="col-1 border-start">관리</div>
                                                         </div>
-                                                        <div className="row" style={{fontSize:'0.8em'}}>
-                                                                <div className="col p-2">*번호</div>
-                                                                <div className="col p-2">*아이디</div>
-                                                                <div className="col p-2">*성명</div>
-                                                                <div className="col p-2">*이메일</div>
-                                                                <div className="col p-2">*연락처</div>
-                                                                <div className="col p-2">*가입일</div>
-                                                                <div className="col p-2">*관리</div>
+                                                        <div className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                <div className="col-1 border-start">*번호</div>
+                                                                <div className="col-2 border-start">*아이디</div>
+                                                                <div className="col-2 border-start">*성명</div>
+                                                                <div className="col-2 border-start">*이메일</div>
+                                                                <div className="col-2 border-start">*연락처</div>
+                                                                <div className="col-2 border-start">*가입일</div>
+                                                                <div className="col-1 border-start">*관리</div>
                                                         </div>
                                                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                                                                <div style={{textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
+                                                                <div style={{marginTop:'20px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
                                                                         더보기
                                                                 </div>
-                                                                <button className='button'>탈퇴처리</button>
+                                                                <button className='button' style={{marginTop:'20px', border:'1px solid blue', backgroundColor:'blue'}}>탈퇴처리</button>
                                                         </div>
                                                 </div>
                                                 <div className='category-content'>
@@ -512,26 +595,26 @@ function Manager(){
                                                                         <button className="search-icon"></button>
                                                                 </div>
                                                         </div>
-                                                        <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em'}}>
-                                                                <div className="col p-2">번호</div>
-                                                                <div className="col p-2">아이디</div>
-                                                                <div className="col p-2">성명</div>
-                                                                <div className="col p-2">이메일</div>
-                                                                <div className="col p-2">연락처</div>
-                                                                <div className="col p-2">가입일</div>
-                                                                <div className="col p-2">관리</div>
+                                                        <div className="row border real-dark-border mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                <div className="col-1 border-start">번호</div>
+                                                                <div className="col-2 border-start">아이디</div>
+                                                                <div className="col-2 border-start">성명</div>
+                                                                <div className="col-2 border-start">이메일</div>
+                                                                <div className="col-2 border-start">연락처</div>
+                                                                <div className="col-2 border-start">가입일</div>
+                                                                <div className="col-1 border-start">관리</div>
                                                         </div>
-                                                        <div className="row" style={{fontSize:'0.8em'}}>
-                                                                <div className="col p-2">*번호</div>
-                                                                <div className="col p-2">*아이디</div>
-                                                                <div className="col p-2">*성명</div>
-                                                                <div className="col p-2">*이메일</div>
-                                                                <div className="col p-2">*연락처</div>
-                                                                <div className="col p-2">*가입일</div>
-                                                                <div className="col p-2">*관리</div>
+                                                        <div className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                <div className="col-1 border-start">*번호</div>
+                                                                <div className="col-2 border-start">*아이디</div>
+                                                                <div className="col-2 border-start">*성명</div>
+                                                                <div className="col-2 border-start">*이메일</div>
+                                                                <div className="col-2 border-start">*연락처</div>
+                                                                <div className="col-2 border-start">*가입일</div>
+                                                                <div className="col-1 border-start">*관리</div>
                                                         </div>
                                                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                                                                <div style={{textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
+                                                                <div style={{marginTop:'20px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
                                                                         더보기
                                                                 </div>
                                                         </div>
@@ -571,28 +654,28 @@ function Manager(){
                                                                 <div style={{display: 'flex', alignItems:'center', gap:'20px'}}>
                                                                         <p style={{width:"80px d-inline-flex"}}>등록일자 :</p>
                                                                         <div className="row mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', border: '1px solid #333333', borderRadius:'10px', width:'400px'}}>
-                                                                                <div className="col p-1 text-center">당일</div>
-                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}}>일주일</div>
-                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}}>1개월</div>
-                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}}>3개월</div>
-                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}}>1년</div>
-                                                                        </div>  
+                                                                                <div className="col p-1 text-center" onClick={() => handleDatePreset('day')}>당일</div>
+                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('week')}>일주일</div>
+                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('month', 1)}>1개월</div>
+                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('month', 3)}>3개월</div>
+                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('year')}>1년</div>
+                                                                        </div>
                                                                 </div>
                                                                 <div style={{marginLeft:"85px"}}>
                                                                         <div style={{display:"flex", gap:"10px", fontSize:"0.8em", padding:"10px"}}>
-                                                                                <input type='date' className='calendar'/>
+                                                                                <input type='date' className='calendar' value={startDate} onChange={(e) => setStartDate(e.target.value)}/>
                                                                                 <b>~</b>
-                                                                                <input type='date' className='calendar'/>
+                                                                                <input type='date' className='calendar' value={endDate} onChange={(e) => setEndDate(e.target.value)}/>
                                                                         </div>
                                                                 </div>
                                                         </div>
                                                         {/* 상품 목록 */}
                                                         <h4 style={{textAlign:'left', fontWeight:'600', marginTop:'20px'}}>상품 목록</h4>
                                                         <hr/>
-                                                        <button className='button' style={{marginLeft:'920px'}}>상품등록</button>
+                                                        <button className='button' style={{marginLeft:'920px', border:'1px solid blue', backgroundColor:'blue'}}>상품등록</button>
                                                         <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
                                                                 <thead>
-                                                                        <tr>
+                                                                        <tr style={{fontSize:'0.8em'}}>
                                                                                 <th style={{backgroundColor:'#eeeeee'}}>일괄삭제</th>
                                                                                 <th style={{backgroundColor:'#eeeeee'}}>기업명</th>
                                                                                 <th style={{backgroundColor:'#eeeeee'}}>카테고리</th>
@@ -605,15 +688,15 @@ function Manager(){
                                                                 </thead>
                                                                 <tbody>
                                                                         <tr>
-                                                                                <td>
+                                                                                <td style={{fontSize:'0.8em'}}>
                                                                                         <input type="checkbox" aria-label="항목 선택" />
                                                                                 </td>
-                                                                                <td>기업명</td>
-                                                                                <td>카테고리</td>
-                                                                                <td>상품명</td>
-                                                                                <td>판매가</td>
-                                                                                <td>재고</td>
-                                                                                <td>등록일</td>
+                                                                                <td style={{fontSize:'0.8em'}}>기업명</td>
+                                                                                <td style={{fontSize:'0.8em'}}>카테고리</td>
+                                                                                <td style={{fontSize:'0.8em'}}>상품명</td>
+                                                                                <td style={{fontSize:'0.8em'}}>판매가</td>
+                                                                                <td style={{fontSize:'0.8em'}}>재고</td>
+                                                                                <td style={{fontSize:'0.8em'}}>등록일</td>
                                                                                 <td>
                                                                                         <button className='button2' style={{marginRight:'10px'}}>수정</button>
                                                                                         <button className='button2'>삭제</button>
@@ -660,26 +743,64 @@ function Manager(){
                                                                 <div className="col p-2">작성일</div>
                                                                 <div className="col p-2">수정/삭제</div>
                                                         </div>
-                                                        <div className="row" style={{fontSize:'0.8em', textAlign:'center'}}>
-                                                                <div className="col p-2">1</div>
-                                                                <div className="col p-2">
+                                                        <div className="row" style={{textAlign:'center'}}>
+                                                                <div className="col p-2" style={{fontSize:'0.8em'}}>1</div>
+                                                                <div className="col p-2" onClick={() => handleToggle(1)} style={{fontSize:'0.8em'}}>
                                                                         <div>🔒사고 싶은 옷이 찜목록에서 삭제됐어요.</div>
                                                                 </div>
-                                                                <div className="col p-2">김희*</div>
-                                                                <div className="col p-2">2026-04-26</div>
+                                                                <div className="col p-2" style={{fontSize:'0.8em'}}>김희*</div>
+                                                                <div className="col p-2" style={{fontSize:'0.8em'}}>2026-04-26</div>
                                                                 <div className="col p-2">
                                                                         <button className='button2' style={{marginRight:'10px'}}>수정</button>
                                                                         <button className='button2'>삭제</button>
                                                                 </div>
                                                         </div>
+                                                        {/* 답변 창: openId가 현재 행의 ID와 일치할 때만 렌더링 */}
+                                                        {openId === 1 && (
+                                                                <div className="answer-box" style={{
+                                                                backgroundColor: '#f9f9f9',
+                                                                padding: '20px',
+                                                                fontSize: '0.8em',
+                                                                borderTop: '1px solid #eee',
+                                                                textAlign: 'left'
+                                                                }}>
+                                                                        <span style={{ color: '#ff6b6b', fontWeight: 'bold' }}>A.</span>
+                                                                        <div style={{ whiteSpace: 'pre-wrap', fontSize: '1em', lineHeight: '1.6' }}>
+                                                                                {`안녕하세요, 고객님. CANVAS를 이용해 주셔서 감사합니다. 해당 상품은 현재 시즌 종료로 인해 데이터가 삭제되었습니다. 불편을 드려 죄송합니다.`}
+                                                                        </div>
+                                                                </div>
+                                                        )}
                                                         {/* 페이징 */}
                                                         <nav>
-                                                                <ul className="pagination">
-                                                                        <li><a className='paging-text' href="#">≪</a></li>
-                                                                        <li><a className='paging-active-text' href="#">1</a></li>
-                                                                        <li><a className='paging-text' href="#">2</a></li>
-                                                                        <li><a className='paging-text' href="#">3</a></li>
-                                                                        <li><a className='paging-text' href="#">≫</a></li>
+                                                                <ul className="pagination" style={{marginTop:'20px'}}>
+                                                                        <li>
+                                                                                <a className='paging-text' href="#" onClick={(e) => paginate(currentPage - 1, e)} 
+                                                                                        style={{ textDecoration: 'none', color: currentPage === 1 ? '#ccc' : '#333' }}>
+                                                                                                ≪
+                                                                                </a>
+                                                                        </li>
+                                                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                                                                                <li key={num}>
+                                                                                        <a 
+                                                                                                href="#"
+                                                                                                onClick={(e) => paginate(num, e)}
+                                                                                                className={currentPage === num ? 'paging-active-text' : 'paging-text'}
+                                                                                                style={{
+                                                                                                        textDecoration: 'none',
+                                                                                                        fontWeight: currentPage === num ? 'bold' : 'normal',
+                                                                                                        color: currentPage === num ? '#000' : '#888'
+                                                                                                }}
+                                                                                        >
+                                                                                        {num}
+                                                                                        </a>
+                                                                                </li>
+                                                                                ))}
+                                                                        <li>
+                                                                                <a className='paging-text' href="#" onClick={(e) => paginate(currentPage + 1, e)}
+                                                                                style={{ textDecoration: 'none', color: currentPage === totalPages ? '#ccc' : '#333' }}>
+                                                                                        ≫
+                                                                                </a>
+                                                                        </li>
                                                                 </ul>
                                                         </nav>
                                                 </div>
@@ -704,28 +825,28 @@ function Manager(){
                                                                 <div style={{display: 'flex', alignItems:'center', gap:'20px'}}>
                                                                         <p style={{width:"80px d-inline-flex"}}>등록일자 :</p>
                                                                         <div className="row mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', border: '1px solid #333333', borderRadius:'10px', width:'400px'}}>
-                                                                                <div className="col p-1 text-center">당일</div>
-                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}}>일주일</div>
-                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}}>1개월</div>
-                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}}>3개월</div>
-                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}}>1년</div>
-                                                                        </div>  
+                                                                                <div className="col p-1 text-center" onClick={() => handleDatePreset('day')}>당일</div>
+                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('week')}>일주일</div>
+                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('month', 1)}>1개월</div>
+                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('month', 3)}>3개월</div>
+                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('year')}>1년</div>
+                                                                        </div>
                                                                 </div>
                                                                 <div style={{marginLeft:"85px"}}>
                                                                         <div style={{display:"flex", gap:"10px", fontSize:"0.8em", padding:"10px"}}>
-                                                                                <input type='date' className='calendar'/>
+                                                                                <input type='date' className='calendar' value={startDate} onChange={(e) => setStartDate(e.target.value)}/>
                                                                                 <b>~</b>
-                                                                                <input type='date' className='calendar'/>
+                                                                                <input type='date' className='calendar' value={endDate} onChange={(e) => setEndDate(e.target.value)}/>
                                                                         </div>
                                                                 </div>
                                                         </div>
                                                         {/* 상품 목록 */}
                                                         <h4 style={{textAlign:'left', fontWeight:'600', marginTop:'20px'}}>상품 목록</h4>
                                                         <hr/>
-                                                        <button className='button' style={{marginLeft:'920px'}} onClick={()=>setChartOpen(true)}>매출 통계</button>
+                                                        <button className='button' style={{marginLeft:'920px', border:'1px solid blue', backgroundColor:'blue'}} onClick={()=>setChartOpen(true)}>매출 통계</button>
                                                         <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
                                                                 <thead>
-                                                                        <tr>
+                                                                        <tr style={{fontSize:'0.8em'}}>
                                                                                 <th style={{backgroundColor:'#eeeeee'}}>날짜</th>
                                                                                 <th style={{backgroundColor:'#eeeeee'}}>상품코드</th>
                                                                                 <th style={{backgroundColor:'#eeeeee'}}>카테고리</th>
@@ -740,15 +861,15 @@ function Manager(){
                                                                 </thead>
                                                                 <tbody>
                                                                         <tr>
-                                                                                <td>2026-01-22</td>
-                                                                                <td>L001</td>
-                                                                                <td>야외 〉조경</td>
-                                                                                <td>나무원목의자</td>
-                                                                                <td>기업명1</td>
-                                                                                <td>70,000</td>
-                                                                                <td>15</td>
-                                                                                <td>69,000</td>
-                                                                                <td>151,600</td>
+                                                                                <td style={{fontSize:'0.8em'}}>2026-01-22</td>
+                                                                                <td style={{fontSize:'0.8em'}}>L001</td>
+                                                                                <td style={{fontSize:'0.8em'}}>야외 〉조경</td>
+                                                                                <td style={{fontSize:'0.8em'}}>나무원목의자</td>
+                                                                                <td style={{fontSize:'0.8em'}}>기업명1</td>
+                                                                                <td style={{fontSize:'0.8em'}}>70,000</td>
+                                                                                <td style={{fontSize:'0.8em'}}>15</td>
+                                                                                <td style={{fontSize:'0.8em'}}>69,000</td>
+                                                                                <td style={{fontSize:'0.8em'}}>151,600</td>
                                                                                 <td>
                                                                                         <button className='button' onClick={()=>setModalOpen(true)}>상세보기</button>
                                                                                 </td>
