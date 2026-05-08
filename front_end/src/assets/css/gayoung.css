@@ -22,6 +22,7 @@
 }
 .category-content{
         flex: 1;
+        margin-left: 20px;
         padding: 20px;
 }
 /* 메뉴 셀렉 후 */

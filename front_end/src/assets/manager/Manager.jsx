@@ -522,586 +522,584 @@ function Manager(){
         )
         
         return(
-                <div className='inner-container'>
-                        <div className='manager-container'>
-                                <div className='category-mana'>
-                                        <Link to="/" style={{textDecoration:"none"}}>
-                                             <h1 className="canvas">CANVAS</h1>   
-                                        </Link>
-                                        <div className='sub-mana'>
-                                        {menus.map((menu) => (
-                                                <div key={menu}>
-                                                        <div
-                                                                onClick={() => setActiveMenu(menu)}
-                                                                style={{
-                                                                        cursor: 'pointer',
-                                                                        backgroundColor: activeMenu === menu ? '#3a4ca8' : '#333333',
-                                                                        padding: '0px 15px',
-                                                                        paddingLeft:'40px',
-                                                                        margin: 0
-                                                                }}
-                                                                onClick={()=>{
-                                                                        setActiveMenu(menu);
-                                                                        if(menu=='게시글 관리') setIsPostOpen(!isPostOpen);
-                                                                }}
-                                                        >
-                                                                {menu}
-                                                        </div>
-                                                
-                                                {/* 서브메뉴 조건부 렌더링 */}
-                                                {menu === '게시글 관리' && (isPostOpen || submenus.includes(activeMenu)) && (
-                                                        <div style={{ backgroundColor: '#222222' }}>
-                                                        {submenus.map((sub) => (
-                                                                <p
-                                                                key={sub}
-                                                                onClick={() => setActiveMenu(sub)}
-                                                                style={{
-                                                                        cursor: 'pointer',
-                                                                        padding: '8px 30px',
-                                                                        fontSize: '0.9em',
-                                                                        color:'#ffffff',
-                                                                        paddingLeft:'60px',
-                                                                        backgroundColor: activeMenu === sub ? '#4a5cb8' : 'transparent',
-                                                                        margin: 0
-                                                                }}
-                                                                >
-                                                                {sub}
-                                                                </p>
-                                                        ))}
-                                                        </div>
-                                                )}
+                <div className='manager-container'>
+                        <div className='category-mana'>
+                                <Link to="/" style={{textDecoration:"none"}}>
+                                        <h1 className="canvas">CANVAS</h1>   
+                                </Link>
+                                <div className='sub-mana'>
+                                {menus.map((menu) => (
+                                        <div key={menu}>
+                                                <div
+                                                        onClick={() => setActiveMenu(menu)}
+                                                        style={{
+                                                                cursor: 'pointer',
+                                                                backgroundColor: activeMenu === menu ? '#3a4ca8' : '#333333',
+                                                                padding: '0px 15px',
+                                                                paddingLeft:'40px',
+                                                                margin: 0
+                                                        }}
+                                                        onClick={()=>{
+                                                                setActiveMenu(menu);
+                                                                if(menu=='게시글 관리') setIsPostOpen(!isPostOpen);
+                                                        }}
+                                                >
+                                                        {menu}
                                                 </div>
-                                        ))}
+                                        
+                                        {/* 서브메뉴 조건부 렌더링 */}
+                                        {menu === '게시글 관리' && (isPostOpen || submenus.includes(activeMenu)) && (
+                                                <div style={{ backgroundColor: '#222222' }}>
+                                                {submenus.map((sub) => (
+                                                        <p
+                                                        key={sub}
+                                                        onClick={() => setActiveMenu(sub)}
+                                                        style={{
+                                                                cursor: 'pointer',
+                                                                padding: '8px 30px',
+                                                                fontSize: '0.9em',
+                                                                color:'#ffffff',
+                                                                paddingLeft:'60px',
+                                                                backgroundColor: activeMenu === sub ? '#4a5cb8' : 'transparent',
+                                                                margin: 0
+                                                        }}
+                                                        >
+                                                        {sub}
+                                                        </p>
+                                                ))}
+                                                </div>
+                                        )}
+                                        </div>
+                                ))}
+                                </div>
+                        </div>
+                        {/* 대시보드 페이지 */}
+                        {activeMenu == '대시보드' &&(
+                                <div className='category-content'>
+                                        <h4 style={{textAlign:'left', fontWeight:'600'}}>매출 현황</h4>
+                                        <hr/>
+                                        <div style={{display: 'flex', gap: '20px', alignItems: 'center'}}>
+                                                <div style={{ flex: 3, height: '350px' }}> 
+                                                        <Line 
+                                                        data={data2} 
+                                                        options={{
+                                                                ...ChartData.options2,
+                                                                maintainAspectRatio: false
+                                                        }}
+                                                        />
+                                                </div>
+                                                <div style={{ flex: 1.5, height: '350px' }}>
+                                                        <Doughnut 
+                                                        data={data3} 
+                                                        options={{
+                                                                ...ChartData.options3,
+                                                                maintainAspectRatio: false
+                                                        }}
+                                                        />
+                                                </div>
+                                        </div>
+                                        <div style={{marginTop:'20px', display: 'flex', gap: '20px', alignItems: 'center'}}>
+                                                        <div style={{marginLeft:'215px'}}>CANVAS 전체 매출 현황</div>
+                                                        <div style={{marginLeft:'400px'}}>기업 매출 상위 분포도</div>
+                                        </div>
+                                        <h4 style={{marginTop:'60px', textAlign:'left', fontWeight:'600'}}>상위 리스트</h4>
+                                        <hr/>
+                                        <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center'}}>
+                                                <div className="col p-2">인기 상품 TOP 5</div>
+                                                <div className="col p-2">조회수 TOP 5</div>
+                                        </div>
+                                        <div className="row" style={{fontSize:'0.8em', textAlign:'center'}}>
+                                                <div className="col p-2">게시글(상품) 이름</div>
+                                                <div className="col p-2">게시글(상품) 이름</div>
                                         </div>
                                 </div>
-                                {/* 대시보드 페이지 */}
-                                {activeMenu == '대시보드' &&(
+                        )}
+                        {/* 회원관리 페이지 */}
+                        {activeMenu == '회원 관리' &&(
+                                <div style={{display: 'flex', flexDirection: 'column', width:'80%'}}>
                                         <div className='category-content'>
-                                                <h4 style={{textAlign:'left', fontWeight:'600'}}>매출 현황</h4>
-                                                <hr/>
-                                                <div style={{display: 'flex', gap: '20px', alignItems: 'center'}}>
-                                                        <div style={{ flex: 3, height: '350px' }}> 
-                                                                <Line 
-                                                                data={data2} 
-                                                                options={{
-                                                                        ...ChartData.options2,
-                                                                        maintainAspectRatio: false
-                                                                }}
-                                                                />
-                                                        </div>
-                                                        <div style={{ flex: 1.5, height: '350px' }}>
-                                                                <Doughnut 
-                                                                data={data3} 
-                                                                options={{
-                                                                        ...ChartData.options3,
-                                                                        maintainAspectRatio: false
-                                                                }}
-                                                                />
+                                                <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
+                                                        <h4 style={{textAlign:'left', fontWeight:'600'}}>회원 검색</h4>
+                                                        <div className="search-bar">
+                                                                <input type="text" placeholder="검색할 상품을 입력해주세요." />
+                                                                <button className="search-icon"></button>
                                                         </div>
                                                 </div>
-                                                <div style={{marginTop:'20px', display: 'flex', gap: '20px', alignItems: 'center'}}>
-                                                                <div style={{marginLeft:'215px'}}>CANVAS 전체 매출 현황</div>
-                                                                <div style={{marginLeft:'400px'}}>기업 매출 상위 분포도</div>
+                                                <hr />
+                                                <div className="row border real-dark-border mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                        <div className="col-1 border-start">일괄탈퇴</div>
+                                                        <div className="col-2 border-start">아이디</div>
+                                                        <div className="col-2 border-start">성명</div>
+                                                        <div className="col-2 border-start">이메일</div>
+                                                        <div className="col-2 border-start">연락처</div>
+                                                        <div className="col-2 border-start">가입일</div>
+                                                        <div className="col-1 border-start">관리</div>
                                                 </div>
-                                                <h4 style={{marginTop:'60px', textAlign:'left', fontWeight:'600'}}>상위 리스트</h4>
-                                                <hr/>
-                                                <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center'}}>
-                                                        <div className="col p-2">인기 상품 TOP 5</div>
-                                                        <div className="col p-2">조회수 TOP 5</div>
-                                                </div>
-                                                <div className="row" style={{fontSize:'0.8em', textAlign:'center'}}>
-                                                        <div className="col p-2">게시글(상품) 이름</div>
-                                                        <div className="col p-2">게시글(상품) 이름</div>
+                                                {users
+                                                        .filter(user=>user.manage !=='탈퇴')
+                                                        .map((user)=>(
+                                                                <div key={user} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                        <div className="col-1 border-start" style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
+                                                                                        <input type="checkbox" aria-label="항목 선택" />
+                                                                        </div>
+                                                                        <div className="col-2 border-start">{user.userid}</div>
+                                                                        <div className="col-2 border-start">{user.name}</div>
+                                                                        <div className="col-2 border-start">{user.email}</div>
+                                                                        <div className="col-2 border-start">{user.tel}</div>
+                                                                        <div className="col-2 border-start">{user.writedate}</div>
+                                                                        <div className="col-1 border-start" style={{
+                                                                                background: user.manage == '탈퇴' ? '#ffebee' : '#e3f2fd',
+                                                                                color: user.manage == '탈퇴' ? '#c62828' : '#1976d2',
+                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                        }}>{user.manage}</div>
+                                                                </div>
+                                                ))}
+                                                <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                                                        <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}} onClick={() => setShowMore(!showMore)}>
+                                                                {showMore ? "접기" : "더보기"}
+                                                        </button>
+                                                        <button className='button' style={{marginTop:'20px', border:'1px solid blue', backgroundColor:'blue'}}>탈퇴처리</button>
                                                 </div>
                                         </div>
-                                )}
-                                {/* 회원관리 페이지 */}
-                                {activeMenu == '회원 관리' &&(
-                                        <div style={{display: 'flex', flexDirection: 'column', width:'80%'}}>
-                                                <div className='category-content'>
-                                                        <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
-                                                                <h4 style={{textAlign:'left', fontWeight:'600'}}>회원 검색</h4>
-                                                                <div className="search-bar">
-                                                                        <input type="text" placeholder="검색할 상품을 입력해주세요." />
-                                                                        <button className="search-icon"></button>
-                                                                </div>
-                                                        </div>
-                                                        <hr />
-                                                        <div className="row border real-dark-border mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                <div className="col-1 border-start">일괄탈퇴</div>
-                                                                <div className="col-2 border-start">아이디</div>
-                                                                <div className="col-2 border-start">성명</div>
-                                                                <div className="col-2 border-start">이메일</div>
-                                                                <div className="col-2 border-start">연락처</div>
-                                                                <div className="col-2 border-start">가입일</div>
-                                                                <div className="col-1 border-start">관리</div>
-                                                        </div>
-                                                        {users
-                                                                .filter(user=>user.manage !=='탈퇴')
-                                                                .map((user)=>(
-                                                                        <div key={user} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                                <div className="col-1 border-start" style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
-                                                                                                <input type="checkbox" aria-label="항목 선택" />
-                                                                                </div>
-                                                                                <div className="col-2 border-start">{user.userid}</div>
-                                                                                <div className="col-2 border-start">{user.name}</div>
-                                                                                <div className="col-2 border-start">{user.email}</div>
-                                                                                <div className="col-2 border-start">{user.tel}</div>
-                                                                                <div className="col-2 border-start">{user.writedate}</div>
-                                                                                <div className="col-1 border-start" style={{
-                                                                                        background: user.manage == '탈퇴' ? '#ffebee' : '#e3f2fd',
-                                                                                        color: user.manage == '탈퇴' ? '#c62828' : '#1976d2',
-                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                }}>{user.manage}</div>
-                                                                        </div>
-                                                        ))}
-                                                        <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                                                                <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}} onClick={() => setShowMore(!showMore)}>
-                                                                        {showMore ? "접기" : "더보기"}
-                                                                </button>
-                                                                <button className='button' style={{marginTop:'20px', border:'1px solid blue', backgroundColor:'blue'}}>탈퇴처리</button>
+                                        <div className='category-content'>
+                                                <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
+                                                        <h4 style={{textAlign:'left', fontWeight:'600'}}>탈퇴회원 검색</h4>
+                                                        <div className="search-bar">
+                                                                <input type="text" placeholder="검색할 상품을 입력해주세요." />
+                                                                <button className="search-icon"></button>
                                                         </div>
                                                 </div>
-                                                <div className='category-content'>
-                                                        <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
-                                                                <h4 style={{textAlign:'left', fontWeight:'600'}}>탈퇴회원 검색</h4>
-                                                                <div className="search-bar">
-                                                                        <input type="text" placeholder="검색할 상품을 입력해주세요." />
-                                                                        <button className="search-icon"></button>
+                                                <hr />
+                                                <div className="row border real-dark-border mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                        <div className="col-1 border-start">번호</div>
+                                                        <div className="col-2 border-start">아이디</div>
+                                                        <div className="col-2 border-start">성명</div>
+                                                        <div className="col-2 border-start">이메일</div>
+                                                        <div className="col-2 border-start">연락처</div>
+                                                        <div className="col-2 border-start">가입일</div>
+                                                        <div className="col-1 border-start">관리</div>
+                                                </div>
+                                                {users
+                                                        .filter(user=>user.manage =='탈퇴')
+                                                        .map((user)=>(
+                                                                <div key={user} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                        <div className="col-1 border-start">{user.id}</div>
+                                                                        <div className="col-2 border-start">{user.userid}</div>
+                                                                        <div className="col-2 border-start">{user.name}</div>
+                                                                        <div className="col-2 border-start">{user.email}</div>
+                                                                        <div className="col-2 border-start">{user.tel}</div>
+                                                                        <div className="col-2 border-start">{user.writedate}</div>
+                                                                        <div className="col-1 border-start" style={{
+                                                                                background: user.manage == '탈퇴' ? '#ffebee' : '#e3f2fd',
+                                                                                color: user.manage == '탈퇴' ? '#c62828' : '#1976d2',
+                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                        }}>{user.manage}</div>
                                                                 </div>
+                                                ))}
+                                                <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
+                                                        더보기
+                                                </button>
+                                        </div>
+                                </div>
+                        )}
+
+                        {/* 기업관리 페이지 */}
+                        {activeMenu == '기업 관리' &&(
+                                <div style={{display: 'flex', flexDirection: 'column', width:'80%'}}>
+                                        <div className='category-content'>
+                                                <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
+                                                        <h4 style={{textAlign:'left', fontWeight:'600'}}>기업 검색</h4>
+                                                        <div className="search-bar">
+                                                                <input type="text" placeholder="검색할 상품을 입력해주세요." />
+                                                                <button className="search-icon"></button>
                                                         </div>
-                                                        <hr />
-                                                        <div className="row border real-dark-border mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                <div className="col-1 border-start">번호</div>
-                                                                <div className="col-2 border-start">아이디</div>
-                                                                <div className="col-2 border-start">성명</div>
-                                                                <div className="col-2 border-start">이메일</div>
-                                                                <div className="col-2 border-start">연락처</div>
-                                                                <div className="col-2 border-start">가입일</div>
-                                                                <div className="col-1 border-start">관리</div>
-                                                        </div>
-                                                        {users
-                                                                .filter(user=>user.manage =='탈퇴')
-                                                                .map((user)=>(
-                                                                        <div key={user} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                                <div className="col-1 border-start">{user.id}</div>
-                                                                                <div className="col-2 border-start">{user.userid}</div>
-                                                                                <div className="col-2 border-start">{user.name}</div>
-                                                                                <div className="col-2 border-start">{user.email}</div>
-                                                                                <div className="col-2 border-start">{user.tel}</div>
-                                                                                <div className="col-2 border-start">{user.writedate}</div>
-                                                                                <div className="col-1 border-start" style={{
-                                                                                        background: user.manage == '탈퇴' ? '#ffebee' : '#e3f2fd',
-                                                                                        color: user.manage == '탈퇴' ? '#c62828' : '#1976d2',
-                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                }}>{user.manage}</div>
+                                                </div>
+                                                <hr />
+                                                <div className="row border real-dark-border mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                        <div className="col-1 border-start">번호</div>
+                                                        <div className="col-2 border-start">아이디</div>
+                                                        <div className="col-2 border-start">성명</div>
+                                                        <div className="col-2 border-start">이메일</div>
+                                                        <div className="col-2 border-start">연락처</div>
+                                                        <div className="col-2 border-start">가입일</div>
+                                                        <div className="col-1 border-start">관리</div>
+                                                </div>
+                                                {companys
+                                                        .filter(company=>company.manage !=='탈퇴')
+                                                        .map((company)=>(
+                                                                <div key={company} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                        <div className="col-1 border-start" style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
+                                                                                        <input type="checkbox" aria-label="항목 선택" />
                                                                         </div>
-                                                        ))}
+                                                                        <div className="col-2 border-start">{company.userid}</div>
+                                                                        <div className="col-2 border-start">{company.name}</div>
+                                                                        <div className="col-2 border-start">{company.email}</div>
+                                                                        <div className="col-2 border-start">{company.tel}</div>
+                                                                        <div className="col-2 border-start">{company.writedate}</div>
+                                                                        <div className="col-1 border-start" style={{
+                                                                                background: company.manage == '탈퇴' ? '#ffebee' : '#e3f2fd',
+                                                                                color: company.manage == '탈퇴' ? '#c62828' : '#1976d2',
+                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                        }}>{company.manage}</div>
+                                                                </div>
+                                                ))}
+                                                <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                                                        <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
+                                                                더보기
+                                                        </button>
+                                                        <button className='button' style={{marginTop:'20px', border:'1px solid blue', backgroundColor:'blue'}}>탈퇴처리</button>
+                                                </div>
+                                        </div>
+                                        <div className='category-content'>
+                                                <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
+                                                        <h4 style={{textAlign:'left', fontWeight:'600'}}>탈퇴기업 검색</h4>
+                                                        <div className="search-bar">
+                                                                <input type="text" placeholder="검색할 상품을 입력해주세요." />
+                                                                <button className="search-icon"></button>
+                                                        </div>
+                                                </div>
+                                                <hr />
+                                                <div className="row border real-dark-border mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                        <div className="col-1 border-start">번호</div>
+                                                        <div className="col-2 border-start">아이디</div>
+                                                        <div className="col-2 border-start">성명</div>
+                                                        <div className="col-2 border-start">이메일</div>
+                                                        <div className="col-2 border-start">연락처</div>
+                                                        <div className="col-2 border-start">가입일</div>
+                                                        <div className="col-1 border-start">관리</div>
+                                                </div>
+                                                {companys
+                                                        .filter(company=>company.manage =='탈퇴')
+                                                        .map((company)=>(
+                                                                <div key={company} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                        <div className="col-1 border-start">{company.id}</div>
+                                                                        <div className="col-2 border-start">{company.userid}</div>
+                                                                        <div className="col-2 border-start">{company.name}</div>
+                                                                        <div className="col-2 border-start">{company.email}</div>
+                                                                        <div className="col-2 border-start">{company.tel}</div>
+                                                                        <div className="col-2 border-start">{company.writedate}</div>
+                                                                        <div className="col-1 border-start" style={{
+                                                                                background: company.manage == '탈퇴' ? '#ffebee' : '#e3f2fd',
+                                                                                color: company.manage == '탈퇴' ? '#c62828' : '#1976d2',
+                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                        }}>{company.manage}</div>
+                                                                </div>
+                                                ))}
+                                                <div style={{display: 'flex', justifyContent: 'space-between'}}>
                                                         <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
                                                                 더보기
                                                         </button>
                                                 </div>
                                         </div>
-                                )}
-
-                                {/* 기업관리 페이지 */}
-                                {activeMenu == '기업 관리' &&(
-                                        <div style={{display: 'flex', flexDirection: 'column', width:'80%'}}>
-                                                <div className='category-content'>
-                                                        <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
-                                                                <h4 style={{textAlign:'left', fontWeight:'600'}}>기업 검색</h4>
-                                                                <div className="search-bar">
-                                                                        <input type="text" placeholder="검색할 상품을 입력해주세요." />
-                                                                        <button className="search-icon"></button>
-                                                                </div>
+                                </div>
+                        )}
+                        {/* 상품관리 페이지 */}
+                        {activeMenu == '상품 관리' && (
+                                <div style={{display: 'flex', flexDirection: 'column', width:'80%'}}>
+                                        <div className='category-content'>
+                                                {/* 상품검색 */}
+                                                <h4 style={{textAlign:'left', fontWeight:'600px'}}>상품 검색</h4>
+                                                <hr/>
+                                                <div style={{textAlign:'left', width:'500px'}}>
+                                                        <div style={{display: 'flex', justifyContent: 'space-between', gap:'10px'}}>
+                                                                <p>카테고리 :</p> 
+                                                                <select className="cat1" style={{width:'200px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px'}}>
+                                                                                <option value="null">대분류</option>
+                                                                                <option value="category">카테고리1</option>
+                                                                                <option value="category">카테고리2</option>
+                                                                </select>
+                                                                <select className="cat1" style={{width:'200px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px'}}>
+                                                                                <option value="null">소분류</option>
+                                                                                <option value="category">카테고리1</option>
+                                                                                <option value="category">카테고리2</option>
+                                                                </select>
                                                         </div>
-                                                        <hr />
-                                                        <div className="row border real-dark-border mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                <div className="col-1 border-start">번호</div>
-                                                                <div className="col-2 border-start">아이디</div>
-                                                                <div className="col-2 border-start">성명</div>
-                                                                <div className="col-2 border-start">이메일</div>
-                                                                <div className="col-2 border-start">연락처</div>
-                                                                <div className="col-2 border-start">가입일</div>
-                                                                <div className="col-1 border-start">관리</div>
-                                                        </div>
-                                                        {companys
-                                                                .filter(company=>company.manage !=='탈퇴')
-                                                                .map((company)=>(
-                                                                        <div key={company} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                                <div className="col-1 border-start" style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
-                                                                                                <input type="checkbox" aria-label="항목 선택" />
-                                                                                </div>
-                                                                                <div className="col-2 border-start">{company.userid}</div>
-                                                                                <div className="col-2 border-start">{company.name}</div>
-                                                                                <div className="col-2 border-start">{company.email}</div>
-                                                                                <div className="col-2 border-start">{company.tel}</div>
-                                                                                <div className="col-2 border-start">{company.writedate}</div>
-                                                                                <div className="col-1 border-start" style={{
-                                                                                        background: company.manage == '탈퇴' ? '#ffebee' : '#e3f2fd',
-                                                                                        color: company.manage == '탈퇴' ? '#c62828' : '#1976d2',
-                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                }}>{company.manage}</div>
-                                                                        </div>
-                                                        ))}
                                                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                                                                <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
-                                                                        더보기
-                                                                </button>
-                                                                <button className='button' style={{marginTop:'20px', border:'1px solid blue', backgroundColor:'blue'}}>탈퇴처리</button>
+                                                                <p>검색어 :</p>
+                                                                <select className="cat1" style={{width:'100px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px'}}>
+                                                                                <option value="null">전체</option>
+                                                                                <option value="category">상품명</option>
+                                                                                <option value="category">기업명</option>
+                                                                </select>
+                                                                <input type='text' style={{width:'320px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px', border: '1px solid #333333'}} placeholder="검색어를 입력하세요."></input>
+                                                        </div>
+                                                        <div style={{display: 'flex', alignItems:'center', gap:'20px'}}>
+                                                                <p style={{width:"80px d-inline-flex"}}>등록일자 :</p>
+                                                                <div className="row mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', border: '1px solid #333333', borderRadius:'10px', width:'400px'}}>
+                                                                        <div className="col p-1 text-center" onClick={() => handleDatePreset('day')}>당일</div>
+                                                                        <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('week')}>일주일</div>
+                                                                        <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('month', 1)}>1개월</div>
+                                                                        <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('month', 3)}>3개월</div>
+                                                                        <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('year')}>1년</div>
+                                                                </div>
+                                                        </div>
+                                                        <div style={{marginLeft:"85px"}}>
+                                                                <div style={{display:"flex", gap:"10px", fontSize:"0.8em", padding:"10px"}}>
+                                                                        <input type='date' className='calendar' value={startDate} onChange={(e) => setStartDate(e.target.value)}/>
+                                                                        <b>~</b>
+                                                                        <input type='date' className='calendar' value={endDate} onChange={(e) => setEndDate(e.target.value)}/>
+                                                                </div>
                                                         </div>
                                                 </div>
-                                                <div className='category-content'>
-                                                        <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
-                                                                <h4 style={{textAlign:'left', fontWeight:'600'}}>탈퇴기업 검색</h4>
-                                                                <div className="search-bar">
-                                                                        <input type="text" placeholder="검색할 상품을 입력해주세요." />
-                                                                        <button className="search-icon"></button>
-                                                                </div>
-                                                        </div>
-                                                        <hr />
-                                                        <div className="row border real-dark-border mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                <div className="col-1 border-start">번호</div>
-                                                                <div className="col-2 border-start">아이디</div>
-                                                                <div className="col-2 border-start">성명</div>
-                                                                <div className="col-2 border-start">이메일</div>
-                                                                <div className="col-2 border-start">연락처</div>
-                                                                <div className="col-2 border-start">가입일</div>
-                                                                <div className="col-1 border-start">관리</div>
-                                                        </div>
-                                                        {companys
-                                                                .filter(company=>company.manage =='탈퇴')
-                                                                .map((company)=>(
-                                                                        <div key={company} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                                <div className="col-1 border-start">{company.id}</div>
-                                                                                <div className="col-2 border-start">{company.userid}</div>
-                                                                                <div className="col-2 border-start">{company.name}</div>
-                                                                                <div className="col-2 border-start">{company.email}</div>
-                                                                                <div className="col-2 border-start">{company.tel}</div>
-                                                                                <div className="col-2 border-start">{company.writedate}</div>
-                                                                                <div className="col-1 border-start" style={{
-                                                                                        background: company.manage == '탈퇴' ? '#ffebee' : '#e3f2fd',
-                                                                                        color: company.manage == '탈퇴' ? '#c62828' : '#1976d2',
-                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                }}>{company.manage}</div>
-                                                                        </div>
-                                                        ))}
-                                                        <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                                                                <button style={{backgroundColor:'white', border:'0px', textDecoration:'underline', textAlign:'left', fontSize:'0.8em'}}>
-                                                                        더보기
-                                                                </button>
-                                                        </div>
+                                                {/* 상품 목록 */}
+                                                <h4 style={{textAlign:'left', fontWeight:'600', marginTop:'20px'}}>상품 목록</h4>
+                                                <hr/>
+                                                <div style={{display: 'flex', justifyContent: 'space-between', width:'100%'}}>
+                                                        <button className='button' style={{border:'1px solid blue', backgroundColor:'blue', marginLeft:'10px'}}>선택삭제</button> 
+                                                        <button className='button' style={{border:'1px solid blue', backgroundColor:'blue'}}>상품등록</button>  
                                                 </div>
-                                        </div>
-                                )}
-                                {/* 상품관리 페이지 */}
-                                {activeMenu == '상품 관리' && (
-                                        <div style={{display: 'flex', flexDirection: 'column', width:'80%'}}>
-                                                <div className='category-content'>
-                                                        {/* 상품검색 */}
-                                                        <h4 style={{textAlign:'left', fontWeight:'600px'}}>상품 검색</h4>
-                                                        <hr/>
-                                                        <div style={{textAlign:'left', width:'500px'}}>
-                                                                <div style={{display: 'flex', justifyContent: 'space-between', gap:'10px'}}>
-                                                                        <p>카테고리 :</p> 
-                                                                        <select className="cat1" style={{width:'200px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px'}}>
-                                                                                        <option value="null">대분류</option>
-                                                                                        <option value="category">카테고리1</option>
-                                                                                        <option value="category">카테고리2</option>
-                                                                        </select>
-                                                                        <select className="cat1" style={{width:'200px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px'}}>
-                                                                                        <option value="null">소분류</option>
-                                                                                        <option value="category">카테고리1</option>
-                                                                                        <option value="category">카테고리2</option>
-                                                                        </select>
-                                                                </div>
-                                                                <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                                                                        <p>검색어 :</p>
-                                                                        <select className="cat1" style={{width:'100px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px'}}>
-                                                                                        <option value="null">전체</option>
-                                                                                        <option value="category">상품명</option>
-                                                                                        <option value="category">기업명</option>
-                                                                        </select>
-                                                                        <input type='text' style={{width:'320px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px', border: '1px solid #333333'}} placeholder="검색어를 입력하세요."></input>
-                                                                </div>
-                                                                <div style={{display: 'flex', alignItems:'center', gap:'20px'}}>
-                                                                        <p style={{width:"80px d-inline-flex"}}>등록일자 :</p>
-                                                                        <div className="row mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', border: '1px solid #333333', borderRadius:'10px', width:'400px'}}>
-                                                                                <div className="col p-1 text-center" onClick={() => handleDatePreset('day')}>당일</div>
-                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('week')}>일주일</div>
-                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('month', 1)}>1개월</div>
-                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('month', 3)}>3개월</div>
-                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('year')}>1년</div>
-                                                                        </div>
-                                                                </div>
-                                                                <div style={{marginLeft:"85px"}}>
-                                                                        <div style={{display:"flex", gap:"10px", fontSize:"0.8em", padding:"10px"}}>
-                                                                                <input type='date' className='calendar' value={startDate} onChange={(e) => setStartDate(e.target.value)}/>
-                                                                                <b>~</b>
-                                                                                <input type='date' className='calendar' value={endDate} onChange={(e) => setEndDate(e.target.value)}/>
-                                                                        </div>
-                                                                </div>
-                                                        </div>
-                                                        {/* 상품 목록 */}
-                                                        <h4 style={{textAlign:'left', fontWeight:'600', marginTop:'20px'}}>상품 목록</h4>
-                                                        <hr/>
-                                                        <div style={{display: 'flex', justifyContent: 'space-between', width:'100%'}}>
-                                                                <button className='button' style={{border:'1px solid blue', backgroundColor:'blue', marginLeft:'10px'}}>선택삭제</button> 
-                                                                <button className='button' style={{border:'1px solid blue', backgroundColor:'blue'}}>상품등록</button>  
-                                                        </div>
-                                                        
-                                                        <table className="table table-bordered" style={{width:'100%', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
-                                                                <thead>
-                                                                        <tr style={{fontSize:'0.8em'}}>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>일괄삭제</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>기업명</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>카테고리</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>상품명</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>판매가</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>등록일</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>재고</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>상태</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>목록 수정/삭제</th>
-                                                                        </tr>
-                                                                </thead>
-                                                                {products.map((pd)=>(
-                                                                        <tbody key={pd.id}>
-                                                                                <tr>
-                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
-                                                                                                <input type="checkbox" aria-label="항목 선택" />
-                                                                                        </td>
-                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.comname}</td>
-                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.category}</td>
-                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.title}</td>
-                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.cost}</td>
-                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.writedate}</td>
-                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.stock}</td>
-                                                                                        <td style={{textAlign: 'center', verticalAlign: 'middle'}}>
-                                                                                                <div className="col-7" style={{
-                                                                                                        display: 'inline-block', width: 'auto',
-                                                                                                        background: pd.state == '품절' ? '#ffebee' : '#e3f2fd',
-                                                                                                        color: pd.state == '품절' ? '#c62828' : '#1976d2',
-                                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                                }}>
-                                                                                                      {pd.state}  
-                                                                                                </div>
-                                                                                        </td>
-                                                                                        <td>
-                                                                                                <button className='button2' style={{marginRight:'10px'}}>수정</button>
-                                                                                                <button className='button2'>삭제</button>
-                                                                                        </td>
-                                                                                </tr>
-                                                                        </tbody>
-                                                                ))}
-                                                        </table>
-                                                </div>
-                                        </div>
-                                )}
-                                {/* 게시글관리 페이지 */}
-                                {activeMenu == '게시글 관리' && (
-                                        <div className='category-content'>
-                                                <Reservation/>
-                                                <Event/>
-                                        </div>
-                                )}
-                                {activeMenu == '-예약' && (
-                                        <div className='category-content'>
-                                                <Reservation/>
-                                        </div>
-                                )}
-                                {activeMenu == '-이벤트 관리' && (
-                                        <div className='category-content'>
-                                                <Event/>
-                                        </div>
-                                )}
-                                {/* 문의관리 페이지 */}
-                                {activeMenu == '문의 관리' && (
-                                        <div style={{display: 'flex', flexDirection: 'column', width:'80%'}}>
-                                                <div className='category-content'>
-                                                        <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
-                                                                <h4 style={{textAlign:'left', fontWeight:'600'}}>문의 목록</h4>
-                                                                <div className="search-bar">
-                                                                        <input type="text" placeholder="검색할 단어 및 문장을 입력해주세요." />
-                                                                        <button className="search-icon"></button>
-                                                                </div>
-                                                        </div>
-                                                        <hr/>
-                                                        <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                <div className="col-1">번호</div>
-                                                                <div className="col-5">제목</div>
-                                                                <div className="col-1">작성자</div>
-                                                                <div className="col-2">작성일</div>
-                                                                <div className="col-1">답변 상태</div>
-                                                                <div className="col-2">수정/삭제</div>
-                                                        </div>
-                                                        {ask.map(ask=>(
-                                                                <div key={ask.id}>
-                                                                        <div className="row" style={{textAlign:'center', alignItems:'center'}}>
-                                                                                <div className="col-1" style={{fontSize:'0.8em'}}>{ask.id}</div>
-                                                                                <div className="col-5" onClick={() => handleToggle(ask.id)} style={{fontSize:'0.8em'}}>
-                                                                                        <div>{ask.subject}</div>
-                                                                                </div>
-                                                                                <div className="col-1" style={{fontSize:'0.8em'}}>{ask.username}</div>
-                                                                                <div className="col-2" style={{fontSize:'0.8em'}}>{ask.writedate}</div>
-                                                                                <div className="col-1" style={{
-                                                                                        background: ask.state == '답변 미작성' ? '#ffebee' : '#e3f2fd',
-                                                                                        color: ask.state == '답변 미작성' ? '#c62828' : '#1976d2',
-                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                }}>{ask.state}</div>
-                                                                                <div className="col-2">
+                                                
+                                                <table className="table table-bordered" style={{width:'100%', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
+                                                        <thead>
+                                                                <tr style={{fontSize:'0.8em'}}>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>일괄삭제</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>기업명</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>카테고리</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>상품명</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>판매가</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>등록일</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>재고</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>상태</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>목록 수정/삭제</th>
+                                                                </tr>
+                                                        </thead>
+                                                        {products.map((pd)=>(
+                                                                <tbody key={pd.id}>
+                                                                        <tr>
+                                                                                <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
+                                                                                        <input type="checkbox" aria-label="항목 선택" />
+                                                                                </td>
+                                                                                <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.comname}</td>
+                                                                                <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.category}</td>
+                                                                                <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.title}</td>
+                                                                                <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.cost}</td>
+                                                                                <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.writedate}</td>
+                                                                                <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{pd.stock}</td>
+                                                                                <td style={{textAlign: 'center', verticalAlign: 'middle'}}>
+                                                                                        <div className="col-7" style={{
+                                                                                                display: 'inline-block', width: 'auto',
+                                                                                                background: pd.state == '품절' ? '#ffebee' : '#e3f2fd',
+                                                                                                color: pd.state == '품절' ? '#c62828' : '#1976d2',
+                                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                                        }}>
+                                                                                                {pd.state}  
+                                                                                        </div>
+                                                                                </td>
+                                                                                <td>
                                                                                         <button className='button2' style={{marginRight:'10px'}}>수정</button>
                                                                                         <button className='button2'>삭제</button>
-                                                                                </div>
-                                                                        </div>
-                                                                
-                                                                        {/* 답변 창: openId가 현재 행의 ID와 일치할 때만 렌더링 */}
-                                                                        {openId === ask.id && (
-                                                                                <div className="answer-box" style={{
-                                                                                        backgroundColor: '#f9f9f9',
-                                                                                        padding: '20px',
-                                                                                        fontSize: '0.8em',
-                                                                                        borderTop: '1px solid #eee',
-                                                                                        textAlign: 'left',
-                                                                                        width:'70%',
-                                                                                        margin:'0 auto'
-                                                                                }}>
-                                                                                        <span style={{ color: '#ff6b6b', fontWeight: 'bold' }}>A.</span>
-                                                                                        <div style={{ whiteSpace: 'pre-wrap', fontSize: '1em', lineHeight: '1.6' }}>
-                                                                                                {ask.answer == null || ask.answer == '' ? "답변을 등록 중입니다." : ask.answer}
-                                                                                        </div>
-                                                                                </div>
-                                                                        )}
-                                                                </div>
+                                                                                </td>
+                                                                        </tr>
+                                                                </tbody>
                                                         ))}
-                                                        {/* 페이징 */}
-                                                        <nav>
-                                                                <ul className="pagination" style={{marginTop:'20px'}}>
-                                                                        <li>
-                                                                                <a className='paging-text' href="#" onClick={(e) => paginate(currentPage - 1, e)} 
-                                                                                        style={{ textDecoration: 'none', color: currentPage === 1 ? '#ccc' : '#333' }}>
-                                                                                                ≪
-                                                                                </a>
-                                                                        </li>
-                                                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-                                                                                <li key={num}>
-                                                                                        <a 
-                                                                                                href="#"
-                                                                                                onClick={(e) => paginate(num, e)}
-                                                                                                className={currentPage === num ? 'paging-active-text' : 'paging-text'}
-                                                                                                style={{
-                                                                                                        textDecoration: 'none',
-                                                                                                        fontWeight: currentPage === num ? 'bold' : 'normal',
-                                                                                                        color: currentPage === num ? '#000' : '#888'
-                                                                                                }}
-                                                                                        >
-                                                                                        {num}
-                                                                                        </a>
-                                                                                </li>
-                                                                                ))}
-                                                                        <li>
-                                                                                <a className='paging-text' href="#" onClick={(e) => paginate(currentPage + 1, e)}
-                                                                                style={{ textDecoration: 'none', color: currentPage === totalPages ? '#ccc' : '#333' }}>
-                                                                                        ≫
-                                                                                </a>
-                                                                        </li>
-                                                                </ul>
-                                                        </nav>
-                                                </div>
+                                                </table>
                                         </div>
-                                )}
-                                {/* 통계 페이지 */}
-                                {activeMenu == '통계' && (
-                                        <div>
-                                                <div className='category-content'>
-                                                        <h4 style={{textAlign:'left', fontWeight:'600'}}>기업 검색</h4>
-                                                        <hr/>
-                                                <div style={{textAlign:'left', width:'500px'}}>
-                                                                <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                                                                        <p>기업명 :</p>
-                                                                        <select className="cat1" style={{width:'100px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px'}}>
-                                                                                        <option value="null">전체</option>
-                                                                                        <option value="category">상품명</option>
-                                                                                        <option value="category">기업명</option>
-                                                                        </select>
-                                                                        <input type='text' style={{width:'320px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px', border: '1px solid #333333'}} placeholder="검색어를 입력하세요."></input>
-                                                                </div>
-                                                                <div style={{display: 'flex', alignItems:'center', gap:'20px'}}>
-                                                                        <p style={{width:"80px d-inline-flex"}}>등록일자 :</p>
-                                                                        <div className="row mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', border: '1px solid #333333', borderRadius:'10px', width:'400px'}}>
-                                                                                <div className="col p-1 text-center" onClick={() => handleDatePreset('day')}>당일</div>
-                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('week')}>일주일</div>
-                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('month', 1)}>1개월</div>
-                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('month', 3)}>3개월</div>
-                                                                                <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('year')}>1년</div>
+                                </div>
+                        )}
+                        {/* 게시글관리 페이지 */}
+                        {activeMenu == '게시글 관리' && (
+                                <div className='category-content'>
+                                        <Reservation/>
+                                        <Event/>
+                                </div>
+                        )}
+                        {activeMenu == '-예약' && (
+                                <div className='category-content'>
+                                        <Reservation/>
+                                </div>
+                        )}
+                        {activeMenu == '-이벤트 관리' && (
+                                <div className='category-content'>
+                                        <Event/>
+                                </div>
+                        )}
+                        {/* 문의관리 페이지 */}
+                        {activeMenu == '문의 관리' && (
+                                <div style={{display: 'flex', flexDirection: 'column', width:'80%'}}>
+                                        <div className='category-content'>
+                                                <div style={{display:'flex', justifyContent:'space-between', marginBottom:'10px'}}>
+                                                        <h4 style={{textAlign:'left', fontWeight:'600'}}>문의 목록</h4>
+                                                        <div className="search-bar">
+                                                                <input type="text" placeholder="검색할 단어 및 문장을 입력해주세요." />
+                                                                <button className="search-icon"></button>
+                                                        </div>
+                                                </div>
+                                                <hr/>
+                                                <div className="row" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                        <div className="col-1">번호</div>
+                                                        <div className="col-5">제목</div>
+                                                        <div className="col-1">작성자</div>
+                                                        <div className="col-2">작성일</div>
+                                                        <div className="col-1">답변 상태</div>
+                                                        <div className="col-2">수정/삭제</div>
+                                                </div>
+                                                {ask.map(ask=>(
+                                                        <div key={ask.id}>
+                                                                <div className="row" style={{textAlign:'center', alignItems:'center'}}>
+                                                                        <div className="col-1" style={{fontSize:'0.8em'}}>{ask.id}</div>
+                                                                        <div className="col-5" onClick={() => handleToggle(ask.id)} style={{fontSize:'0.8em'}}>
+                                                                                <div>{ask.subject}</div>
+                                                                        </div>
+                                                                        <div className="col-1" style={{fontSize:'0.8em'}}>{ask.username}</div>
+                                                                        <div className="col-2" style={{fontSize:'0.8em'}}>{ask.writedate}</div>
+                                                                        <div className="col-1" style={{
+                                                                                background: ask.state == '답변 미작성' ? '#ffebee' : '#e3f2fd',
+                                                                                color: ask.state == '답변 미작성' ? '#c62828' : '#1976d2',
+                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                        }}>{ask.state}</div>
+                                                                        <div className="col-2">
+                                                                                <button className='button2' style={{marginRight:'10px'}}>수정</button>
+                                                                                <button className='button2'>삭제</button>
                                                                         </div>
                                                                 </div>
-                                                                <div style={{marginLeft:"85px"}}>
-                                                                        <div style={{display:"flex", gap:"10px", fontSize:"0.8em", padding:"10px"}}>
-                                                                                <input type='date' className='calendar' value={startDate} onChange={(e) => setStartDate(e.target.value)}/>
-                                                                                <b>~</b>
-                                                                                <input type='date' className='calendar' value={endDate} onChange={(e) => setEndDate(e.target.value)}/>
+                                                        
+                                                                {/* 답변 창: openId가 현재 행의 ID와 일치할 때만 렌더링 */}
+                                                                {openId === ask.id && (
+                                                                        <div className="answer-box" style={{
+                                                                                backgroundColor: '#f9f9f9',
+                                                                                padding: '20px',
+                                                                                fontSize: '0.8em',
+                                                                                borderTop: '1px solid #eee',
+                                                                                textAlign: 'left',
+                                                                                width:'70%',
+                                                                                margin:'0 auto'
+                                                                        }}>
+                                                                                <span style={{ color: '#ff6b6b', fontWeight: 'bold' }}>A.</span>
+                                                                                <div style={{ whiteSpace: 'pre-wrap', fontSize: '1em', lineHeight: '1.6' }}>
+                                                                                        {ask.answer == null || ask.answer == '' ? "답변을 등록 중입니다." : ask.answer}
+                                                                                </div>
                                                                         </div>
+                                                                )}
+                                                        </div>
+                                                ))}
+                                                {/* 페이징 */}
+                                                <nav>
+                                                        <ul className="pagination" style={{marginTop:'20px'}}>
+                                                                <li>
+                                                                        <a className='paging-text' href="#" onClick={(e) => paginate(currentPage - 1, e)} 
+                                                                                style={{ textDecoration: 'none', color: currentPage === 1 ? '#ccc' : '#333' }}>
+                                                                                        ≪
+                                                                        </a>
+                                                                </li>
+                                                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                                                                        <li key={num}>
+                                                                                <a 
+                                                                                        href="#"
+                                                                                        onClick={(e) => paginate(num, e)}
+                                                                                        className={currentPage === num ? 'paging-active-text' : 'paging-text'}
+                                                                                        style={{
+                                                                                                textDecoration: 'none',
+                                                                                                fontWeight: currentPage === num ? 'bold' : 'normal',
+                                                                                                color: currentPage === num ? '#000' : '#888'
+                                                                                        }}
+                                                                                >
+                                                                                {num}
+                                                                                </a>
+                                                                        </li>
+                                                                        ))}
+                                                                <li>
+                                                                        <a className='paging-text' href="#" onClick={(e) => paginate(currentPage + 1, e)}
+                                                                        style={{ textDecoration: 'none', color: currentPage === totalPages ? '#ccc' : '#333' }}>
+                                                                                ≫
+                                                                        </a>
+                                                                </li>
+                                                        </ul>
+                                                </nav>
+                                        </div>
+                                </div>
+                        )}
+                        {/* 통계 페이지 */}
+                        {activeMenu == '통계' && (
+                                <div style={{display: 'flex', flexDirection: 'column', width:'80%'}}>
+                                        <div className='category-content'>
+                                                <h4 style={{textAlign:'left', fontWeight:'600'}}>기업 검색</h4>
+                                                <hr/>
+                                        <div style={{textAlign:'left', width:'500px'}}>
+                                                        <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                                                                <p>기업명 :</p>
+                                                                <select className="cat1" style={{width:'100px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px'}}>
+                                                                                <option value="null">전체</option>
+                                                                                <option value="category">상품명</option>
+                                                                                <option value="category">기업명</option>
+                                                                </select>
+                                                                <input type='text' style={{width:'320px', padding:'3px', borderRadius:'10px', fontSize:'0.8em', height:'30px', border: '1px solid #333333'}} placeholder="검색어를 입력하세요."></input>
+                                                        </div>
+                                                        <div style={{display: 'flex', alignItems:'center', gap:'20px'}}>
+                                                                <p style={{width:"80px d-inline-flex"}}>등록일자 :</p>
+                                                                <div className="row mx-0" style={{backgroundColor:'#eeeeee', fontSize:'0.8em', border: '1px solid #333333', borderRadius:'10px', width:'400px'}}>
+                                                                        <div className="col p-1 text-center" onClick={() => handleDatePreset('day')}>당일</div>
+                                                                        <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('week')}>일주일</div>
+                                                                        <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('month', 1)}>1개월</div>
+                                                                        <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('month', 3)}>3개월</div>
+                                                                        <div className="col p-1 text-center" style={{borderLeft:'1px solid black'}} onClick={() => handleDatePreset('year')}>1년</div>
                                                                 </div>
                                                         </div>
-                                                        {/* 상품 목록 */}
-                                                        <h4 style={{textAlign:'left', fontWeight:'600', marginTop:'20px'}}>상품 목록</h4>
-                                                        <hr/>
-                                                        <button className='button' style={{marginLeft:'920px', border:'1px solid blue', backgroundColor:'blue'}} onClick={()=>setChartOpen(true)}>매출 통계</button>
-                                                        <table className="table table-bordered" style={{width:'1000px', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
-                                                                <thead>
-                                                                        <tr style={{fontSize:'0.8em'}}>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>날짜</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>상품코드</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>카테고리</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>상품명</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>기업명</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>판매가</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>주문건수</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>배송비</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>수수료</th>
-                                                                                <th style={{backgroundColor:'#eeeeee'}}>상세보기</th>
-                                                                        </tr>
-                                                                </thead>
-                                                                {tonggyea.map((item)=>(
-                                                                        <tbody>
-                                                                                <tr>
-                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.writedate}</td>
-                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.code}</td>
-                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.category}</td>
-                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.title}</td>
-                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.comname}</td>
-                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.cost}</td>
-                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.stock}</td>
-                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.deliver}</td>
-                                                                                        <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.susuryo}</td>
-                                                                                        <td>
-                                                                                                <button className='button' onClick={()=>setModalOpen(true)}>상세보기</button>
-                                                                                        </td>
-                                                                                </tr>
-                                                                        </tbody>
-                                                                ))}
-                                                        </table>
+                                                        <div style={{marginLeft:"85px"}}>
+                                                                <div style={{display:"flex", gap:"10px", fontSize:"0.8em", padding:"10px"}}>
+                                                                        <input type='date' className='calendar' value={startDate} onChange={(e) => setStartDate(e.target.value)}/>
+                                                                        <b>~</b>
+                                                                        <input type='date' className='calendar' value={endDate} onChange={(e) => setEndDate(e.target.value)}/>
+                                                                </div>
+                                                        </div>
                                                 </div>
+                                                {/* 상품 목록 */}
+                                                <h4 style={{textAlign:'left', fontWeight:'600', marginTop:'20px'}}>상품 목록</h4>
+                                                <hr/>
+                                                <button className='button' style={{marginLeft:'88%', border:'1px solid blue', backgroundColor:'blue'}} onClick={()=>setChartOpen(true)}>매출 통계</button>
+                                                <table  className="table table-bordered" style={{width:'100%', textAlign:'center', border:'1px solid #787878', marginTop:'20px'}}>
+                                                        <thead>
+                                                                <tr style={{fontSize:'0.8em'}}>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>날짜</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>상품코드</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>카테고리</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>상품명</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>기업명</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>판매가</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>주문건수</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>배송비</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>수수료</th>
+                                                                        <th style={{backgroundColor:'#eeeeee'}}>상세보기</th>
+                                                                </tr>
+                                                        </thead>
+                                                        {tonggyea.map((item)=>(
+                                                                <tbody>
+                                                                        <tr>
+                                                                                <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.writedate}</td>
+                                                                                <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.code}</td>
+                                                                                <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.category}</td>
+                                                                                <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.title}</td>
+                                                                                <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.comname}</td>
+                                                                                <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.cost}</td>
+                                                                                <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.stock}</td>
+                                                                                <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.deliver}</td>
+                                                                                <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.susuryo}</td>
+                                                                                <td>
+                                                                                        <button className='button' onClick={()=>setModalOpen(true)}>상세보기</button>
+                                                                                </td>
+                                                                        </tr>
+                                                                </tbody>
+                                                        ))}
+                                                </table>
                                         </div>
-                                )}
-                                {modalOpen && (
-                                        <>
-                                                <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999 }} onClick={() => setModalOpen(false)} />
-                                                <BuyTag/>
-                                        </>
-                                )}
-                                {chartOpen && (
-                                        <>
-                                                <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999 }} onClick={() => setChartOpen(false)} />
-                                                <ChartModel/>
-                                        </>
-                                )}
-                                {/* 환경설정 페이지
-                                {activeMenu == '환경설정' && (
-                                        <div>
-                                        </div>
-                                )} */}
-                        </div>
+                                </div>
+                        )}
+                        {modalOpen && (
+                                <>
+                                        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999 }} onClick={() => setModalOpen(false)} />
+                                        <BuyTag/>
+                                </>
+                        )}
+                        {chartOpen && (
+                                <>
+                                        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999 }} onClick={() => setChartOpen(false)} />
+                                        <ChartModel/>
+                                </>
+                        )}
+                        {/* 환경설정 페이지
+                        {activeMenu == '환경설정' && (
+                                <div>
+                                </div>
+                        )} */}
                 </div>
         )
 }

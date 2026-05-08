@@ -267,7 +267,7 @@ function Parchase(){
                                                         <div>
                                                                 <div style={{display:'flex', justifyContent: 'left', alignItems: 'center'}}>
                                                                         <input type="radio" name="addressType" value="saved" onChange={handleRadioChange}/>
-                                                                        <span style={{marginLeft:'3px'}}>배송지(선택)</span>
+                                                                        <span style={{marginLeft:'3px'}}>배송지(기존 주소)</span>
                                                                 </div>
                                                                 <div>기존 주소</div>
                                                                 <div style={{display:'flex', justifyContent: 'left', alignItems: 'center', marginTop:'5px'}}>
