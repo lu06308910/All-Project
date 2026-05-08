@@ -197,7 +197,7 @@ function Manager(){
                                                         </td>
                                                         <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.category}</td>
                                                         <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
-                                                                <div style={{width:'100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                                                                <div style={{width:'90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
                                                                         {item.subject}
                                                                 </div>
                                                         </td>
@@ -258,7 +258,7 @@ function Manager(){
                                                         </td>
                                                         <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.category}</td>
                                                         <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
-                                                                <div style={{width:'100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                                                                <div style={{width:'90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
                                                                         {item.subject}
                                                                 </div></td>
                                                         <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.startdate}</td>
@@ -315,7 +315,7 @@ function Manager(){
                                                         </td>
                                                         <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>{item.category}</td>
                                                         <td style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
-                                                                <div style={{width:'100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                                                                <div style={{width:'90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
                                                                         {item.subject}
                                                                 </div>
                                                         </td>
