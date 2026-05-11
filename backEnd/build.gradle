@@ -1,57 +1,64 @@
-dhooplugins {
-	id 'java'
-	id 'org.springframework.boot' version '4.0.3'
-	id 'io.spring.dependency-management' version '1.1.7'
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.3'
+    id 'io.spring.dependency-management' version '1.1.5'
 }
 
-group = 'com.blogback'
+group = 'com.canvas'
 version = '0.0.1-SNAPSHOT'
-description = 'bolg project first base file'
+description = 'Demo project for Spring Boot'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
+
+    /* --- 핵심 기능 --- */
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'   // webmvc 포함
+
+    /* --- 템플릿 엔진 (선택 사항) --- */
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+
+    /* --- Lombok --- */
     compileOnly 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-thymeleaf-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    // Source: https://mvnrepository.com/artifact/com.google.code.gson/gson
-    implementation("com.google.code.gson:gson:2.13.2")
+
+    /* --- DB Driver --- */
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    /* --- JSON 사용 시 --- */
+    implementation 'com.google.code.gson:gson:2.13.2'
+
+    /* --- 파일 업로드 --- */
+    implementation 'commons-io:commons-io:2.21.0'
+    implementation 'commons-fileupload:commons-fileupload:1.6.0'
+
+    /* --- WebSocket --- */
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    /* --- 개발 도구 (자동 리로드) --- */
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    //file upload
-    // Source: https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation("commons-io:commons-io:2.21.0")
-    // Source: https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload
-    implementation("commons-fileupload:commons-fileupload:1.6.0")
-    // Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-websocket
-    implementation("org.springframework.boot:spring-boot-starter-websocket:4.0.3")
+
+    /* --- 테스트 (정식 Starter 1개) --- */
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    implementation 'javax.inject:javax.inject:1'
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
-}
-
-bootJar{
-    archiveFileName="docker_test.jar"
+bootJar {
+    archiveFileName = "docker_test.jar"
 }
