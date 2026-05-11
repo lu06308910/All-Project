@@ -776,9 +776,8 @@
         background-color: #f9f9f9;
 }
 
-.detail-content {
-        padding: 25px 40px;
-        border-top: 1px inset #eee;
+.my-detail-content {
+        padding: 25px 40px;      
         line-height: 1.6;
         animation: slideDown 0.3s ease-out;
 }
