@@ -10,7 +10,7 @@ public class DataEntity {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique= true, nullable = false)
+    @Column(name ="user_id", unique= true, nullable = false)
     private String userId;
 
     private String password;

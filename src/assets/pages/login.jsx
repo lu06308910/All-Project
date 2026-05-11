@@ -45,6 +45,7 @@ function Login() {
         // 로그인 실행(db후 마무리)
         const loginStart = async (e) => {
                 e.preventDefault();
+                window.alert("현재 코드상의 주소: http://localhost:9991/api/member/login");
 
                 if (!formData.userId || !formData.password) {
                         alert("아이디와 비밀번호를 모두 입력해주세요.");
@@ -82,7 +83,7 @@ function Login() {
                         <div className="login-container">
                                 <div className="login-title">
                                         <p className="title-sub">CANVAS FURNITURE</p>
-                                        <h2 className="title-main">SIGN IN</h2>
+                                        <h2 className="title-main">로그인 IN</h2>
                                 </div>
 
                                 <div className="user-type-tab">
