@@ -10,7 +10,12 @@ public class DataEntity {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
-    private String testMessage;
+    @Column(unique= true, nullable = false)
+    private String userId;
+
+    private String password;
+    private String userName;
+    private String email;
 }
 
 
