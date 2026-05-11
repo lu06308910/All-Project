@@ -10,6 +10,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/member")
+@CrossOrigin(origins = "http://localhost:5173") // 리엑트 주소 허용한다는 메소드
 public class DataController {
 
     @Autowired
@@ -18,6 +19,11 @@ public class DataController {
     // 데이터 저장
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> loginData) {
+        System.out.println("========================================");
+        System.out.println("[백엔드 호출] /api/member/login");
+        System.out.println("프론트가 보낸 ID: " + loginData.get("userId"));
+        System.out.println("프론트가 보낸 PW: " + loginData.get("password"));
+        System.out.println("========================================");
         String userId = loginData.get("userId");
         String password = loginData.get("password");
 
