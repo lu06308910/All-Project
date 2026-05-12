@@ -9,8 +9,8 @@ function Login() {
         // 상태 관리 통합
         const [formData, setFormData] = useState({
                 userType: 'PERSONAL', // 기본값: 일반 회원
-                userid: '',
-                userpwd: ''
+                userId: '', // 백엔드 entity 필드명이랑 동일하게 맞추기
+                password: ''
         });
 
         const [messages, setMessages] = useState({
@@ -23,7 +23,7 @@ function Login() {
                 const { name, value } = e.target;
                 setFormData(prev => ({ ...prev, [name]: value }));
 
-                if (name === 'userid') {
+                if (name === 'userId') {
                         const reg = /^[A-Za-z0-9]{5,10}$/;
                         setMessages(prev => ({
                                 ...prev,
@@ -31,7 +31,7 @@ function Login() {
                                         ? { text: '사용 가능한 아이디 형식입니다.', isError: false }
                                         : { text: '아이디는 5~10자의 영문/숫자만 가능합니다.', isError: true }
                         }));
-                } else if (name === 'userpwd') {
+                } else if (name === 'password') {
                         const reg = /^[A-Za-z0-9!@#]{8,12}$/;
                         setMessages(prev => ({
                                 ...prev,
@@ -45,17 +45,21 @@ function Login() {
         // 로그인 실행(db후 마무리)
         const loginStart = async (e) => {
                 e.preventDefault();
+                window.alert("현재 코드상의 주소: http://localhost:9991/api/member/login");
 
-                if (!formData.userid || !formData.userpwd) {
+                if (!formData.userId || !formData.password) {
                         alert("아이디와 비밀번호를 모두 입력해주세요.");
                         return;
                 }
 
                 try {
                         // formData에 userType이 포함되어 서버로 전송됩니다.
-                        const response = await axios.post('/api/member/login', formData);
+                        const response = await axios.post('http://localhost:9991/api/member/login', {
+                                userId: formData.userId,
+                                password: formData.password
+                        });
 
-                        if (response.data.status === 'success') {
+                        if (response.status === 200) {
                                 sessionStorage.setItem('user', JSON.stringify(response.data.user));
                                 sessionStorage.setItem('isLoggedIn', 'true');
 
@@ -66,7 +70,11 @@ function Login() {
                         }
                 } catch (error) {
                         console.error("Login Error:", error);
-                        alert("로그인에 실패하였습니다.");
+                        if (error.response && error.response.status === 401) {
+                                alert(error.response.data || "아이디 또는 비밀번호를 확인해주세요.");
+                        } else {
+                                alert("로그인에 실패하였습니다.");
+                        }
                 }
         };
 
@@ -75,7 +83,7 @@ function Login() {
                         <div className="login-container">
                                 <div className="login-title">
                                         <p className="title-sub">CANVAS FURNITURE</p>
-                                        <h2 className="title-main">SIGN IN</h2>
+                                        <h2 className="title-main">로그인 IN</h2>
                                 </div>
 
                                 <div className="user-type-tab">
@@ -100,10 +108,10 @@ function Login() {
                                                 <p>ID</p>
                                                 <input
                                                         type="text"
-                                                        name="userid"
+                                                        name="userId"
                                                         // 탭 선택에 따른 동적 placeholder
                                                         placeholder={formData.userType === 'BUSINESS' ? "기업 아이디를 입력하세요" : "아이디를 입력하세요"}
-                                                        value={formData.userid}
+                                                        value={formData.userId}
                                                         onChange={loginFormRender}
                                                 />
                                                 <div className="msg-container">
@@ -117,9 +125,9 @@ function Login() {
                                                 <p>PASSWORD</p>
                                                 <input
                                                         type="password"
-                                                        name="userpwd"
+                                                        name="password"
                                                         placeholder="비밀번호를 입력하세요"
-                                                        value={formData.userpwd}
+                                                        value={formData.password}
                                                         onChange={loginFormRender}
                                                 />
                                                 <div className="msg-container">
