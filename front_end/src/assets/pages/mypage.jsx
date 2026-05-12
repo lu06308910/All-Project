@@ -4,11 +4,61 @@ import './../css/kdh.css';
 const MyPage = () => {
 
         // 로그인 조건 : true - 기업 / false - 일반
-        const [isCorporate] = useState(false);
+        const [isCorporate] = useState(true);
         const [userName] = useState(isCorporate ? "DB(기업)" : "DB(일반)"); //
-
         const [activeMenu, setActiveMenu] = useState(isCorporate ? '판매 현황' : '주문내역');
 
+        const userMenus = ['주문내역', '취소/반품/교환 내역', '찜', '이벤트', '문의 내역'];
+        const corpMenus = ['판매 현황', '상품 등록/관리', '정산내역', '고객 문의 관리'];
+
+        const sideMenus = isCorporate ? corpMenus : userMenus;
+
+        const [orders] = useState([
+                { id: 1, brand: "CANVAS", name: "크로켓 2000 거실장", price: "230,000", rating: "★★★☆☆", status: "배송 중", deliveryDate: "26.04.27", deliveryStatus: "도착(예정)" }
+        ]);
+
+        const [cancelItems] = useState([
+                { id: 101, brand: "CANVAS", name: "크로켓 2000 거실장[1200 / 1500 / 2000]", option: "월넛 / 1200cm / 1개", price: "230,000", status: "취소 완료", date: "26.04.11(토)" },
+                { id: 102, brand: "CANVAS", name: "크로켓 2000 거실장[1200 / 1500 / 2000]", option: "월넛 / 1200cm / 1개", price: "230,000", status: "반품 신청", date: "26.04.11(토)" },
+                { id: 103, brand: "CANVAS", name: "크로켓 2000 거실장[1200 / 1500 / 2000]", option: "월넛 / 1200cm / 1개", price: "230,000", status: "교환 신청", date: "26.04.11(토)" }
+        ]);
+        
+        const [inquiries] = useState([
+                {
+                        id: 301,
+                        category: "배송문의",
+                        title: "거실장 배송 언제쯤 오나요?",
+                        date: "2026.04.15",
+                        answered: true
+                },
+                {
+                        id: 302,
+                        category: "상품문의",
+                        title: "소파 가죽 샘플을 볼 수 있을까요?",
+                        date: "2026.04.20",
+                        answered: false
+                }
+        ]);
+
+        const [wishItems, setWishItems] = useState([
+                { id: 201, brand: "CANVAS", name: "크로켓 2000 거실장", price: "230,000", imgUrl: "" },
+                { id: 202, brand: "CANVAS", name: "심플 라인 소파", price: "450,000", imgUrl: "" }
+        ]);
+
+        const totalAmount = orders.reduce((sum, order) => {
+                const price = typeof order.price === 'string'
+                        ? parseInt(order.price.replace(/,/g, ""))
+                        : order.price;
+                return sum + (price || 0);
+        }, 0);
+        // 배송 중 건수
+        const deliveryCount = orders.filter(order => order.status === "배송 중").length;
+
+        // 작성할 리뷰)
+        const reviewCount = 5;
+
+        const cancelCount = cancelItems ? cancelItems.length : 0;
+        const unansweredCount = inquiries ? inquiries.filter(inq => !inq.answered).length : 0;
         /* 마이페이지 컴포넌트 */
         const renderContent = () => {
                 // 기업용 메뉴
@@ -37,39 +87,6 @@ const MyPage = () => {
                 }
         };
 
-        const userMenus = ['주문내역', '취소/반품/교환 내역', '찜', '이벤트', '문의 내역'];
-        const corpMenus = ['판매 현황', '상품 등록/관리', '정산내역', '고객 문의 관리'];
-
-        const sideMenus = isCorporate ? corpMenus : userMenus;
-
-        const [orders] = useState([
-                { id: 1, brand: "CANVAS", name: "크로켓 2000 거실장", price: "230,000", rating: "★★★☆☆", status: "배송 중", deliveryDate: "26.04.27", deliveryStatus: "도착(예정)" }
-        ]);
-        const totalAmount = orders.reduce((sum, order) => {
-                const price = typeof order.price === 'string'
-                        ? parseInt(order.price.replace(/,/g, ""))
-                        : order.price;
-                return sum + (price || 0);
-        }, 0);
-
-        // 배송 중 건수
-        const deliveryCount = orders.filter(order => order.status === "배송 중").length;
-
-        // 작성할 리뷰)
-        const reviewCount = 5;
-
-        // 기업용을 위한 임시 데이터 (상단 기업용 UI에서 item.cancelCount 에러 방지)
-        const corpStats = { cancelCount: 0 };
-        const [cancelItems] = useState([
-                { id: 101, brand: "CANVAS", name: "크로켓 2000 거실장[1200 / 1500 / 2000]", option: "월넛 / 1200cm / 1개", price: "230,000", status: "취소 완료", date: "26.04.11(토)" },
-                { id: 102, brand: "CANVAS", name: "크로켓 2000 거실장[1200 / 1500 / 2000]", option: "월넛 / 1200cm / 1개", price: "230,000", status: "반품 신청", date: "26.04.11(토)" },
-                { id: 103, brand: "CANVAS", name: "크로켓 2000 거실장[1200 / 1500 / 2000]", option: "월넛 / 1200cm / 1개", price: "230,000", status: "교환 신청", date: "26.04.11(토)" }
-        ]);
-        const [wishItems, setWishItems] = useState([
-                { id: 201, brand: "CANVAS", name: "크로켓 2000 거실장", price: "230,000", imgUrl: "" },
-                { id: 202, brand: "CANVAS", name: "심플 라인 소파", price: "450,000", imgUrl: "" }
-        ]);
-
         // 찜 삭제 함수
         const handleDeleteAllWish = () => {
                 if (window.confirm("찜한 상품을 모두 삭제하시겠습니까?")) {
@@ -82,23 +99,6 @@ const MyPage = () => {
                         setWishItems(wishItems.filter(item => item.id !== id));
                 }
         };
-
-        const [inquiries] = useState([
-                {
-                        id: 301,
-                        category: "배송문의",
-                        title: "거실장 배송 언제쯤 오나요?",
-                        date: "2026.04.15",
-                        answered: true
-                },
-                {
-                        id: 302,
-                        category: "상품문의",
-                        title: "소파 가죽 샘플을 볼 수 있을까요?",
-                        date: "2026.04.20",
-                        answered: false
-                }
-        ]);
 
         const [products, setProducts] = useState([
                 { id: 1, name: "크로켓 2000 거실장", price: "230,000", status: "판매완료" },
@@ -126,11 +126,13 @@ const MyPage = () => {
                                                         </div>
                                                         <div className="stat-item">
                                                                 <div className="stat-label">취소/반품 〉</div>
-                                                                <div className="stat-value" style={{ color: item.cancelCount > 0 ? 'red' : 'inherit' }}>0건</div>
+                                                                <div className="stat-value" style={{ color: cancelCount > 0 ? 'red' : 'inherit' }}>{cancelCount}건</div>
                                                         </div>
                                                         <div className="stat-item">
                                                                 <div className="stat-label">미답변 문의 〉</div>
-                                                                <div className="stat-value" style={{ color: 'red' }}>{corpStats.cancelCount}건</div>
+                                                                <div className="stat-value" style={{ color: unansweredCount > 0 ? 'red' : 'inherit' }}>
+                                                                        {unansweredCount}건
+                                                                </div>
                                                         </div>
                                                 </>
                                         ) : (
@@ -474,7 +476,7 @@ const InquiryList = ({ inquiries, isCorp }) => {
                                                 {expandedId === inquiry.id && (
                                                         <tr className="inquiry-detail-row">
                                                                 <td colSpan="6">
-                                                                        <div className="detail-content">
+                                                                        <div className="my-detail-content">
                                                                                 <div className="question-box">
                                                                                         <strong>Q. 문의 내용</strong>
                                                                                         <p>{inquiry.content || "문의 상세 내용 데이터가 여기에 표시됩니다."}</p>

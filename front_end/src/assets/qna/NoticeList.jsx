@@ -24,7 +24,7 @@ function NoticeList() {
 
       {/* ▷ 오른쪽 공지사항 목록 */}
       <div style={{ flexGrow: 1 }}>
-        
+
         {/* 공지 테이블 */}
         <div style={{ minHeight: '500px' }}>
           {/* 검색창 */}
@@ -41,14 +41,22 @@ function NoticeList() {
             <button className="search-icon"></button>
           </div>
 
-           {/* 상단 개수 */}
-          <p style={{ margin: '0 0 15px 0', fontSize: '15px' }}>총 <strong>1325</strong>개의 공지사항이 있습니다.</p>
-
+          {/* 상단 개수 */}
+          <div style={{display:'flex',justifyContent: 'space-between', alignItems: 'center'}}>
+            <p style={{ margin: '0 0 15px 0', fontSize: '15px' }}>총 <strong>1325</strong>개의 공지사항이 있습니다.</p>
+            <button
+              className="btn btn-dark"
+              style={{ marginBottom:'10px' }}
+              onClick={()=>{ location.href="/qna/noticewrite"}}
+            >
+              공지 등록
+            </button>
+          </div>
           <table style={{ width: '100%', borderTop: '2px solid #000', fontSize: '15px', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid #ccc', height: '50px' }}>
                 <th style={{ width: '80px' }}>번호</th>
-                <th style={{ width: '120px' }}>단체명</th>
+                <th style={{ width: '120px' }}>작성자</th>
                 <th>제목</th>
                 <th style={{ width: '120px' }}>공지일</th>
               </tr>
@@ -58,13 +66,13 @@ function NoticeList() {
               <tr style={{ borderBottom: '1px solid #eee', height: '48px' }}>
                 <td>6253</td>
                 <td>CANVAS</td>
-                <td><Link to="/qna/noticeview" style={{textDecoration:'none',color:'black'}}>[정기점검 발표] 20년 03월 ... 교육기관 일정 안내</Link></td>
+                <td><Link to="/qna/noticeview" style={{ textDecoration: 'none', color: 'black' }}>[정기점검 발표] 20년 03월 ... 교육기관 일정 안내</Link></td>
                 <td>2020.04.13</td>
               </tr>
               <tr style={{ borderBottom: '1px solid #eee', height: '48px' }}>
                 <td>6252</td>
                 <td>CANVAS</td>
-                <td><Link to="/qna/noticeview" style={{textDecoration:'none',color:'black'}}>전달 이용약관 변경 (2020. 04. 15)</Link></td>
+                <td><Link to="/qna/noticeview" style={{ textDecoration: 'none', color: 'black' }}>전달 이용약관 변경 (2020. 04. 15)</Link></td>
                 <td>2020.04.08</td>
               </tr>
             </tbody>

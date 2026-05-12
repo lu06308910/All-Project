@@ -7,7 +7,7 @@ function Member() {
         const navigate = useNavigate();
 
         const [formData, setFormData] = useState({
-                userType: 'PERSONAL',
+                usertype: 'PERSONAL', // 기본값: 일반 회원
                 userid: '',
                 userpwd: '',
                 pwdCheck: '',
@@ -94,16 +94,34 @@ function Member() {
                         return;
                 }
 
-                try {
-                        const response = await axios.post('/api/member/join', formData);
-                        if (response.data.status === 'success') {
-                                alert("CANVAS의 가족이 되신 것을 환영합니다!");
-                                navigate("/login");
-                        }
-                } catch (error) {
-                        console.error("Join Error:", error);
-                        alert("회원가입 중 오류가 발생했습니다.");
-                }
+                //백엔드
+                axios.post('http://localhost:9991/member/signup', {
+                        userid: formData.userid,
+                        userpwd: formData.userpwd,
+                        username: formData.username,
+                        tel: formData.tel,
+                        email: formData.email,
+                        zipcode: formData.zipcode,
+                        address: formData.address,
+                        address_detail: formData.address_detail,
+                        businessName: formData.businessName,
+                        businessNum: formData.businessNum,
+                        usertype: formData.usertype
+                })
+                        .then(function (response) {
+                                console.log(response.data);
+                                if (response.data) { // 회원가입 성공
+                                        alert("CANVAS의 가족이 되신 것을 환영합니다!");
+                                        navigate("/login");
+                                } else {
+                                        alert('회원가입 실패하였습니다.')
+                                }
+                        })
+                        .catch(function (error) {
+                                console.error("Join Error:", error);
+                                alert("회원가입 중 오류가 발생했습니다.");
+                        })
+
         };
 
         return (
@@ -118,15 +136,15 @@ function Member() {
                                 <div className="user-type-tab">
                                         <button
                                                 type="button"
-                                                className={formData.userType === 'PERSONAL' ? 'active' : ''}
-                                                onClick={() => setFormData({ ...formData, userType: 'PERSONAL' })}
+                                                className={formData.usertype === 'PERSONAL' ? 'active' : ''}
+                                                onClick={() => setFormData({ ...formData, usertype: 'PERSONAL' })}
                                         >
                                                 일반 회원
                                         </button>
                                         <button
                                                 type="button"
-                                                className={formData.userType === 'BUSINESS' ? 'active' : ''}
-                                                onClick={() => setFormData({ ...formData, userType: 'BUSINESS' })}
+                                                className={formData.usertype === 'BUSINESS' ? 'active' : ''}
+                                                onClick={() => setFormData({ ...formData, usertype: 'BUSINESS' })}
                                         >
                                                 기업 회원
                                         </button>
@@ -135,7 +153,7 @@ function Member() {
                                 <form onSubmit={handleSignup} className="login-form">
 
                                         {/* 기업 회원 전용 필드 */}
-                                        {formData.userType === 'BUSINESS' && (
+                                        {formData.usertype === 'BUSINESS' && (
                                                 <>
                                                         <div className="input-group">
                                                                 <p>COMPANY NAME</p>
@@ -179,6 +197,11 @@ function Member() {
                                         </div>
 
                                         <div className="input-group">
+                                                <p>Tel</p>
+                                                <input type="text" name="tel" placeholder="010-0000-0000" onChange={handleChange} />
+                                        </div>
+
+                                        <div className="input-group">
                                                 <p>E-MAIL</p>
                                                 <input type="email" name="email" placeholder="example@canvas.com" onChange={handleChange} />
                                         </div>
@@ -187,10 +210,10 @@ function Member() {
                                         <div className="input-group">
                                                 <p>ADDRESS</p>
                                                 <div className="address-zip">
-                                                        <input type="text" name="zipcode" placeholder="우편번호" value={formData.zipcode} readOnly />
+                                                        <input type="text" name="zipcode" placeholder="우편번호" value={formData.zipcode} readOnly  />
                                                         <button type="button" className="zip-btn" onClick={handleAddressSearch}>주소 검색</button>
                                                 </div>
-                                                <input type="text" name="address" placeholder="기본 주소" value={formData.address} readOnly className="address-main" />
+                                                <input type="text" name="address" placeholder="기본 주소" value={formData.address} readOnly className="address-main"  />
                                                 <input type="text" name="address_detail" placeholder="상세 주소" value={formData.address_detail} onChange={handleChange} className="address-detail" />
                                         </div>
 

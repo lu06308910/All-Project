@@ -8,8 +8,8 @@ function Login() {
 
         // 상태 관리 통합
         const [formData, setFormData] = useState({
-                userType: 'PERSONAL', // 기본값: 일반 회원
-                userid: '',
+                usertype: 'PERSONAL', // 기본값: 일반 회원
+                userid: '', //백엔드 콘트롤러 내용이랑 동일
                 userpwd: ''
         });
 
@@ -42,7 +42,7 @@ function Login() {
                 }
         };
 
-        // 로그인 실행(db후 마무리)
+        // 로그인 실행
         const loginStart = async (e) => {
                 e.preventDefault();
 
@@ -53,20 +53,27 @@ function Login() {
 
                 try {
                         // formData에 userType이 포함되어 서버로 전송됩니다.
-                        const response = await axios.post('/api/member/login', formData);
+                        const response = await axios.post('http://localhost:9991/member/login', formData);
 
-                        if (response.data.status === 'success') {
-                                sessionStorage.setItem('user', JSON.stringify(response.data.user));
-                                sessionStorage.setItem('isLoggedIn', 'true');
+                        if (response.data) {
+                                // 로그인 성공: 객체가 존재하면 성공
+                                sessionStorage.setItem('logStatus', 'Y');
+                                sessionStorage.setItem('logId', response.data.userid);
+                                sessionStorage.setItem('logName', response.data.username);
+                                sessionStorage.setItem('userType', response.data.usertype);
 
-                                alert(`${response.data.user.username}님, 환영합니다!`);
-                                navigate("/");
+
+
+                                alert(`${response.data.username}님, 환영합니다!`);
+
+                                window.location.href = "/";
                         } else {
                                 alert(response.data.message || "로그인 정보를 확인해주세요.");
                         }
                 } catch (error) {
                         console.error("Login Error:", error);
                         alert("로그인에 실패하였습니다.");
+
                 }
         };
 
@@ -81,15 +88,15 @@ function Login() {
                                 <div className="user-type-tab">
                                         <button
                                                 type="button"
-                                                className={formData.userType === 'PERSONAL' ? 'active' : ''}
-                                                onClick={() => setFormData({ ...formData, userType: 'PERSONAL' })}
+                                                className={formData.usertype === 'PERSONAL' ? 'active' : ''}
+                                                onClick={() => setFormData({ ...formData, usertype: 'PERSONAL' })}
                                         >
                                                 일반 회원
                                         </button>
                                         <button
                                                 type="button"
-                                                className={formData.userType === 'BUSINESS' ? 'active' : ''}
-                                                onClick={() => setFormData({ ...formData, userType: 'BUSINESS' })}
+                                                className={formData.usertype === 'BUSINESS' ? 'active' : ''}
+                                                onClick={() => setFormData({ ...formData, usertype: 'BUSINESS' })}
                                         >
                                                 기업 회원
                                         </button>
@@ -102,7 +109,7 @@ function Login() {
                                                         type="text"
                                                         name="userid"
                                                         // 탭 선택에 따른 동적 placeholder
-                                                        placeholder={formData.userType === 'BUSINESS' ? "기업 아이디를 입력하세요" : "아이디를 입력하세요"}
+                                                        placeholder={formData.usertype === 'BUSINESS' ? "기업 아이디를 입력하세요" : "아이디를 입력하세요"}
                                                         value={formData.userid}
                                                         onChange={loginFormRender}
                                                 />
