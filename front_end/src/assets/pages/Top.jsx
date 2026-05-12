@@ -1,10 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { Link, Outlet } from 'react-router-dom';
+import axios from "axios";
 import Footer from './Footer';
 import './../css/top.css';
 
 function Top() {
   const [showTopBtn, setShowTopBtn] = useState(false);
+
+  const isLogin = window.sessionStorage.getItem("logStatus") === "Y"; // 로그인 여부판단
+  //로그아웃
+  //스트링부트의 session삭제
+  //sessionStorage정보 삭제
+  function logoutFnt() {
+
+    axios.get('http://localhost:9990/member/logout')
+      .then((response) => {
+        // sessionStorage의 모든 변수를 삭제한다.
+        window.sessionStorage.clear();
+        window.location.href = "/";
+      })
+      .catch((error) => {
+        console.log("로그아웃 에러 발생함..", error)
+      })
+  }
 
   // 스크롤 감지 로직
   useEffect(() => {
@@ -65,10 +83,23 @@ function Top() {
             </div>
 
             <div className="icon-categori">
-              <div><Link to="/login">로그인</Link></div>
-              <div><Link to="/member/signup">회원가입</Link></div>
-              <div><Link to="/mypage">마이스토어</Link></div>
-              <div><Link to="/basket">장바구니</Link></div>
+              {/* 로그인 안 했을 때 */}
+              {!isLogin && (
+                <>
+                  <div><Link to="/login">로그인</Link></div>
+                  <div><Link to="/member/signup">회원가입</Link></div>
+                </>
+              )}
+
+              {/* 로그인 했을 때 */}
+              {isLogin && (
+                <>
+                  <div><Link to="#" onClick={logoutFnt}>로그아웃</Link></div>
+                  <div><Link to="/mypage">마이스토어</Link></div>
+                  <div><Link to="/basket">장바구니</Link></div>
+                </>
+              )}
+
             </div>
           </div>
         </div>
