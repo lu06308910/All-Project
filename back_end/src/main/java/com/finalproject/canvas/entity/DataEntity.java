@@ -11,20 +11,26 @@ public class DataEntity {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name ="user_id", unique= true, nullable = false)
-    private String userId;
+    @Column(name ="userid", unique= true, length=20, nullable = false)
+    private String userid;
 
-    @Column(nullable = false, length = 18)
-    private String password;
-    @Column(nullable = false)
-    private String userName;
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
+    private String userpwd;
+    @Column(nullable = false, length=20)
+    private String username;
+    @Column(nullable = false, length=45)
     private String email;
-    @Column(nullable = true)
+    @Column(nullable = false, length=20)
+    private String tel;
+    @Column(nullable = false, length=20)
+    private String zipcode;
+    @Column(nullable = true, length=300)
     private String address;
+    @Column(nullable = true, length=300)
+    private String address_detail;
 
-    @Column(nullable = false)
-    private String userType;
+    @Column(nullable = false,columnDefinition = "varchar(20) default 'PERSONAL'")
+    private String usertype = "PERSONAL";
     
     //탈퇴여부 확인
     public enum OutStatus {

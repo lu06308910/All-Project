@@ -23,7 +23,7 @@ function Login() {
                 const { name, value } = e.target;
                 setFormData(prev => ({ ...prev, [name]: value }));
 
-                if (name === 'userId') {
+                if (name === 'userid') {
                         const reg = /^[A-Za-z0-9]{5,10}$/;
                         setMessages(prev => ({
                                 ...prev,
@@ -31,7 +31,7 @@ function Login() {
                                         ? { text: '사용 가능한 아이디 형식입니다.', isError: false }
                                         : { text: '아이디는 5~10자의 영문/숫자만 가능합니다.', isError: true }
                         }));
-                } else if (name === 'password') {
+                } else if (name === 'userpwd') {
                         const reg = /^[A-Za-z0-9!@#]{8,12}$/;
                         setMessages(prev => ({
                                 ...prev,
@@ -60,6 +60,8 @@ function Login() {
                                 sessionStorage.setItem('logStatus', 'Y');
                                 sessionStorage.setItem('logId', response.data.userid);
                                 sessionStorage.setItem('logName', response.data.username);
+                                sessionStorage.setItem('userType', response.data.usertype);
+
 
 
                                 alert(`${response.data.username}님, 환영합니다!`);
