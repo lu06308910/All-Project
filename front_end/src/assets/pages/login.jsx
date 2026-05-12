@@ -53,13 +53,14 @@ function Login() {
 
                 try {
                         // formData에 userType이 포함되어 서버로 전송됩니다.
-                        const response = await axios.post('/api/member/login', formData);
+                        const response = await axios.post('http://localhost:9990/api/member/login', formData);
 
-                        if (response.data.status === 'success') {
-                                sessionStorage.setItem('user', JSON.stringify(response.data.user));
+                        if (response.data) {
+                                // 로그인 성공: 객체가 존재하면 성공
+                                sessionStorage.setItem('user', JSON.stringify(response.data));
                                 sessionStorage.setItem('isLoggedIn', 'true');
 
-                                alert(`${response.data.user.username}님, 환영합니다!`);
+                                alert(`${response.data.username}님, 환영합니다!`);
                                 navigate("/");
                         } else {
                                 alert(response.data.message || "로그인 정보를 확인해주세요.");
