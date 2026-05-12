@@ -28,7 +28,7 @@ public class CpDataEntity {
     private String address;
 
     @Column(nullable = false)
-    private String role;
+    private String userType;
 
     //탈퇴여부 확인
     public enum OutStatus {
