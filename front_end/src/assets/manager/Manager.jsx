@@ -525,9 +525,6 @@ function Manager(){
                 <div className='inner-container'>
                         <div className='manager-container'>
                                 <div className='category-mana'>
-                                        <Link to="/" style={{textDecoration:"none"}}>
-                                             <h1 className="canvas">CANVAS</h1>   
-                                        </Link>
                                         <div className='sub-mana'>
                                         {menus.map((menu) => (
                                                 <div key={menu}>
