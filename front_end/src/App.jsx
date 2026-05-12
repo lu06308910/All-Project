@@ -39,7 +39,7 @@ function App() {
 
           {/* 앞으로 추가될 페이지는 여기에 계속 Route 추가해주시면 됨 */}
           <Route path='login' element={<Login />}></Route>
-          <Route path='/member/signup' element={<Member />}></Route>
+          <Route path='member/signup' element={<Member />}></Route>
           <Route path='/member/findmember' element={<FindMember />}></Route>
           <Route path='/member/memberedit' element={<MemberEdit />}></Route>
           <Route path='/mypage' element={<Mypage />}></Route>
