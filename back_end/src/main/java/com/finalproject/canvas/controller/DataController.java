@@ -1,5 +1,6 @@
 package com.finalproject.canvas.controller;
 
+import com.finalproject.canvas.entity.CpDataEntity;
 import com.finalproject.canvas.entity.DataEntity;
 import com.finalproject.canvas.service.DataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,9 @@ public class DataController {
 
     @Autowired
     private DataService DataService;
+
+    @Autowired
+    private CpDataEntity CpDataEntity;
 
     // 데이터 저장
     @PostMapping("/login")
