@@ -23,7 +23,7 @@ function Login() {
                 const { name, value } = e.target;
                 setFormData(prev => ({ ...prev, [name]: value }));
 
-                if (name === 'userId') {
+                if (name === 'userid') {
                         const reg = /^[A-Za-z0-9]{5,10}$/;
                         setMessages(prev => ({
                                 ...prev,
@@ -31,7 +31,7 @@ function Login() {
                                         ? { text: '사용 가능한 아이디 형식입니다.', isError: false }
                                         : { text: '아이디는 5~10자의 영문/숫자만 가능합니다.', isError: true }
                         }));
-                } else if (name === 'password') {
+                } else if (name === 'userpwd') {
                         const reg = /^[A-Za-z0-9!@#]{8,12}$/;
                         setMessages(prev => ({
                                 ...prev,
@@ -53,17 +53,18 @@ function Login() {
 
                 try {
                         // formData에 userType이 포함되어 서버로 전송됩니다.
-                        const response = await axios.post('http://localhost:9990/member/login', formData);
+                        const response = await axios.post('http://localhost:9989/member/login', formData);
 
-                        if (response.data) {
+                        if (response.data.status === "OK") {
                                 // 로그인 성공: 객체가 존재하면 성공
                                 sessionStorage.setItem('logStatus', 'Y');
                                 sessionStorage.setItem('logId', response.data.userid);
                                 sessionStorage.setItem('logName', response.data.username);
+                                sessionStorage.setItem('userType', response.data.usertype);
+
 
 
                                 alert(`${response.data.username}님, 환영합니다!`);
-
                                 window.location.href = "/";
                         } else {
                                 alert(response.data.message || "로그인 정보를 확인해주세요.");
@@ -71,7 +72,6 @@ function Login() {
                 } catch (error) {
                         console.error("Login Error:", error);
                         alert("로그인에 실패하였습니다.");
-
                 }
         };
 

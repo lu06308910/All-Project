@@ -1,29 +1,85 @@
 package com.finalproject.canvas.service;
 
+import com.finalproject.canvas.entity.CpDataEntity;
 import com.finalproject.canvas.entity.DataEntity;
+import com.finalproject.canvas.repository.CpDataRepository;
 import com.finalproject.canvas.repository.DataRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
+@RequiredArgsConstructor
 public class DataService {
 
-    @Autowired
-    private DataRepository dataRepository;
+    private final DataRepository dataRepository;      // 일반회원
+    private final CpDataRepository cpDataRepository;  // 기업회원
 
-    public DataEntity login(String userId, String password){
-        DataEntity user = dataRepository.findByUserId(userId)
-                .orElse(null);
-// [확인용 로그]
-        if(user == null) {
-            System.out.println(">>> 서비스 결과: DB에 '" + userId + "' 라는 아이디가 없음");
-        } else {
-            System.out.println(">>> 서비스 결과: 아이디는 있음 비번 일치 여부: " + user.getPassword().equals(password));
-            System.out.println(">>> DB비번: [" + user.getPassword() + "], 입력비번: [" + password + "]");
+    // 일반 회원 회원가입
+    public DataEntity dataInsert(DataEntity dataEntity) {
+        try {
+            return dataRepository.save(dataEntity);
+        } catch (Exception se) {
+            se.printStackTrace();
+            return null;
         }
-        if(user != null && user.getPassword().trim().equals(password.trim())){
-            return user; //로그인 성공
-        }
-        return null; //로그인 실패
     }
+
+    // 기업 회원 회원가입
+    public CpDataEntity businessInsert(CpDataEntity cpEntity) {
+        return cpDataRepository.save(cpEntity);
+    }
+
+    // 일반 회원 로그인
+    public DataEntity loginPersonal(String userid, String userpwd) {
+        return dataRepository.findByUseridAndUserpwd(userid, userpwd);
+    }
+
+    // 기업 회원 로그인
+    public CpDataEntity loginBusiness(String userid, String userpwd) {
+        return cpDataRepository.findByUseridAndUserpwd(userid, userpwd);
+    }
+
+    // 일반 회원 선택
+    public DataEntity dataSelect(String userid) {
+        return dataRepository.findByUserid(userid);
+    }
+
+    // 일반 회원 정보 수정
+    public DataEntity dataUpdate(DataEntity entity) {
+        DataEntity orgEntity = dataRepository.findByUserid(entity.getUserid());
+
+        // 비밀번호 일치 확인
+        if (orgEntity != null && entity.getUserpwd().equals(orgEntity.getUserpwd())) {
+            return dataRepository.save(entity);
+        } else {
+            return null;
+        }
+    }
+
+    // 일반 회원 탈퇴
+    public Integer unregister(Integer mId){
+        try {
+            DataEntity entity = dataRepository.findById(mId).orElse(null);
+            if (entity == null) return 0;
+            entity.setIsOut(DataEntity.OutStatus.Y);
+            dataRepository.save(entity);
+            return mId;
+        }catch(Exception e){
+            return 0;
+        }
+    }
+
+    //모든 일반회원 정보 가져오기
+    public List<DataEntity> getAllMembers(){
+        return dataRepository.findAll();
+    }
+    //모든 기업회원 정보 가져오기
+    public List<CpDataEntity> getAllCpMembers(){
+        return cpDataRepository.findAll();
+    }
+
+
+
 }

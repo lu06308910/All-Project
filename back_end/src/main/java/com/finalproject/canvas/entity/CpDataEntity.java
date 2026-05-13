@@ -4,42 +4,49 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Data
+@Table(name="company")
 public class CpDataEntity {
+
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "c_id")
+    private Integer cId;
 
-    @Column(name ="user_id", unique= true, nullable = false)
-    private String userId;
-
-    @Column(nullable = false, length = 18)
-    private String password;
-    @Column(nullable = false)
+    @Column(nullable = false, length =15)
+    private String userid;
+    @Column(nullable = false, length = 20)
+    private String userpwd;
+    @Column(name = "businessName", nullable = false, length =10)
     private String businessName;
-    @Column(nullable = false)
-    private String ownerName;
-    @Column(nullable = false)
-    private String businessNum; //texId가 구별은 더 나을 것 같은데 프론트에 맞추려고 일단 주석처리
-    @Column(nullable = false)
+    @Column(name ="businessNum", nullable = false, length=20)
+    private String businessNum;
+    @Column(nullable = false, length =45)
+    private String tel;
+    @Column(nullable = false, length = 45)
     private String email;
-    @Column(nullable = true)
+    @Column(nullable = false, length=20)
+    private String zipcode;
+    @Column (nullable = false, length=300)
     private String address;
-
-    @Column(nullable = false)
-    private String userType;
-
-    //탈퇴여부 확인
-    public enum OutStatus {
-        Y, N
-    }
-    @Enumerated(EnumType.STRING)
-    @Column(name = "is_out", nullable = true, columnDefinition = "CHAR(1) DEFAULT 'N'")
-    private OutStatus isOut = OutStatus.N;
+    @Column(name = "address_detail")
+    private String addressDetail;
+    @Column(nullable = false, length=300)
+    private String usertype ="BUSINESS";
 
     @CreationTimestamp
-    @Column(columnDefinition = "DATETIME default now()")
-    private String writedate;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime writedate;
 
+    // 탈퇴 여부 : Y(탈퇴), N(정상)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "is_out")
+    private OutStatus isOut = OutStatus.N;
+
+    public enum OutStatus{
+        Y, N
+    }
 }

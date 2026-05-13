@@ -65,7 +65,7 @@ function NoticeWrite() {
                 alert("등록 완료!");
 
                 // 비동기 호출
-                axios.post("http://localhost:9990/qna/noticewrite", noticewriteData)
+                axios.post("http://localhost:9989/qna/noticewrite", noticewriteData)
 
                 .then((response) => {
                         console.log("response.data", response.data);
