@@ -95,7 +95,7 @@ function Member() {
                 }
 
                 //백엔드
-                axios.post('http://localhost:9991/member/signup', {
+                axios.post('http://localhost:9989/member/signup', {
                         userid: formData.userid,
                         userpwd: formData.userpwd,
                         username: formData.username,

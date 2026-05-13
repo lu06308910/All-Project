@@ -13,7 +13,7 @@ function Top() {
   //sessionStorage정보 삭제
   function logoutFnt() {
 
-    axios.get('http://localhost:9991/member/logout')
+    axios.get('http://localhost:9989/member/logout')
       .then((response) => {
         // sessionStorage의 모든 변수를 삭제한다.
         window.sessionStorage.clear();
