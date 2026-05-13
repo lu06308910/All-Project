@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './../css/gayoung.css'
 import './../css/top.css'
 import './../css/kdh.css'
@@ -16,6 +16,7 @@ import {
         Legend,
         ArcElement
 } from 'chart.js';
+import axios from 'axios';
 ChartJS.register(
         CategoryScale,
         LinearScale,
@@ -45,15 +46,20 @@ function Manager() {
                 { id: 2, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", enddate: "2026-06-04", state:"Y" },
                 { id: 3, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-04-28", enddate: "2026-05-04", state:"N" }
         ];
-        // 유저명
-        const users = [
-                { id: 1, name: '김수한무', userid: 'kimsuhan1', email: 'kimsuhan1@gmail.com', tel: '010-1214-8354', writedate:'2026-02-01', is_out:'N' },
-                { id: 2, name: '김수한무', userid: 'kimsuhan1', email: 'kimsuhan1@gmail.com', tel: '010-1214-8354', writedate:'2026-02-01', is_out:'Y' },
-        ]
-        const companys = [
-                { id: 1, name: '기업명1', userid: 'company123', email: 'company1@gmail.com', tel: '010-5252-8354', writedate:'2026-04-01', is_out:'N' },
-                { id: 2, name: '기업명2', userid: 'company456', email: 'company4@gmail.com', tel: '010-8282-8354', writedate:'2025-05-01', is_out:'Y' },
-        ]
+        //회원 업데이트
+        const [users, setUsers] = useState([]);
+        useEffect(() => {
+                axios.get('http://localhost:9989/member/all')
+                .then(res => setUsers(res.data))
+                .catch(err => console.log(err));
+        }, []);
+        const [companys, setCompanys] = useState([]);
+        useEffect(() => {
+                axios.get('http://localhost:9989/member/all/business')
+                .then(res => setCompanys(res.data))
+                .catch(err => console.log(err));
+        }, []);
+
         //상품관리
         const products =[
                 {id:1, comname:"기업명1", category:'야외 〉조경', title:'상품명1', cost:'2,555,000원', count:'152', writedate:'2023-09-26' },
@@ -117,6 +123,28 @@ function Manager() {
                         return { ...prev, [menu]: Array.from(currentSet) };
                 });
         };
+        
+
+        //회원 삭제 명령어
+        const handleBulkUnregister = () => {
+        const targets = selectedItems['회원관리'] || [];
+        if (targets.length === 0) return alert("탈퇴처리할 회원을 선택해주세요.");
+        if (!window.confirm(`선택한 ${targets.length}명을 탈퇴처리 하시겠습니까?`)) return;
+
+        Promise.all(
+                targets.map(mid =>
+                axios.patch(`http://localhost:9989/member/unregister/${mid}`)
+                )
+        )
+        .then(() => {
+                alert("탈퇴처리 완료");
+                axios.get('http://localhost:9989/member/all')
+                .then(res => setUsers(res.data));
+                setSelectedItems(prev => ({ ...prev, '회원관리': [] }));
+        })
+        .catch(err => console.log(err));
+        }
+
 
         const deleteSelected = (menu) => {
                 const targets = selectedItems[menu] || [];
@@ -651,29 +679,38 @@ function Manager() {
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
                                                 {users
-                                                        .filter(user => user.is_out =='N')
+                                                        .filter(user => user.isOut =="N")
                                                         .map((user) => (
-                                                                <div key={user} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
+                                                                <div key={user.mid} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
                                                                         <div className="col-1 border-start" style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                                <input type="checkbox" aria-label="항목 선택" />
+                                                                                <input
+                                                                                        type="checkbox"
+                                                                                        checked={selectedItems['회원관리']?.includes(user.mid) || false}
+                                                                                        onChange={() => handleCheck('회원관리', user.mid)}
+                                                                                />
                                                                         </div>
                                                                         <div className="col-2 border-start">{user.userid}</div>
-                                                                        <div className="col-2 border-start">{user.name}</div>
+                                                                        <div className="col-2 border-start">{user.username}</div>
                                                                         <div className="col-2 border-start">{user.email}</div>
                                                                         <div className="col-2 border-start">{user.tel}</div>
-                                                                        <div className="col-2 border-start">{user.writedate}</div>
+                                                                        <div className="col-2 border-start">{user.writedate.slice(0, 10)}</div>
                                                                         <div className="col-1 border-start" style={{
-                                                                                background: user.is_out == 'Y' ? '#ffebee' : '#e3f2fd',
-                                                                                color: user.is_out == 'Y' ? '#c62828' : '#1976d2',
+                                                                                background: user.isOut == "Y" ? '#ffebee' : '#e3f2fd',
+                                                                                color: user.isOut == "Y" ? '#c62828' : '#1976d2',
                                                                                 padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                        }}>{user.is_out=='Y'?'탈퇴':'활동 중'}</div>
+                                                                        }}>{user.isOut=="Y"?'탈퇴':'활동 중'}</div>
                                                                 </div>
                                                         ))}
                                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                         <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }} onClick={() => setShowMore(!showMore)}>
                                                                 {showMore ? "접기" : "더보기"}
                                                         </button>
-                                                        <button className='button' style={{ marginTop: '20px', border: '1px solid blue', backgroundColor: 'blue' }}>탈퇴처리</button>
+                                                        <button
+                                                                className='button'
+                                                                style={{ marginTop: '20px', border: '1px solid blue', backgroundColor: 'blue' }}
+                                                                onClick={handleBulkUnregister}>
+                                                                탈퇴처리
+                                                        </button>
                                                 </div>
                                         </div>
                                         <div className='category-content'>
@@ -695,20 +732,20 @@ function Manager() {
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
                                                 {users
-                                                        .filter(user => user.is_out !== 'N')
+                                                        .filter(user => user.isOut !== "N")
                                                         .map((user) => (
-                                                                <div key={user} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
-                                                                        <div className="col-1 border-start">{user.id}</div>
+                                                                <div key={user.mid} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
+                                                                        <div className="col-1 border-start">{user.mid}</div>
                                                                         <div className="col-2 border-start">{user.userid}</div>
-                                                                        <div className="col-2 border-start">{user.name}</div>
+                                                                        <div className="col-2 border-start">{user.username}</div>
                                                                         <div className="col-2 border-start">{user.email}</div>
                                                                         <div className="col-2 border-start">{user.tel}</div>
-                                                                        <div className="col-2 border-start">{user.writedate}</div>
+                                                                        <div className="col-2 border-start">{user.writedate.slice(0, 10)}</div>
                                                                         <div className="col-1 border-start" style={{
-                                                                                background: user.is_out == 'Y' ? '#ffebee' : '#e3f2fd',
-                                                                                color: user.is_out == 'Y' ? '#c62828' : '#1976d2',
+                                                                                background: user.isOut == "Y" ? '#ffebee' : '#e3f2fd',
+                                                                                color: user.isOut == "Y" ? '#c62828' : '#1976d2',
                                                                                 padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                        }}>{user.is_out=='Y'?'탈퇴':'활동 중'}</div>
+                                                                        }}>{user.isOut=="Y"?'탈퇴':'활동 중'}</div>
                                                                 </div>
                                                         ))}
                                                 <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
@@ -740,22 +777,22 @@ function Manager() {
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
                                                 {companys
-                                                        .filter(company=>company.is_out !=='Y')
+                                                        .filter(company=>company.isOut =='N')
                                                                 .map((company)=>(
                                                                         <div key={company} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
                                                                                 <div className="col-1 border-start" style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
                                                                                                 <input type="checkbox" aria-label="항목 선택" />
                                                                                 </div>
                                                                                 <div className="col-2 border-start">{company.userid}</div>
-                                                                                <div className="col-2 border-start">{company.name}</div>
+                                                                                <div className="col-2 border-start">{company.businessName}</div>
                                                                                 <div className="col-2 border-start">{company.email}</div>
                                                                                 <div className="col-2 border-start">{company.tel}</div>
-                                                                                <div className="col-2 border-start">{company.writedate}</div>
+                                                                                <div className="col-2 border-start">{company.writedate.slice(0, 10)}</div>
                                                                                 <div className="col-1 border-start" style={{
-                                                                                        background: company.is_out == 'Y' ? '#ffebee' : '#e3f2fd',
-                                                                                        color: company.is_out == 'Y' ? '#c62828' : '#1976d2',
+                                                                                        background: company.isOut == 'Y' ? '#ffebee' : '#e3f2fd',
+                                                                                        color: company.isOut == 'Y' ? '#c62828' : '#1976d2',
                                                                                         padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                }}>{company.is_out=='Y'?'Y':'활동 중'}</div>
+                                                                                }}>{company.isOut=='Y'?'탈퇴':'활동 중'}</div>
                                                                         </div>
                                                         ))}
                                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -784,20 +821,20 @@ function Manager() {
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
                                                 {companys
-                                                        .filter(company=>company.is_out =='Y')
+                                                        .filter(company=>company.isOut !=='N')
                                                                 .map((company)=>(
                                                                         <div key={company} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                                <div className="col-1 border-start">{company.id}</div>
+                                                                                <div className="col-1 border-start">{company.cid}</div>
                                                                                 <div className="col-2 border-start">{company.userid}</div>
                                                                                 <div className="col-2 border-start">{company.name}</div>
                                                                                 <div className="col-2 border-start">{company.email}</div>
                                                                                 <div className="col-2 border-start">{company.tel}</div>
-                                                                                <div className="col-2 border-start">{company.writedate}</div>
+                                                                                <div className="col-2 border-start">{company.writedate.slice(0, 10)}</div>
                                                                                 <div className="col-1 border-start" style={{
-                                                                                        background: company.is_out == 'Y' ? '#ffebee' : '#e3f2fd',
-                                                                                        color: company.is_out == 'Y' ? '#c62828' : '#1976d2',
+                                                                                        background: company.isOut == 'Y' ? '#ffebee' : '#e3f2fd',
+                                                                                        color: company.isOut == 'Y' ? '#c62828' : '#1976d2',
                                                                                         padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                }}>{company.is_out=='Y'?'탈퇴':'활동 중'}</div>
+                                                                                }}>{company.isOut=='Y'?'탈퇴':'활동 중'}</div>
                                                                         </div>
                                                         ))}
                                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
