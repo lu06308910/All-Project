@@ -11,7 +11,7 @@ bin/
 .apt_generated
 .classpath
 .factorypath
-.project
+.projecta
 .settings
 .springBeans
 .sts4-cache

@@ -31,44 +31,45 @@ function Manager() {
 
         //게시글관리
         const preevents = [
-                { id: 1, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", finaldate: "2026-06-04", state: "공개" },
-                { id: 2, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", finaldate: "2026-06-04", state: "공개" },
-                { id: 3, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-04-28", finaldate: "2026-05-04", state: "비공개" }
+                { id: 1, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", finaldate: "2026-06-04", state:"Y" },
+                { id: 2, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", finaldate: "2026-06-04", state:"Y" },
+                { id: 3, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-04-28", finaldate: "2026-05-04", state:"N" }
         ];
         const resevents = [
-                { id: 1, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", writedate: "2026-05-28", updatedate: "2026-06-04", state: "미공개" },
-                { id: 2, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", writedate: "2026-05-28", updatedate: "2026-06-04", state: "미공개" },
-                { id: 3, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", writedate: "2026-04-28", updatedate: "2026-05-04", state: "공개" }
+                { id: 1, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", writedate: "2026-05-28", updatedate: "2026-06-04", state:"N" },
+                { id: 2, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", writedate: "2026-05-28", updatedate: "2026-06-04", state:"N" },
+                { id: 3, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", writedate: "2026-04-28", updatedate: "2026-05-04", state:"Y" }
         ];
         const endevents = [
-                { id: 1, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", enddate: "2026-06-04", state: "비공개" },
-                { id: 2, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", enddate: "2026-06-04", state: "비공개" },
-                { id: 3, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-04-28", enddate: "2026-05-04", state: "공개" }
+                { id: 1, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", enddate: "2026-06-04", state:"N" },
+                { id: 2, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", enddate: "2026-06-04", state:"Y" },
+                { id: 3, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-04-28", enddate: "2026-05-04", state:"N" }
         ];
         // 유저명
         const users = [
-                { id: 1, name: '김수한무', userid: 'kimsuhan1', email: 'kimsuhan1@gmail.com', tel: '010-1214-8354', writedate: '2026-02-01', manage: '활동 중' },
-                { id: 2, name: '김수한무', userid: 'kimsuhan1', email: 'kimsuhan1@gmail.com', tel: '010-1214-8354', writedate: '2026-02-01', manage: '탈퇴' },
+                { id: 1, name: '김수한무', userid: 'kimsuhan1', email: 'kimsuhan1@gmail.com', tel: '010-1214-8354', writedate:'2026-02-01', is_out:'N' },
+                { id: 2, name: '김수한무', userid: 'kimsuhan1', email: 'kimsuhan1@gmail.com', tel: '010-1214-8354', writedate:'2026-02-01', is_out:'Y' },
         ]
         const companys = [
-                { id: 1, name: '기업명1', userid: 'company123', email: 'company1@gmail.com', tel: '010-5252-8354', writedate: '2026-04-01', manage: '활동 중' },
-                { id: 2, name: '기업명2', userid: 'company456', email: 'company4@gmail.com', tel: '010-8282-8354', writedate: '2025-05-01', manage: '탈퇴' },
+                { id: 1, name: '기업명1', userid: 'company123', email: 'company1@gmail.com', tel: '010-5252-8354', writedate:'2026-04-01', is_out:'N' },
+                { id: 2, name: '기업명2', userid: 'company456', email: 'company4@gmail.com', tel: '010-8282-8354', writedate:'2025-05-01', is_out:'Y' },
         ]
         //상품관리
-        const products = [
-                { id: 1, comname: "기업명1", category: '야외 〉조경', title: '상품명1', cost: '2,555,000원', stock: '152', state: '판매 중', writedate: '2023-09-26' },
-                { id: 2, comname: "기업명1", category: '야외 〉조경', title: '상품명1', cost: '2,555,000원', stock: '0', state: '품절', writedate: '2023-09-26' },
+        const products =[
+                {id:1, comname:"기업명1", category:'야외 〉조경', title:'상품명1', cost:'2,555,000원', count:'152', writedate:'2023-09-26' },
+                {id:2, comname:"기업명1", category:'야외 〉조경', title:'상품명1', cost:'2,555,000원', count:'0', writedate:'2023-09-26' },
         ]
         //문의
         const ask = [
-                { id: 1, subject: '🔒사고 싶은 옷이 찜목록에서 삭제됐어요.', username: '김희*', writedate: '2026-04-26', state: '답변 미작성', answer: null },
-                { id: 2, subject: '🔒사고 싶은 옷이 찜목록에서 삭제됐어요.', username: '안승*', writedate: '2026-04-25', state: '답변 완료', answer: "안녕하세요, 고객님. CANVAS를 이용해 주셔서 감사합니다. 해당 상품은 현재 시즌 종료로 인해 데이터가 삭제되었습니다. 불편을 드려 죄송합니다." },
+                { id: 1, subject: '🔒사고 싶은 옷이 찜목록에서 삭제됐어요.', username: '김희*', writedate: '2026-04-26', state: '답변 미작성', answer: null},
+                { id: 2, subject: '🔒사고 싶은 옷이 찜목록에서 삭제됐어요.', username: '안승*', writedate: '2026-04-25', state: '답변 완료', answer:"안녕하세요, 고객님. CANVAS를 이용해 주셔서 감사합니다. 해당 상품은 현재 시즌 종료로 인해 데이터가 삭제되었습니다. 불편을 드려 죄송합니다."},
         ]
 
         const tonggyea = [
-                { id: 1, writedate: '2026-01-22', code: 'L001', category: "야외 〉조경", title: '나무원목의자', comname: '기업명1', cost: '70,000', stock: '15', deliver: '69,000', susuryo: '151,600' },
-                { id: 1, writedate: '2026-01-22', code: 'L001', category: "야외 〉조경", title: '나무원목의자', comname: '기업명1', cost: '70,000', stock: '15', deliver: '69,000', susuryo: '151,600' }
+                {id:1, writedate:'2026-01-22', code:'L001', category:"야외 〉조경", title:'나무원목의자', comname:'기업명1', cost:'70,000', count:'15', deliver:'69,000', susuryo:'151,600'},
+                {id:1, writedate:'2026-01-22', code:'L001', category:"야외 〉조경", title:'나무원목의자', comname:'기업명1', cost:'70,000', count:'15', deliver:'69,000', susuryo:'151,600'}
         ]
+
 
         const [showMore, setShowMore] = useState(false);
         const [activeMenu, setActiveMenu] = useState('대시보드');
@@ -213,12 +214,12 @@ function Manager() {
                                                         <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate}</td>
                                                         <td>
                                                                 <span style={{
-                                                                        background: item.state == '미공개' ? '#ffebee' : '#e3f2fd',
-                                                                        color: item.state == '미공개' ? '#c62828' : '#1976d2',
+                                                                        background: item.state == 'N' ? '#ffebee' : '#e3f2fd',
+                                                                        color: item.state == 'N' ? '#c62828' : '#1976d2',
                                                                         padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
                                                                         textAlign: 'center', verticalAlign: 'middle'
                                                                 }}>
-                                                                        {item.state}
+                                                                        {item.state=='N'?'미공개':'공개'}
                                                                 </span>
                                                         </td>
                                                         <td>
@@ -239,7 +240,11 @@ function Manager() {
         )
         const Event = () => (
                 <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>진행 중인 이벤트</h4>
+                        <h4 style={{textAlign:'left', fontWeight:'600',
+                                marginTop: activeMenu === '-이벤트 관리' ? '0px' : '20px',}}
+                        >
+                                진행 중인 이벤트
+                        </h4>
                         <hr />
                         <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue', marginLeft: '10px' }}>선택삭제</button>
                         <table className="table table-bordered" style={{ width: '100%', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
@@ -273,12 +278,12 @@ function Manager() {
                                                         <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.finaldate}</td>
                                                         <td>
                                                                 <span style={{
-                                                                        background: item.state == '비공개' ? '#ffebee' : '#e3f2fd',
-                                                                        color: item.state == '비공개' ? '#c62828' : '#1976d2',
+                                                                        background: item.state == 'N' ? '#ffebee' : '#e3f2fd',
+                                                                        color: item.state == 'N' ? '#c62828' : '#1976d2',
                                                                         padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
                                                                         textAlign: 'center', verticalAlign: 'middle'
                                                                 }}>
-                                                                        {item.state}
+                                                                        {item.state=='N'?'비공개':'공개'}
                                                                 </span>
                                                         </td>
                                                         <td>
@@ -295,7 +300,7 @@ function Manager() {
                                 </button>
                                 <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}>게시글등록</button>
                         </div>
-                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>마무리 된 이벤트</h4>
+                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop:'20px' }}>마무리 된 이벤트</h4>
                         <hr />
                         <button className='button' style={{
                                 border: '1px solid blue', backgroundColor: 'blue', marginLeft: '10px'
@@ -332,12 +337,12 @@ function Manager() {
                                                         <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.enddate}</td>
                                                         <td>
                                                                 <span style={{
-                                                                        background: item.state == '비공개' ? '#ffebee' : '#e3f2fd',
-                                                                        color: item.state == '비공개' ? '#c62828' : '#1976d2',
+                                                                        background: item.state == 'N' ? '#ffebee' : '#e3f2fd',
+                                                                        color: item.state == 'N' ? '#c62828' : '#1976d2',
                                                                         padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
                                                                         textAlign: 'center', verticalAlign: 'middle'
                                                                 }}>
-                                                                        {item.state}
+                                                                        {item.state=='N'?'비공개':'공개'}
                                                                 </span>
                                                         </td>
                                                         <td>
@@ -630,6 +635,7 @@ function Manager() {
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>회원 검색</h4>
                                                         <div className="search-bar">
+
                                                                 <input type="text" placeholder="검색할 상품을 입력해주세요." />
                                                                 <button className="search-icon"></button>
                                                         </div>
@@ -645,7 +651,7 @@ function Manager() {
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
                                                 {users
-                                                        .filter(user => user.manage !== '탈퇴')
+                                                        .filter(user => user.is_out =='N')
                                                         .map((user) => (
                                                                 <div key={user} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
                                                                         <div className="col-1 border-start" style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
@@ -657,10 +663,10 @@ function Manager() {
                                                                         <div className="col-2 border-start">{user.tel}</div>
                                                                         <div className="col-2 border-start">{user.writedate}</div>
                                                                         <div className="col-1 border-start" style={{
-                                                                                background: user.manage == '탈퇴' ? '#ffebee' : '#e3f2fd',
-                                                                                color: user.manage == '탈퇴' ? '#c62828' : '#1976d2',
+                                                                                background: user.is_out == 'Y' ? '#ffebee' : '#e3f2fd',
+                                                                                color: user.is_out == 'Y' ? '#c62828' : '#1976d2',
                                                                                 padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                        }}>{user.manage}</div>
+                                                                        }}>{user.is_out=='Y'?'탈퇴':'활동 중'}</div>
                                                                 </div>
                                                         ))}
                                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -689,7 +695,7 @@ function Manager() {
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
                                                 {users
-                                                        .filter(user => user.manage == '탈퇴')
+                                                        .filter(user => user.is_out !== 'N')
                                                         .map((user) => (
                                                                 <div key={user} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
                                                                         <div className="col-1 border-start">{user.id}</div>
@@ -699,10 +705,10 @@ function Manager() {
                                                                         <div className="col-2 border-start">{user.tel}</div>
                                                                         <div className="col-2 border-start">{user.writedate}</div>
                                                                         <div className="col-1 border-start" style={{
-                                                                                background: user.manage == '탈퇴' ? '#ffebee' : '#e3f2fd',
-                                                                                color: user.manage == '탈퇴' ? '#c62828' : '#1976d2',
+                                                                                background: user.is_out == 'Y' ? '#ffebee' : '#e3f2fd',
+                                                                                color: user.is_out == 'Y' ? '#c62828' : '#1976d2',
                                                                                 padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                        }}>{user.manage}</div>
+                                                                        }}>{user.is_out=='Y'?'탈퇴':'활동 중'}</div>
                                                                 </div>
                                                         ))}
                                                 <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
@@ -734,23 +740,23 @@ function Manager() {
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
                                                 {companys
-                                                        .filter(company => company.manage !== '탈퇴')
-                                                        .map((company) => (
-                                                                <div key={company} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
-                                                                        <div className="col-1 border-start" style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                                <input type="checkbox" aria-label="항목 선택" />
+                                                        .filter(company=>company.is_out !=='Y')
+                                                                .map((company)=>(
+                                                                        <div key={company} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                                <div className="col-1 border-start" style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
+                                                                                                <input type="checkbox" aria-label="항목 선택" />
+                                                                                </div>
+                                                                                <div className="col-2 border-start">{company.userid}</div>
+                                                                                <div className="col-2 border-start">{company.name}</div>
+                                                                                <div className="col-2 border-start">{company.email}</div>
+                                                                                <div className="col-2 border-start">{company.tel}</div>
+                                                                                <div className="col-2 border-start">{company.writedate}</div>
+                                                                                <div className="col-1 border-start" style={{
+                                                                                        background: company.is_out == 'Y' ? '#ffebee' : '#e3f2fd',
+                                                                                        color: company.is_out == 'Y' ? '#c62828' : '#1976d2',
+                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                                }}>{company.is_out=='Y'?'Y':'활동 중'}</div>
                                                                         </div>
-                                                                        <div className="col-2 border-start">{company.userid}</div>
-                                                                        <div className="col-2 border-start">{company.name}</div>
-                                                                        <div className="col-2 border-start">{company.email}</div>
-                                                                        <div className="col-2 border-start">{company.tel}</div>
-                                                                        <div className="col-2 border-start">{company.writedate}</div>
-                                                                        <div className="col-1 border-start" style={{
-                                                                                background: company.manage == '탈퇴' ? '#ffebee' : '#e3f2fd',
-                                                                                color: company.manage == '탈퇴' ? '#c62828' : '#1976d2',
-                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                        }}>{company.manage}</div>
-                                                                </div>
                                                         ))}
                                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                         <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
@@ -778,21 +784,21 @@ function Manager() {
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
                                                 {companys
-                                                        .filter(company => company.manage == '탈퇴')
-                                                        .map((company) => (
-                                                                <div key={company} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
-                                                                        <div className="col-1 border-start">{company.id}</div>
-                                                                        <div className="col-2 border-start">{company.userid}</div>
-                                                                        <div className="col-2 border-start">{company.name}</div>
-                                                                        <div className="col-2 border-start">{company.email}</div>
-                                                                        <div className="col-2 border-start">{company.tel}</div>
-                                                                        <div className="col-2 border-start">{company.writedate}</div>
-                                                                        <div className="col-1 border-start" style={{
-                                                                                background: company.manage == '탈퇴' ? '#ffebee' : '#e3f2fd',
-                                                                                color: company.manage == '탈퇴' ? '#c62828' : '#1976d2',
-                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                        }}>{company.manage}</div>
-                                                                </div>
+                                                        .filter(company=>company.is_out =='Y')
+                                                                .map((company)=>(
+                                                                        <div key={company} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                                <div className="col-1 border-start">{company.id}</div>
+                                                                                <div className="col-2 border-start">{company.userid}</div>
+                                                                                <div className="col-2 border-start">{company.name}</div>
+                                                                                <div className="col-2 border-start">{company.email}</div>
+                                                                                <div className="col-2 border-start">{company.tel}</div>
+                                                                                <div className="col-2 border-start">{company.writedate}</div>
+                                                                                <div className="col-1 border-start" style={{
+                                                                                        background: company.is_out == 'Y' ? '#ffebee' : '#e3f2fd',
+                                                                                        color: company.is_out == 'Y' ? '#c62828' : '#1976d2',
+                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                                }}>{company.is_out=='Y'?'탈퇴':'활동 중'}</div>
+                                                                        </div>
                                                         ))}
                                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                         <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
@@ -883,15 +889,15 @@ function Manager() {
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.title}</td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.cost}</td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.writedate}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.stock}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.count}</td>
                                                                                 <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                                                                                         <div className="col-7" style={{
                                                                                                 display: 'inline-block', width: 'auto',
-                                                                                                background: pd.state == '품절' ? '#ffebee' : '#e3f2fd',
-                                                                                                color: pd.state == '품절' ? '#c62828' : '#1976d2',
+                                                                                                background: pd.count == 0 ? '#ffebee' : '#e3f2fd',
+                                                                                                color: pd.count == 0 ? '#c62828' : '#1976d2',
                                                                                                 padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
                                                                                         }}>
-                                                                                                {pd.state}
+                                                                                                {pd.count == 0 ?'품절':'재고 있음'}  
                                                                                         </div>
                                                                                 </td>
                                                                                 <td>
@@ -929,6 +935,11 @@ function Manager() {
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>문의 목록</h4>
                                                         <div className="search-bar">
+                                                                <select className="cat1" style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}>
+                                                                        <option value="username">이름</option>
+                                                                        <option value="userid">아이디</option>
+                                                                        <option value="email">이메일</option>
+                                                                </select>
                                                                 <input type="text" placeholder="검색할 단어 및 문장을 입력해주세요." />
                                                                 <button className="search-icon"></button>
                                                         </div>
@@ -1079,11 +1090,11 @@ function Manager() {
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.title}</td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.comname}</td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.cost}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.stock}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.count}</td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.deliver}</td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.susuryo}</td>
                                                                                 <td>
-                                                                                        <button className='button' onClick={() => setModalOpen(true)}>상세보기</button>
+                                                                                        <button className='button2' onClick={()=>setModalOpen(true)} style={{width:'80px'}}>상세보기</button>
                                                                                 </td>
                                                                         </tr>
                                                                 </tbody>
