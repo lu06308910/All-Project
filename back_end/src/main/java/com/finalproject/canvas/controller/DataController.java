@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @CrossOrigin(origins="*")
@@ -151,14 +152,23 @@ public class DataController {
         return dataService.dataUpdate(entity);
     }
     //회원탈퇴
-    @DeleteMapping("/unregister/{id}")
-    public Integer unregister(@PathVariable("id") Integer id, HttpSession session){
-        log.info("회원탈퇴ID"+id);
+    //is_out만 탈퇴 형식으로 바꾸기
+    @PatchMapping("/unregister/{id}")
+    public ResponseEntity<?> unregister(@PathVariable("id") Integer id){
         int result = dataService.unregister(id);
-
-        if(result !=0){
-            session.invalidate();
+        if(result != 0){
+            return ResponseEntity.ok("탈퇴처리 완료");
         }
-        return result;
+        return ResponseEntity.badRequest().body("탈퇴처리 실패");
+    }
+
+    //모든 회원 정보 가져오기 (관리자 페이지)
+    @GetMapping("/all")
+    public List<DataEntity> getMembers(){
+        return dataService.getAllMembers();
+    }
+    @GetMapping("/all/business")
+    public List<CpDataEntity> getCpMembers(){
+        return dataService.getAllCpMembers();
     }
 }
