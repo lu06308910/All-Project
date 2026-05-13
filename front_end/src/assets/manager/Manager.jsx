@@ -630,6 +630,7 @@ function Manager() {
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>회원 검색</h4>
                                                         <div className="search-bar">
+
                                                                 <input type="text" placeholder="검색할 상품을 입력해주세요." />
                                                                 <button className="search-icon"></button>
                                                         </div>
@@ -929,6 +930,11 @@ function Manager() {
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>문의 목록</h4>
                                                         <div className="search-bar">
+                                                                <select className="cat1" style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}>
+                                                                        <option value="username">이름</option>
+                                                                        <option value="userid">아이디</option>
+                                                                        <option value="email">이메일</option>
+                                                                </select>
                                                                 <input type="text" placeholder="검색할 단어 및 문장을 입력해주세요." />
                                                                 <button className="search-icon"></button>
                                                         </div>

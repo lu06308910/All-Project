@@ -23,11 +23,7 @@
 
 .footer-brand {
         display: flex;
-<<<<<<< HEAD
         align-items: center;
-=======
-        dlign-items: center;
->>>>>>> 91f5c7b30aa69ba582f0def97ea8746b0a0bc108
         gap: 15px;
 }
 
