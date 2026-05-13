@@ -5,6 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CpDataRepository extends JpaRepository<CpDataEntity, Long> {
-    CpDataEntity findByUseridAndUserpwd(String userid, String userpwd);
+public interface CpDataRepository extends JpaRepository<CpDataEntity, Integer> {
+
+    public CpDataEntity findByUseridAndUserpwd(String userid, String userpwd);
+
+    public CpDataEntity findByUserid(String userid);
 }

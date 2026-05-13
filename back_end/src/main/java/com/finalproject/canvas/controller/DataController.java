@@ -17,19 +17,15 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/member") //모든 매핑주소에 공통으로 들어가는 매핑
+@RequestMapping("/member")
 
 public class DataController {
     //해당 repository 검색하여
     private final DataService dataService;
-    // 회원가입 : /joins/joinsForm
-    // 로그인 : /joins/login
-    // 회원정보수정 : /joins/joinsEdit
+
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody Map<String, Object> signupData) {
-
         String usertype = (String) signupData.get("usertype");
-        log.info("회원가입 타입: " + usertype);
 
         if(usertype == null){
             return ResponseEntity.badRequest().body("usertype 값이 필요합니다.");
@@ -45,7 +41,7 @@ public class DataController {
             entity.setEmail((String) signupData.get("email"));
             entity.setZipcode((String) signupData.get("zipcode"));
             entity.setAddress((String) signupData.get("address"));
-            entity.setAddress_detail((String) signupData.get("address_detail"));
+            entity.setAddressDetail((String) signupData.get("address_detail"));
             entity.setUsertype("PERSONAL");
 
             DataEntity saved = dataService.dataInsert(entity);
@@ -64,7 +60,7 @@ public class DataController {
             cpEntity.setEmail((String) signupData.get("email"));
             cpEntity.setZipcode((String) signupData.get("zipcode"));
             cpEntity.setAddress((String) signupData.get("address"));
-            cpEntity.setAddress_detail((String) signupData.get("address_detail"));
+            cpEntity.setAddressDetail((String) signupData.get("address_detail"));
             cpEntity.setUsertype("BUSINESS");
 
             CpDataEntity saved = dataService.businessInsert(cpEntity);
@@ -161,7 +157,7 @@ public class DataController {
         log.info("회원탈퇴ID"+id);
         int result = dataService.unregister(id);
 
-        if(result==0){
+        if(result !=0){
             session.invalidate();
         }
         return result;
