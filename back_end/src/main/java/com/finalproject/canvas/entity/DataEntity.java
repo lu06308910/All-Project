@@ -3,46 +3,49 @@ package com.finalproject.canvas.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
+@Table(name="member")
 public class DataEntity {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private Long id;
 
-    @Column(name ="userid", unique= true, length=20, nullable = false)
+    @Column(name ="m_id")
+    private Integer mId;
+
+    @Column(nullable = false, length = 15)
     private String userid;
-
-    @Column(nullable = false, length = 20)
-    private String userpwd;
     @Column(nullable = false, length=20)
+    private String userpwd;
+    @Column(nullable = false, length=10)
     private String username;
+    @Column(nullable = false, length=45)
+    private String tel;
     @Column(nullable = false, length=45)
     private String email;
     @Column(nullable = false, length=20)
-    private String tel;
-    @Column(nullable = false, length=20)
     private String zipcode;
-    @Column(nullable = true, length=300)
+    @Column(nullable =false, length=300)
     private String address;
-    @Column(nullable = true, length=300)
-    private String address_detail;
+    @Column(name="address_detail") // DB에는 _로 되어있지만 작업시에는 addressDetail로 설정
+    private String addressDetail;
 
-    @Column(nullable = false,columnDefinition = "varchar(20) default 'PERSONAL'")
+    @Column(nullable=false, length=20)
     private String usertype = "PERSONAL";
-    
-    //탈퇴여부 확인
-    public enum OutStatus {
-        Y, N
-    }
-    @Enumerated(EnumType.STRING)
-    @Column(name = "is_out", nullable = true, columnDefinition = "CHAR(1) DEFAULT 'N'")
-    private CpDataEntity.OutStatus isOut = CpDataEntity.OutStatus.N;
 
     @CreationTimestamp
-    @Column(columnDefinition = "DATETIME default now()")
-    private String writedate;
+    @Column(name = "writedate", nullable=false, updatable =false)
+    private LocalDateTime writedate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="is_out", nullable = false)
+    private OutStatus isOut = OutStatus.N;
+
+    public enum OutStatus{
+        Y,N
+    }
 }
 
 

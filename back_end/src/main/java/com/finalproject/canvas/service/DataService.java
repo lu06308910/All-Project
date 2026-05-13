@@ -14,10 +14,7 @@ public class DataService {
     private final DataRepository dataRepository;      // 일반회원
     private final CpDataRepository cpDataRepository;  // 기업회원
 
-
-    // -------------------------
     // 일반 회원 회원가입
-    // -------------------------
     public DataEntity dataInsert(DataEntity dataEntity) {
         try {
             return dataRepository.save(dataEntity);
@@ -27,42 +24,27 @@ public class DataService {
         }
     }
 
-
-    // -------------------------
     // 기업 회원 회원가입
-    // -------------------------
     public CpDataEntity businessInsert(CpDataEntity cpEntity) {
         return cpDataRepository.save(cpEntity);
     }
 
-
-    // -------------------------
     // 일반 회원 로그인
-    // -------------------------
     public DataEntity loginPersonal(String userid, String userpwd) {
         return dataRepository.findByUseridAndUserpwd(userid, userpwd);
     }
 
-
-    // -------------------------
     // 기업 회원 로그인
-    // -------------------------
     public CpDataEntity loginBusiness(String userid, String userpwd) {
         return cpDataRepository.findByUseridAndUserpwd(userid, userpwd);
     }
 
-
-    // -------------------------
     // 일반 회원 선택
-    // -------------------------
     public DataEntity dataSelect(String userid) {
         return dataRepository.findByUserid(userid);
     }
 
-
-    // -------------------------
     // 일반 회원 정보 수정
-    // -------------------------
     public DataEntity dataUpdate(DataEntity entity) {
         DataEntity orgEntity = dataRepository.findByUserid(entity.getUserid());
 
@@ -74,14 +56,11 @@ public class DataService {
         }
     }
 
-
-    // -------------------------
     // 일반 회원 탈퇴
-    // -------------------------
-    public Integer unregister(Integer id) {
+    public Integer unregister(Integer mId) {
         try {
-            dataRepository.deleteById(id);
-            return id;
+            dataRepository.deleteById(mId);
+            return mId;
         } catch (Exception e) {
             return 0;
         }
