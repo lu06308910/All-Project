@@ -53,7 +53,6 @@ public class DataController {
             CpDataEntity cpEntity = new CpDataEntity();
             cpEntity.setUserid((String) signupData.get("userid"));
             cpEntity.setUserpwd((String) signupData.get("userpwd"));
-//            cpEntity.setOwnerName((String) signupData.get("ownername")); // 담당자명
             cpEntity.setBusinessName((String) signupData.get("businessName"));
             cpEntity.setBusinessNum((String) signupData.get("businessNum"));
             cpEntity.setTel((String) signupData.get("tel"));
