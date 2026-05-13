@@ -7,6 +7,8 @@ import com.finalproject.canvas.repository.DataRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class DataService {
@@ -57,13 +59,27 @@ public class DataService {
     }
 
     // 일반 회원 탈퇴
-    public Integer unregister(Integer mId) {
+    public Integer unregister(Integer mId){
         try {
-            dataRepository.deleteById(mId);
+            DataEntity entity = dataRepository.findById(mId).orElse(null);
+            if (entity == null) return 0;
+            entity.setIsOut(DataEntity.OutStatus.Y);
+            dataRepository.save(entity);
             return mId;
-        } catch (Exception e) {
+        }catch(Exception e){
             return 0;
         }
     }
+
+    //모든 일반회원 정보 가져오기
+    public List<DataEntity> getAllMembers(){
+        return dataRepository.findAll();
+    }
+    //모든 기업회원 정보 가져오기
+    public List<CpDataEntity> getAllCpMembers(){
+        return cpDataRepository.findAll();
+    }
+
+
 
 }
