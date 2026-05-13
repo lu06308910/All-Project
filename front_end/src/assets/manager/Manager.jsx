@@ -76,8 +76,6 @@ function Manager() {
                 {id:1, writedate:'2026-01-22', code:'L001', category:"야외 〉조경", title:'나무원목의자', comname:'기업명1', cost:'70,000', count:'15', deliver:'69,000', susuryo:'151,600'}
         ]
 
-
-        const [showMore, setShowMore] = useState(false);
         const [activeMenu, setActiveMenu] = useState('대시보드');
         const [isPostOpen, setIsPostOpen] = useState(false);
         const [modalOpen, setModalOpen] = useState(false);
@@ -156,7 +154,14 @@ function Manager() {
         }
 
         // 더보기
-        const visibleUsers = showMore ? users : users.slice(0, 4);
+        const [showMore, setShowMore] = useState(false);
+        const [showMoreOut, setShowMoreOut] = useState(false);
+        const [cshowMore, setCShowMore] = useState(false);
+        const [cshowMoreOut, setCShowMoreOut] = useState(false);
+        const visibleUsers = showMore ? users : users.slice(0, 5);
+        const invisibleUsers = showMoreOut ? users : users.slice(0, 5);
+        const visibleCompanys = showMore ? companys : companys.slice(0, 5);
+        const invisibleCompanys = showMoreOut ? companys : companys.slice(0, 5);
 
         const handleToggle = (id) => {
                 // 이미 열려있는 걸 다시 누르면 닫고(null), 아니면 해당 ID를 엽니다.
@@ -678,7 +683,7 @@ function Manager() {
                                                         <div className="col-2 border-start">가입일</div>
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
-                                                {users
+                                                {visibleUsers
                                                         .filter(user => user.isOut =="N")
                                                         .map((user) => (
                                                                 <div key={user.mid} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
@@ -731,7 +736,7 @@ function Manager() {
                                                         <div className="col-2 border-start">가입일</div>
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
-                                                {users
+                                                {invisibleUsers
                                                         .filter(user => user.isOut !== "N")
                                                         .map((user) => (
                                                                 <div key={user.mid} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
@@ -748,8 +753,8 @@ function Manager() {
                                                                         }}>{user.isOut=="Y"?'탈퇴':'활동 중'}</div>
                                                                 </div>
                                                         ))}
-                                                <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
-                                                        더보기
+                                                <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }} onClick={() => setShowMoreOut(!showMoreOut)}>
+                                                        {showMoreOut ? "접기" : "더보기"}
                                                 </button>
                                         </div>
                                 </div>
@@ -776,7 +781,7 @@ function Manager() {
                                                         <div className="col-2 border-start">가입일</div>
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
-                                                {companys
+                                                {visibleCompanys
                                                         .filter(company=>company.isOut =='N')
                                                                 .map((company)=>(
                                                                         <div key={company} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
@@ -796,8 +801,8 @@ function Manager() {
                                                                         </div>
                                                         ))}
                                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                        <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
-                                                                더보기
+                                                        <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }} onClick={() => setCShowMore(!cshowMore)}>
+                                                                {cshowMore ? "접기" : "더보기"}
                                                         </button>
                                                         <button className='button' style={{ marginTop: '20px', border: '1px solid blue', backgroundColor: 'blue' }}>탈퇴처리</button>
                                                 </div>
@@ -820,7 +825,7 @@ function Manager() {
                                                         <div className="col-2 border-start">가입일</div>
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
-                                                {companys
+                                                {invisibleCompanys
                                                         .filter(company=>company.isOut !=='N')
                                                                 .map((company)=>(
                                                                         <div key={company} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
@@ -838,8 +843,8 @@ function Manager() {
                                                                         </div>
                                                         ))}
                                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                        <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
-                                                                더보기
+                                                        <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }} onClick={() => setCShowMoreOut(!cshowMoreOut)}>
+                                                                {cshowMoreOut ? "접기" : "더보기"}
                                                         </button>
                                                 </div>
                                         </div>
