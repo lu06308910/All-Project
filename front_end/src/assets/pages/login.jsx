@@ -53,7 +53,7 @@ function Login() {
 
                 try {
                         // formData에 userType이 포함되어 서버로 전송됩니다.
-                        const response = await axios.post('http://localhost:9990/member/login', formData);
+                        const response = await axios.post('http://localhost:9991/member/login', formData);
 
                         if (response.data.status === "OK") {
                                 // 로그인 성공: 객체가 존재하면 성공
@@ -65,7 +65,6 @@ function Login() {
 
 
                                 alert(`${response.data.username}님, 환영합니다!`);
-
                                 window.location.href = "/";
                         } else {
                                 alert(response.data.message || "로그인 정보를 확인해주세요.");
@@ -73,7 +72,6 @@ function Login() {
                 } catch (error) {
                         console.error("Login Error:", error);
                         alert("로그인에 실패하였습니다.");
-
                 }
         };
 

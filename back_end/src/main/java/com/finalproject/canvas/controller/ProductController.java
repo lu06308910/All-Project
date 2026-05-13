@@ -1,11 +1,15 @@
 package com.finalproject.canvas.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.finalproject.canvas.entity.CpDataEntity;
 import com.finalproject.canvas.entity.FileEntity;
 import com.finalproject.canvas.entity.ProductEntity;
 import com.finalproject.canvas.service.ProductService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -27,37 +31,68 @@ public class ProductController {
     /**
      * 상품 등록
      */
-    @PostMapping("/mypage/addproduct")
-    @Transactional(rollbackFor = {RuntimeException.class, SQLException.class})
-    public String productWrite(ProductEntity productEntity, HttpSession session){
+    @PostMapping(value = "/mypage/addproduct", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public String productWrite(
+            @ModelAttribute ProductEntity productEntity,
+            @RequestParam("files") List<MultipartFile> files,
+            @RequestParam("colors") String colorsJson,
+            @RequestParam("size") String size,
+            HttpSession session
+    ){
 
-
+        CpDataEntity cp = new CpDataEntity();
+        cp.setCId(1);
+        productEntity.setCompany(cp);
 
         String uploadPath = session.getServletContext().getRealPath("/uploads");
         List<FileEntity> fileEntities = null;
 
         try {
-            // 업로드 폴더 없으면 생성
-            File uploadDir = new File(uploadPath);
-            if(!uploadDir.exists()) uploadDir.mkdir();
 
-            // 1) 상품 등록
+            // 1. 폴더 생성
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) uploadDir.mkdir();
+
+            // 2. JSON 파싱 (딱 1번만!)
+            ObjectMapper mapper = new ObjectMapper();
+
+            List<Map<String, Object>> colors =
+                    mapper.readValue(colorsJson, new TypeReference<List<Map<String, Object>>>() {});
+
+            // 3. color DB 저장용 문자열
+            productEntity.setColor(
+                    String.join(",",
+                            colors.stream()
+                                    .map(c -> (String) c.get("colorName"))
+                                    .toList()
+                    )
+            );
+
+            // 4. size 저장
+            productEntity.setSize(size);
+
+            // 5. 상품 저장
             ProductEntity savedProduct = productService.productInsert(productEntity);
 
-            // 2) 파일 업로드 처리
-            fileEntities = fileUploadProcess(productEntity.getFiles(), savedProduct.getPId(), uploadPath);
+            // 6. 파일 + 색상 매칭
+            fileEntities = fileUploadProcess(
+                    files,
+                    colors,
+                    savedProduct.getPId(),
+                    uploadPath
+            );
 
-            // 3) 파일 DB 저장
+            // 7. 파일 DB 저장
             productService.fileListInsert(fileEntities);
 
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
 
-            // 이미 업로드된 파일 삭제
-            if(fileEntities != null){
-                for(FileEntity entity : fileEntities){
-                    File delFile = new File(uploadPath, entity.getFilename()+"."+entity.getExtname());
-                    if(delFile.exists()) delFile.delete();
+            if (fileEntities != null) {
+                for (FileEntity entity : fileEntities) {
+                    File delFile = new File(uploadPath,
+                            entity.getFilename() + "." + entity.getExtname());
+                    if (delFile.exists()) delFile.delete();
                 }
             }
 
@@ -67,58 +102,64 @@ public class ProductController {
 
         return "OK";
     }
-
     /**
      * 파일 업로드 처리
      */
-    public List<FileEntity> fileUploadProcess(List<MultipartFile> fileList, Integer productId, String uploadPath) throws Exception{
+    public List<FileEntity> fileUploadProcess(
+            List<MultipartFile> fileList,
+            List<Map<String, Object>> colors,
+            Integer productId,
+            String uploadPath
+    ) throws Exception {
 
         List<FileEntity> uploadFiles = new ArrayList<>();
+        for (int i = 0; i < fileList.size(); i++) {
 
-        if(fileList != null){
-            for(MultipartFile mf : fileList){
+            MultipartFile mf = fileList.get(i);
+            Map<String, Object> color = colors.get(i);
 
-                if(mf != null && !mf.isEmpty()){
+            if (mf == null || mf.isEmpty()) continue;
 
-                    String uploadFilename = mf.getOriginalFilename();
-                    int point = uploadFilename.lastIndexOf(".");
+            String colorName = (String) color.get("colorName");
 
-                    String filename = uploadFilename.substring(0, point);
-                    String extname = uploadFilename.substring(point + 1);
+            FileEntity fe = new FileEntity();
 
-                    File f = new File(uploadPath, uploadFilename);
+            fe.setColorName(colorName);
 
-                    // 동일 파일명 처리
-                    if(f.exists()){
-                        for(int num=1;;num++){
-                            String newFilename = filename + "(" + num + ")." + extname;
-                            f = new File(uploadPath, newFilename);
-                            if(!f.exists()){
-                                uploadFilename = newFilename;
-                                break;
-                            }
-                        }
+            String uploadFilename = mf.getOriginalFilename();
+            int point = uploadFilename.lastIndexOf(".");
+
+            String filename = uploadFilename.substring(0, point);
+            String extname = uploadFilename.substring(point + 1);
+
+            File f = new File(uploadPath, uploadFilename);
+
+            // 중복 파일 처리
+            if (f.exists()) {
+                for (int num = 1; ; num++) {
+                    String newFilename = filename + "(" + num + ")." + extname;
+                    f = new File(uploadPath, newFilename);
+                    if (!f.exists()) {
+                        uploadFilename = newFilename;
+                        break;
                     }
-
-                    // 파일 업로드
-                    mf.transferTo(f);
-
-                    // FileEntity 생성
-                    FileEntity fe = new FileEntity();
-                    int newPoint = uploadFilename.lastIndexOf(".");
-                    fe.setFilename(uploadFilename.substring(0, newPoint));
-                    fe.setExtname(uploadFilename.substring(newPoint + 1));
-                    fe.setSize((int) f.length());
-
-                    ProductEntity p = new ProductEntity();
-                    p.setPId(productId);
-
-                    fe.setProductEntity(p);
-
-                    uploadFiles.add(fe);
                 }
             }
+
+            mf.transferTo(f);
+
+            int newPoint = uploadFilename.lastIndexOf(".");
+            fe.setFilename(uploadFilename.substring(0, newPoint));
+            fe.setExtname(uploadFilename.substring(newPoint + 1));
+            fe.setSize((int) f.length());
+
+            ProductEntity p = new ProductEntity();
+            p.setPId(productId);
+            fe.setProductEntity(p);
+
+            uploadFiles.add(fe);
         }
+
 
         return uploadFiles;
     }
@@ -139,43 +180,61 @@ public class ProductController {
         return result;
     }
 
-    /**
-     * 상품 수정
-     */
     @PostMapping("/product/edit")
     @Transactional(rollbackFor = {RuntimeException.class, SQLException.class})
-    public ResponseEntity<String> productEdit(ProductEntity productEntity, HttpSession session){
+    public ResponseEntity<String> productEdit(
+            @ModelAttribute ProductEntity productEntity,
+            @RequestParam("files") List<MultipartFile> files,
+            @RequestParam("colors") String colorsJson,
+            HttpSession session
+    ){
 
         String uploadPath = session.getServletContext().getRealPath("/uploads");
         List<FileEntity> newUploadedFiles = null;
 
-        try{
-            // 1) 새 파일 업로드
-            newUploadedFiles = fileUploadProcess(productEntity.getFiles(), productEntity.getPId(), uploadPath);
-            productService.fileListInsert(newUploadedFiles);
+        try {
 
-            // 2) 삭제할 파일 목록 조회
-            List<FileEntity> delFiles = productService.fileIdSelect(productEntity.getDelFile());
+            // 1. 폴더 생성
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) uploadDir.mkdir();
 
-            // 3) 파일 DB 삭제
-            productService.fileDelete(productEntity.getDelFile());
+            // 2. JSON → colors 변환
+            ObjectMapper mapper = new ObjectMapper();
 
-            // 4) 실제 파일 삭제
-            for(FileEntity f : delFiles){
-                File delFile = new File(uploadPath, f.getFilename()+"."+f.getExtname());
-                if(delFile.exists()) delFile.delete();
-            }
+            List<Map<String, Object>> colors =
+                    mapper.readValue(colorsJson, new TypeReference<List<Map<String, Object>>>() {});
 
-            // 5) 상품 정보 수정
+            // 3. 상품 수정 (중요: insert 아님)
             productService.productUpdate(productEntity);
 
-        } catch(Exception e){
+            // 4. 파일 업로드 + 색상 매칭
+            newUploadedFiles = fileUploadProcess(
+                    files,
+                    colors,
+                    productEntity.getPId(),
+                    uploadPath
+            );
+
+            productService.fileListInsert(newUploadedFiles);
+
+            // 5. 삭제 처리
+            List<FileEntity> delFiles =
+                    productService.fileIdSelect(productEntity.getDelFile());
+
+            productService.fileDelete(productEntity.getDelFile());
+
+            for (FileEntity f : delFiles) {
+                File delFile = new File(uploadPath, f.getFilename() + "." + f.getExtname());
+                if (delFile.exists()) delFile.delete();
+            }
+
+            return ResponseEntity.ok("OK");
+
+        } catch (Exception e) {
             e.printStackTrace();
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return ResponseEntity.ok("FAIL");
         }
-
-        return ResponseEntity.ok("OK");
     }
 
     /**

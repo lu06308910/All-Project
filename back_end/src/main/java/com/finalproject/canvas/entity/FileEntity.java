@@ -20,11 +20,16 @@ public class FileEntity {
     @Column(nullable = false,length = 200)
     private String filename;
 
+    @Column(name = "color_name")
+    private String colorName;
+
     @Column(nullable = false,length = 10)
     private String extname;
 
     @Column(nullable = false)
     private int size;
+
+
 
     //원글 정보
     @ManyToOne

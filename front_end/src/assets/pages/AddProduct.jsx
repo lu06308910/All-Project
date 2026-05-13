@@ -12,6 +12,8 @@ import "./../css/seul.css";
 
 function AddProduct() {
 
+        const fileRef = useRef(null);
+
         // 공통 input 스타일
         const inputStyle = {
                 height: "38px",
@@ -55,15 +57,16 @@ function AddProduct() {
         // 색상 추가
         const handleAddColor = () => {
 
-                if (colorInput.trim() === "") return;
+                if (!colorInput.trim()) return;
+                if (!colorFile) return;
 
                 const newColor = {
                         color: colorInput,
-                        imgName: colorImg,
+                        imgName: colorFile.name,
                         imgFile: colorFile,
                 };
 
-                setColors([...colors, newColor]);
+                setColors(prev => [...prev, newColor]);
 
                 setColorInput("");
                 setColorImg("");
@@ -139,52 +142,60 @@ function AddProduct() {
                         return;
                 }
 
-                // 첨부파일이 있는지 확인
-                if (files.length == 0) {
+                const hasFile = colors.some(c => c.imgFile);
+
+                if (!hasFile) {
                         alert("첨부파일은 반드시 1개 이상이여야 합니다.");
-                        return false;
+                        return;
                 }
+
 
                 const formData = new FormData();
-                // formData.append("joinsEntity.id", window.sessionStorage.getItem("id"));
-                formData.append("category", category);
-                formData.append("subCategory", subCategory);
-                formData.append("subject", subject);
-                formData.append("content", html);
+
+                formData.append("b_category", category);
+                formData.append("s_category", subCategory);
+                formData.append("name", subject);
+                formData.append("context", html);
                 formData.append("count", count);
                 formData.append("price", price);
+                formData.append("cId", 1);
 
-                colors.forEach((c, index) => {
-                        formData.append(`colors[${index}].color`, c.color);
-                        formData.append(`colors[${index}].imgName`, c.imgName);
-                        formData.append(`colors[${index}].imgFile`, c.imgFile);
+
+                // 1️ 컬러 정보 (이미지 제외, JSON)
+                formData.append(
+                        "colors",
+                        JSON.stringify(
+                                colors.map(c => ({
+                                        colorName: c.color
+                                }))
+                        )
+                );
+
+
+                // 2️ 이미지 파일 (순서 유지 중요)
+                colors.forEach((c) => {
+                        formData.append("files", c.imgFile);
                 });
-                sizes.forEach((s, index) => {
-                        formData.append(`sizes[${index}].size`, s.size);
-                        formData.append(`sizes[${index}].price`, s.price);
-                });
 
-                // 첨부파일
-                for (var i = 0; i < files.length; i++) {
-                        formData.append("files", files[i])// 여러개 파일을 form객체에 추가 <input type="file">
-                }
 
-                // 비동기 호출
-                axios.post("http://localhost:9990/mypage/addproduct", formData, {
-                        headers: {
-                                "Content-Type": "multipart/form-data"
-                        }
-                })
+                formData.append(
+                        "size",
+                        JSON.stringify(sizes)
+                );
+
+
+                //  전송
+                axios.post("http://localhost:9990/mypage/addproduct", formData)
                         .then((response) => {
                                 console.log("response.data", response.data);
-                                console.log("flies", files);
-                                if (response.data == "OK") {
-                                        window.location.href = "/data/dataList";
+
+                                if (response.data === "OK") {
+                                        window.location.href = "/mypage/addproduct";
                                 }
                         })
                         .catch((error) => {
-                                console.log("글등록 에러발생==>", error)
-                        })
+                                console.log("글등록 에러발생==>", error);
+                        });
         };
 
         return (
@@ -320,10 +331,15 @@ function AddProduct() {
                                                         <input
                                                                 type="file"
                                                                 hidden
-                                                                multiple
-                                                                onChange={(e) => setFiles(Array.from(e.target.files))}
+                                                                onClick={(e) => (e.target.value = null)}
+                                                                onChange={(e) => {
+                                                                        const file = e.target.files[0];
+                                                                        if (!file) return;
+
+                                                                        setColorFile(file);
+                                                                        setColorImg(file.name);
+                                                                }}
                                                         />
-                                                        
                                                 </label>
 
                                                 {/* 색상 추가 버튼 */}
@@ -448,9 +464,9 @@ function AddProduct() {
                                                                 }}
                                                         >
                                                                 <span>{item.size}</span>
-                                                                {item.addPrice && (
+                                                                {item.price && (
                                                                         <span style={{ fontSize: "13px", color: "#555" }}>
-                                                                                (+{item.addPrice}원)
+                                                                                (+{item.price}원)
                                                                         </span>
                                                                 )}
                                                                 <span

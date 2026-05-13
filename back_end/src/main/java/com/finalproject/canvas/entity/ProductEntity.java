@@ -22,6 +22,11 @@ public class ProductEntity {
     @Column(name = "p_id")
     private Integer pId;   // ← 필드명 CamelCase
 
+    // --- 회사 FK ---
+    @ManyToOne
+    @JoinColumn(name = "c_id", nullable = false)
+    private CpDataEntity company;
+
     private String name;
     private String b_category;
     private String s_category;
@@ -29,7 +34,8 @@ public class ProductEntity {
     private String color;
     private Integer count = 0;
     private String size;
-    private String img;
+
+    @Column(columnDefinition = "LONGTEXT")
     private String context;
 
     // ───────── 파일 / 이미지 엔티티 관계 ─────────
@@ -50,10 +56,6 @@ public class ProductEntity {
     @Transient
     private List<Integer> delFile;
 
-    // ───────── 기업아이디 , 확인용 (DB 미저장) ─────────
-    //@ManyToOne
-    //@JoinColumn(name = "c_id", nullable = false)
-    @Column(name = "c_id")
-    private Integer cId;  // ← 숫자로 받아버림
+
 
 }
