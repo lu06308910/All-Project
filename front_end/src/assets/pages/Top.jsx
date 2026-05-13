@@ -8,21 +8,23 @@ function Top() {
   const [showTopBtn, setShowTopBtn] = useState(false);
 
   const isLogin = window.sessionStorage.getItem("logStatus") === "Y"; // 로그인 여부판단
-  //로그아웃
   //스트링부트의 session삭제
   //sessionStorage정보 삭제
-  function logoutFnt() {
+  // 로그아웃
+  const handleLogout = () => {
+    // 세션 스토리지의 모든 정보 삭제
+    sessionStorage.clear();
 
-    axios.get('http://localhost:9989/member/logout')
-      .then((response) => {
-        // sessionStorage의 모든 변수를 삭제한다.
-        window.sessionStorage.clear();
-        window.location.href = "/";
-      })
-      .catch((error) => {
-        console.log("로그아웃 에러 발생함..", error)
-      })
-  }
+    // 또는 특정 항목만 삭제하고 싶을 때:
+    // sessionStorage.removeItem('logStatus');
+    // sessionStorage.removeItem('logId');
+    // sessionStorage.removeItem('logName');
+
+    alert("로그아웃 되었습니다.");
+
+    // 2. 메인 페이지로 이동하면서 새로고침 (상태 초기화)
+    window.location.href = "/";
+  };
 
   // 스크롤 감지 로직
   useEffect(() => {
@@ -94,7 +96,7 @@ function Top() {
               {/* 로그인 했을 때 */}
               {isLogin && (
                 <>
-                  <div><Link to="#" onClick={logoutFnt}>로그아웃</Link></div>
+                  <div><Link to="#" onClick={handleLogout}>로그아웃</Link></div>
                   <div><Link to="/mypage">마이스토어</Link></div>
                   <div><Link to="/basket">장바구니</Link></div>
                 </>

@@ -95,19 +95,7 @@ function Member() {
                 }
 
                 //백엔드
-                axios.post('http://localhost:9989/member/signup', {
-                        userid: formData.userid,
-                        userpwd: formData.userpwd,
-                        username: formData.username,
-                        tel: formData.tel,
-                        email: formData.email,
-                        zipcode: formData.zipcode,
-                        address: formData.address,
-                        address_detail: formData.address_detail,
-                        businessName: formData.businessName,
-                        businessNum: formData.businessNum,
-                        usertype: formData.usertype
-                })
+                axios.post('http://localhost:9989/member/signup', formData)
                         .then(function (response) {
                                 console.log(response.data);
                                 if (response.data) { // 회원가입 성공
@@ -192,7 +180,7 @@ function Member() {
                                         </div>
 
                                         <div className="input-group">
-                                                <p>{formData.userType === 'BUSINESS' ? 'MANAGER NAME' : 'NAME'}</p>
+                                                <p>{formData.usertype === 'BUSINESS' ? 'MANAGER NAME' : 'NAME'}</p>
                                                 <input type="text" name="username" placeholder="이름을 입력하세요" onChange={handleChange} />
                                         </div>
 
