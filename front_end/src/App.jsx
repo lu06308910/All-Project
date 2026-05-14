@@ -53,7 +53,7 @@ function App() {
           <Route path='/qna/write' element={<QnaWrite />}></Route>
           <Route path='/qna/noticelist' element={<NoticeList />}></Route>
           <Route path='/qna/noticewrite' element={<NoticeWrite />}></Route>
-          <Route path='/qna/noticeview' element={<NoticeView />}></Route>
+          <Route path='/qna/noticeview/:id' element={<NoticeView />}></Route>
           <Route path='/basket' element={<Basket />}></Route>
           <Route path='/parchase' element={<Parchase />}></Route>
           <Route path='/finalcheck' element={<Finalbuy />}></Route>

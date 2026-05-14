@@ -8,21 +8,16 @@ function Top() {
   const [showTopBtn, setShowTopBtn] = useState(false);
 
   const isLogin = window.sessionStorage.getItem("logStatus") === "Y"; // 로그인 여부판단
-  //스트링부트의 session삭제
-  //sessionStorage정보 삭제
+  const logId = window.sessionStorage.getItem("logId"); // 로그인한 아이디
+
+  // 관리자 여부 확인 (예: 아이디가 'admin'인 경우)
+  const isAdmin = isLogin && logId === "admin";
   // 로그아웃
   const handleLogout = () => {
     // 세션 스토리지의 모든 정보 삭제
     sessionStorage.clear();
-
-    // 또는 특정 항목만 삭제하고 싶을 때:
-    // sessionStorage.removeItem('logStatus');
-    // sessionStorage.removeItem('logId');
-    // sessionStorage.removeItem('logName');
-
     alert("로그아웃 되었습니다.");
-
-    // 2. 메인 페이지로 이동하면서 새로고침 (상태 초기화)
+    // 메인 페이지로 이동하면서 새로고침 (상태 초기화)
     window.location.href = "/";
   };
 
@@ -35,7 +30,6 @@ function Top() {
         setShowTopBtn(false);
       }
     };
-
     window.addEventListener("scroll", handleShowButton);
     return () => {
       window.removeEventListener("scroll", handleShowButton);
@@ -49,6 +43,7 @@ function Top() {
       behavior: 'smooth' // 부드럽게 올라가는 효과
     });
   }
+
   //---------------------------------------------------------------------
   return (
     <div className="layoutAll">
@@ -74,7 +69,9 @@ function Top() {
             <Link to="/spaceproduct">공간별</Link>
             <Link to="/sale">할인 상품</Link>
             <Link to="/qna">서비스지원</Link>
-            <Link to="/manager">관리자페이지</Link>
+
+            {/* 관리자일 때만 관리자페이지 메뉴가 보이도록 설정 */}
+            {isAdmin && <Link to="/manager">관리자페이지</Link>}
           </div>
 
           {/* 검색 및 아이콘카테고리 */}
