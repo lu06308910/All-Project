@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.finalproject.canvas.entity.CpDataEntity;
 import com.finalproject.canvas.entity.FileEntity;
 import com.finalproject.canvas.entity.ProductEntity;
+import com.finalproject.canvas.entity.SearchVO;
 import com.finalproject.canvas.service.ProductService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -290,5 +291,16 @@ public class ProductController {
         }
 
         return "OK";
+    }
+    //모든 제품 정보 가져오기 (관리자 페이지)
+    @GetMapping("/all/product")
+    public List<ProductEntity> getProducts(){
+        return productService.getAllProducts();
+    }
+    //제품 검색
+    @PostMapping("/search/product")
+    public List<ProductEntity> searchProducts(@RequestBody SearchVO searchVO){
+        log.info("상품검색=>"+searchVO.toString());
+        return productService.searchProducts(searchVO);
     }
 }

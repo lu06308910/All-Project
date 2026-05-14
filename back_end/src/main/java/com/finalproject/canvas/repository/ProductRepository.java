@@ -1,5 +1,6 @@
 package com.finalproject.canvas.repository;
 
+import com.finalproject.canvas.entity.CpDataEntity;
 import com.finalproject.canvas.entity.ProductEntity;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -43,4 +44,8 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Integer>
             @Param("context") String context,
             @Param("price") String price
     );
+    //상품명으로 검색
+    List<ProductEntity> findByNameContaining(String name);
+    //기업명으로 검색
+    List<ProductEntity> findByCompany_BusinessNameContaining(String businessName);
 }

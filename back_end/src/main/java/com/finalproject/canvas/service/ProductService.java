@@ -2,11 +2,13 @@ package com.finalproject.canvas.service;
 
 import com.finalproject.canvas.entity.FileEntity;
 import com.finalproject.canvas.entity.ProductEntity;
+import com.finalproject.canvas.entity.*;
 import com.finalproject.canvas.repository.FileRepository;
 import com.finalproject.canvas.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,14 +22,14 @@ public class ProductService {
     private final FileRepository fileRepository;
 
     // 상품 등록
-    public ProductEntity productInsert(ProductEntity productEntity){
+    public ProductEntity productInsert(ProductEntity productEntity) {
         return productRepository.save(productEntity);
     }
 
     // 파일 리스트 저장
-    public int fileListInsert(List<FileEntity> fileList){
+    public int fileListInsert(List<FileEntity> fileList) {
         int cnt = 0;
-        for(FileEntity entity : fileList) {
+        for (FileEntity entity : fileList) {
             fileRepository.save(entity);
             cnt++;
         }
@@ -40,19 +42,18 @@ public class ProductService {
     }
 
     // 상품 상세 조회
-    public Optional<ProductEntity> productSelect(int id){
+    public Optional<ProductEntity> productSelect(int id) {
         return productRepository.findById(id);
     }
 
-
     // 특정 상품에 연결된 파일 조회
     // FileEntity 필드명이 productEntity 로 되어있다고 가정
-    public List<FileEntity> fileSelect(int productId){
+    public List<FileEntity> fileSelect(int productId) {
         return fileRepository.findByProductEntity_pId(productId);
     }
 
     // 상품 수정
-    public int productUpdate(ProductEntity productEntity){
+    public int productUpdate(ProductEntity productEntity) {
         return productRepository.updateProduct(
                 productEntity.getPId(),
                 productEntity.getName(),
@@ -62,26 +63,40 @@ public class ProductService {
     }
 
     // 삭제할 파일들 선택
-    public List<FileEntity> fileIdSelect(List<Integer> delFile){
+    public List<FileEntity> fileIdSelect(List<Integer> delFile) {
         return fileRepository.findByIdIn(delFile);
     }
 
     // 파일 삭제
-    public int fileDelete(List<Integer> delFile){
+    public int fileDelete(List<Integer> delFile) {
         return fileRepository.deleteByIdIn(delFile);
     }
 
     // 특정 상품에 연결된 파일 전체 삭제
-    public List<FileEntity> fileListDelete(Integer productId){
+    public List<FileEntity> fileListDelete(Integer productId) {
         return fileRepository.findByProductEntity_pId(productId);
     }
 
     // 상품 삭제
-    public void productDelete(Integer id){
+    public void productDelete(Integer id) {
         ProductEntity entity = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 상품이 없습니다."));
         productRepository.delete(entity);
     }
 
+    //모든 product 정보 가져오기(관리자 페이지)
+    public List<ProductEntity> getAllProducts() {
+        return productRepository.findAll();
+    }
 
+    //제품 검색
+    public List<ProductEntity> searchProducts(SearchVO searchVO) {
+        String key = searchVO.getSearchKey();
+        String word = searchVO.getSearchWord();
+        if (word == null || word.isBlank()) return productRepository.findAll();
+
+        if ("name".equals(key)) return productRepository.findByNameContaining(word);
+        if ("businessName".equals(key)) return productRepository.findByCompany_BusinessNameContaining(word);
+        else return productRepository.findByCompany_BusinessNameContaining(word);
+    }
 }

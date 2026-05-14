@@ -11,4 +11,13 @@ public interface DataRepository extends JpaRepository<DataEntity, Integer> {
 
     // 2. 단일 조회: 아이디로 유저 한 명의 정보를 찾습니다.
     public DataEntity findByUserid(String userid);
+
+    //아이디로 검색
+    List<DataEntity> findByUseridContaining(String userid);
+    //이름으로 검색
+    List<DataEntity> findByUsernameContaining(String username);
+    //이메일로 검색
+    List<DataEntity> findByEmailContaining(String email);
+    //전화번호로 검색
+    List<DataEntity> findByTelContaining(String tel);
 }

@@ -49,22 +49,25 @@ function Manager() {
         //회원 업데이트
         const [users, setUsers] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9990/member/all')
+                axios.get('http://localhost:9991/member/all/member')
                 .then(res => setUsers(res.data))
                 .catch(err => console.log(err));
         }, []);
         const [companys, setCompanys] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9990/member/all/business')
+                axios.get('http://localhost:9991/member/all/business')
                 .then(res => setCompanys(res.data))
                 .catch(err => console.log(err));
         }, []);
 
         //상품관리
-        const products =[
-                {id:1, comname:"기업명1", category:'야외 〉조경', title:'상품명1', cost:'2,555,000원', count:'152', writedate:'2023-09-26' },
-                {id:2, comname:"기업명1", category:'야외 〉조경', title:'상품명1', cost:'2,555,000원', count:'0', writedate:'2023-09-26' },
-        ]
+        const [products, setProducts] = useState([]);
+        useEffect(() => {
+                axios.get('http://localhost:9991/all/product')
+                .then(res => setProducts(res.data))
+                .catch(err => console.log(err));
+        }, []);
+        
         //문의
         const ask = [
                 { id: 1, subject: '🔒사고 싶은 옷이 찜목록에서 삭제됐어요.', username: '김희*', writedate: '2026-04-26', state: '답변 미작성', answer: null},
@@ -93,9 +96,6 @@ function Manager() {
         const postsPerPage2 = 5;
         const totalPosts2 = 10;
         const totalPages2 = Math.ceil(totalPosts2 / postsPerPage2);
-
-        const indexOfLastPost = currentPage * postsPerPage;
-        const indexOfFirstPost = indexOfLastPost - postsPerPage;
 
         // 페이지 이동 함수
         const paginate = (pageNumber, e) => {
@@ -126,23 +126,22 @@ function Manager() {
         //회원 삭제 명령어
         const handleBulkUnregister = () => {
         const targets = selectedItems['회원관리'] || [];
-        if (targets.length === 0) return alert("탈퇴처리할 회원을 선택해주세요.");
-        if (!window.confirm(`선택한 ${targets.length}명을 탈퇴처리 하시겠습니까?`)) return;
+                if (targets.length === 0) return alert("탈퇴처리할 회원을 선택해주세요.");
+                if (!window.confirm(`선택한 ${targets.length}명을 탈퇴처리 하시겠습니까?`)) return;
 
         Promise.all(
                 targets.map(mid =>
-                axios.patch(`http://localhost:9990/member/unregister/${mid}`)
+                axios.patch(`http://localhost:9991/member/unregister/${mid}`)
                 )
         )
         .then(() => {
                 alert("탈퇴처리 완료");
-                axios.get('http://localhost:9990/member/all')
+                axios.get('http://localhost:9991/member/all')
                 .then(res => setUsers(res.data));
                 setSelectedItems(prev => ({ ...prev, '회원관리': [] }));
         })
         .catch(err => console.log(err));
         }
-
 
         const deleteSelected = (menu) => {
                 const targets = selectedItems[menu] || [];
@@ -153,53 +152,126 @@ function Manager() {
                 }
         }
 
+        //검색 함수
+        const [userSearchKey, setUserSearchKey] = useState('userid');
+        const [userSearchWord, setUserSearchWord] = useState('');
+        const [companySearchKey, setCompanySearchKey] = useState('userid');
+        const [companySearchWord, setCompanySearchWord] = useState('');
+        const [productSearchKey, setProductSearchKey] = useState('name');
+        const [productSearchWord, setProductSearchWord] = useState('');
+        const [productBCategory, setProductBCategory] = useState('');
+        const [productSCategory, setProductSCategory] = useState('');
+
+        const [userOutSearchKey, setUserOutSearchKey] = useState('userid');
+        const [userOutSearchWord, setUserOutSearchWord] = useState('');
+        const [companyOutSearchKey, setCompanyOutSearchKey] = useState('userid');
+        const [companyOutSearchWord, setCompanyOutSearchWord] = useState('');
+
+        const handleUserSearch = () => {
+                axios.post('http://localhost:9991/member/search',{
+                        searchKey: userSearchKey,
+                        searchWord: userSearchWord
+                })
+                .then(res => setUsers(res.data))
+                .catch(err => console.log(err));
+        }
+
+        const handleCompanySearch = () => {
+                axios.post('http://localhost:9991/member/search/business',{
+                        searchKey: companySearchKey,
+                        searchWord: companySearchWord
+                })
+                .then(res => setCompanys(res.data))
+                .catch(err => console.log(err));
+        }
+
+        const handleProductSearch = () => {
+                axios.post('http://localhost:9991/search/product', {
+                        searchKey: productSearchKey,
+                        searchWord: productSearchWord
+                })
+                .then(res => setProducts(res.data))
+                .catch(err => console.log(err));
+        }
+
         // 더보기
         const [showMore, setShowMore] = useState(false);
         const [showMoreOut, setShowMoreOut] = useState(false);
         const [cshowMore, setCShowMore] = useState(false);
         const [cshowMoreOut, setCShowMoreOut] = useState(false);
-        const visibleUsers = showMore ? users : users.slice(0, 5);
-        const invisibleUsers = showMoreOut ? users : users.slice(0, 5);
-        const visibleCompanys = showMore ? companys : companys.slice(0, 5);
-        const invisibleCompanys = showMoreOut ? companys : companys.slice(0, 5);
+        // 활동 중 회원
+        const activeUsers = users
+                .filter(u => u.isOut === 'N')
+                .filter(u => !userSearchWord || u[userSearchKey]?.includes(userSearchWord));
+        const visibleUsers = showMore ? activeUsers : activeUsers.slice(0, 5);
 
-        const handleToggle = (id) => {
-                // 이미 열려있는 걸 다시 누르면 닫고(null), 아니면 해당 ID를 엽니다.
-                setOpenId(openId === id ? null : id);
-        };
+        // 탈퇴 회원
+        const outUsers = users
+                .filter(u => u.isOut !== 'N')
+                .filter(u => !userOutSearchWord || u[userOutSearchKey]?.includes(userOutSearchWord));
+        const invisibleUsers = showMoreOut ? outUsers : outUsers.slice(0, 5);
+
+        // 활동 중 기업
+        const activeCompanys = companys
+                .filter(c => c.isOut === 'N')
+                .filter(c => !companySearchWord || c[companySearchKey]?.includes(companySearchWord));
+        const visibleCompanys = cshowMore ? activeCompanys : activeCompanys.slice(0, 5);
+
+        // 탈퇴 기업
+        const outCompanys = companys
+                .filter(c => c.isOut !== 'N')
+                .filter(c => !companyOutSearchWord || c[companyOutSearchKey]?.includes(companyOutSearchWord));
+        const invisibleCompanys = cshowMoreOut ? outCompanys : outCompanys.slice(0, 5);
 
         const menus = ['대시보드', '회원 관리', '기업 관리', '상품 관리', '게시글 관리', '문의 관리', '통계', '정산'];
         const submenus = ['-예약', '-이벤트 관리']
-        const handleCategoryClick = (CategoryName) => {
-                setActiveCategory(CategoryName);
-        }
 
         //날짜 변수
         const [startDate, setStartDate] = useState('');
         const [endDate, setEndDate] = useState('');
+        const [productStartDate, setProductStartDate] = useState('');
+        const [productEndDate, setProductEndDate] = useState('');
 
-        const handleDatePreset = (period, value) => {
+        const handleDateProductPreset = (period, value) => {
                 const today = new Date();
                 const start = new Date();
-
-                // 종료일은 언제나 오늘
-                setEndDate(formatDate(today));
-
-                // 기간 설정
+                setProductEndDate(formatDate(today));
                 if (period === 'day') {
-                        // 당일: 시작일도 오늘
-                        setStartDate(formatDate(today));
+                        setProductStartDate(formatDate(today));
                 } else if (period === 'week') {
                         start.setDate(today.getDate() - 7);
-                        setStartDate(formatDate(start));
+                        setProductStartDate(formatDate(start));
                 } else if (period === 'month') {
                         start.setMonth(today.getMonth() - value);
-                        setStartDate(formatDate(start));
+                        setProductStartDate(formatDate(start));
                 } else if (period === 'year') {
                         start.setFullYear(today.getFullYear() - 1);
-                        setStartDate(formatDate(start));
+                        setProductStartDate(formatDate(start));
                 }
         };
+
+        const filteredProducts = products
+                .filter(pd => {
+                        // 1. 카테고리 필터
+                        if (productBCategory && pd.b_category !== productBCategory) return false;
+                        if (productSCategory && pd.s_category !== productSCategory) return false;
+                return true;
+                })
+                .filter(pd => {
+                        // 2. 날짜 필터
+                        if (!productStartDate && !productEndDate) return true;
+                        const writedate = pd.writedate?.split('T')[0];
+                        if (productStartDate && writedate < productStartDate) return false;
+                        if (productEndDate && writedate > productEndDate) return false;
+                return true;
+                })
+                .filter(pd => {
+                        // 3. 검색어 필터
+                        if (!productSearchWord) return true;
+                        if (productSearchKey === 'name') return pd.name?.includes(productSearchWord);
+                        if (productSearchKey === 'businessName') return pd.company?.businessName?.includes(productSearchWord);
+                        return true;
+                });
 
         // 날짜를 YYYY-MM-DD 형식으로 변환하는 보조 함수
         const formatDate = (date) => {
@@ -493,6 +565,7 @@ function Manager() {
                         }
                 ],
         };
+<<<<<<< HEAD
         const data3 = {
                 labels: [
                         'A기업',
@@ -510,6 +583,8 @@ function Manager() {
                         hoverOffset: 4
                 }]
         };
+=======
+>>>>>>> 9da567f3e054cc69c3e497830ce73c71ee8bf685
         const ChartData = {
                 type: 'doughnut',
                 data: data
@@ -543,10 +618,13 @@ function Manager() {
                         }
                 },
         };
+<<<<<<< HEAD
         const ChartData3 = {
                 type: 'doughnut',
                 data: data
         };
+=======
+>>>>>>> 9da567f3e054cc69c3e497830ce73c71ee8bf685
         const ChartModel = () => (
                 <div style={{
                         position: 'fixed',
@@ -623,32 +701,6 @@ function Manager() {
                         {/* 대시보드 페이지 */}
                         {activeMenu == '대시보드' && (
                                 <div className='category-content'>
-                                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>매출 현황</h4>
-                                        <hr />
-                                        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                                                <div style={{ flex: 3, height: '350px' }}>
-                                                        <Line
-                                                                data={data2}
-                                                                options={{
-                                                                        ...ChartData.options2,
-                                                                        maintainAspectRatio: false
-                                                                }}
-                                                        />
-                                                </div>
-                                                <div style={{ flex: 1.5, height: '350px' }}>
-                                                        <Doughnut
-                                                                data={data3}
-                                                                options={{
-                                                                        ...ChartData.options3,
-                                                                        maintainAspectRatio: false
-                                                                }}
-                                                        />
-                                                </div>
-                                        </div>
-                                        <div style={{ marginTop: '20px', display: 'flex', gap: '20px', alignItems: 'center' }}>
-                                                <div style={{ marginLeft: '215px' }}>CANVAS 전체 매출 현황</div>
-                                                <div style={{ marginLeft: '400px' }}>기업 매출 상위 분포도</div>
-                                        </div>
                                         <h4 style={{ marginTop: '60px', textAlign: 'left', fontWeight: '600' }}>상위 리스트</h4>
                                         <hr />
                                         <div className="row" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', textAlign: 'center' }}>
@@ -659,6 +711,41 @@ function Manager() {
                                                 <div className="col p-2">게시글(상품) 이름</div>
                                                 <div className="col p-2">게시글(상품) 이름</div>
                                         </div>
+                                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>매출 현황</h4>
+                                        <hr />
+                                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'space-evenly' }}>
+                                                <div className='dash-board'>
+                                                        <Line
+                                                                data={data2}
+                                                                options={{
+                                                                        ...ChartData.options2,
+                                                                        maintainAspectRatio: false
+                                                                }}
+                                                        />
+                                                </div>
+                                                <div className='dash-board' style={{ overflowX: 'auto' }}>
+                                                        <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', marginTop:'10px' }}>
+                                                                <thead>
+                                                                        <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업명</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>카테고리</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>상품명</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>판매가</th>
+                                                                        </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                        {filteredProducts.slice(0, 6).map((pd) => (
+                                                                        <tr key={pd.pId} style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.company?.businessName}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.b_category}〉{pd.s_category}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pd.name}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.price}</td>
+                                                                        </tr>
+                                                                        ))}
+                                                                </tbody>
+                                                        </table>
+                                                </div>
+                                        </div>
                                 </div>
                         )}
                         {/* 회원관리 페이지 */}
@@ -667,10 +754,26 @@ function Manager() {
                                         <div className='category-content'>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>회원 검색</h4>
-                                                        <div className="search-bar">
-
-                                                                <input type="text" placeholder="검색할 상품을 입력해주세요." />
-                                                                <button className="search-icon"></button>
+                                                        <div style={{display:'flex', justifyContent:'center'}}>
+                                                                <select 
+                                                                        value={userSearchKey}
+                                                                        onChange={(e) => setUserSearchKey(e.target.value)}
+                                                                        className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px', marginTop:'5PX' }}
+                                                                >
+                                                                        <option value="username">이름</option>
+                                                                        <option value="userid">아이디</option>
+                                                                        <option value="email">이메일</option>
+                                                                        <option value="tel">전화번호</option>
+                                                                </select>
+                                                                <div className="search-bar">
+                                                                        <input type="text" placeholder="검색어를 입력해주세요."
+                                                                                value={userSearchWord}
+                                                                                onChange={(e)=> setUserSearchWord(e.target.value)}
+                                                                                onKeyDown={(e)=>e.key === 'Enter'&&handleUserSearch()}
+                                                                        />
+                                                                        <button className="search-icon" onClick={handleUserSearch}></button>
+                                                                </div>
                                                         </div>
                                                 </div>
                                                 <hr />
@@ -684,7 +787,6 @@ function Manager() {
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
                                                 {visibleUsers
-                                                        .filter(user => user.isOut =="N")
                                                         .map((user) => (
                                                                 <div key={user.mid} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
                                                                         <div className="col-1 border-start" style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
@@ -721,9 +823,26 @@ function Manager() {
                                         <div className='category-content'>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>탈퇴회원 검색</h4>
-                                                        <div className="search-bar">
-                                                                <input type="text" placeholder="검색할 상품을 입력해주세요." />
-                                                                <button className="search-icon"></button>
+                                                        <div style={{display:'flex', justifyContent:'center'}}>
+                                                                <select 
+                                                                        value={userSearchKey}
+                                                                        onChange={(e) => setUserOutSearchKey(e.target.value)}
+                                                                        className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px', marginTop:'5PX' }}
+                                                                >
+                                                                        <option value="username">이름</option>
+                                                                        <option value="userid">아이디</option>
+                                                                        <option value="email">이메일</option>
+                                                                        <option value="tel">전화번호</option>
+                                                                </select>
+                                                                <div className="search-bar">
+                                                                        <input type="text" placeholder="검색어를 입력해주세요."
+                                                                                value={userOutSearchWord}
+                                                                                onChange={(e)=> setUserOutSearchWord(e.target.value)}
+                                                                                onKeyDown={(e)=>e.key === 'Enter'&&handleUserSearch()}
+                                                                        />
+                                                                        <button className="search-icon" onClick={handleUserSearch}></button>
+                                                                </div>
                                                         </div>
                                                 </div>
                                                 <hr />
@@ -766,9 +885,26 @@ function Manager() {
                                         <div className='category-content'>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>기업 검색</h4>
-                                                        <div className="search-bar">
-                                                                <input type="text" placeholder="검색할 상품을 입력해주세요." />
-                                                                <button className="search-icon"></button>
+                                                        <div style={{display:'flex', justifyContent:'center'}}>
+                                                                <select 
+                                                                        value={companySearchKey}
+                                                                        onChange={(e) => setCompanySearchKey(e.target.value)}
+                                                                        className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px', marginTop:'5PX' }}
+                                                                >
+                                                                        <option value="businessName">이름</option>
+                                                                        <option value="userid">아이디</option>
+                                                                        <option value="email">이메일</option>
+                                                                        <option value="tel">전화번호</option>
+                                                                </select>
+                                                                <div className="search-bar">
+                                                                        <input type="text" placeholder="검색어를 입력해주세요."
+                                                                                value={companySearchWord}
+                                                                                onChange={(e)=> setCompanySearchWord(e.target.value)}
+                                                                                onKeyDown={(e)=>e.key === 'Enter'&&handleCompanySearch()}
+                                                                        />
+                                                                        <button className="search-icon" onClick={handleCompanySearch}></button>
+                                                                </div>
                                                         </div>
                                                 </div>
                                                 <hr />
@@ -782,9 +918,8 @@ function Manager() {
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
                                                 {visibleCompanys
-                                                        .filter(company=>company.isOut =='N')
                                                                 .map((company)=>(
-                                                                        <div key={company} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                        <div key={company.cid} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
                                                                                 <div className="col-1 border-start" style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
                                                                                                 <input type="checkbox" aria-label="항목 선택" />
                                                                                 </div>
@@ -810,9 +945,26 @@ function Manager() {
                                         <div className='category-content'>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>탈퇴기업 검색</h4>
-                                                        <div className="search-bar">
-                                                                <input type="text" placeholder="검색할 상품을 입력해주세요." />
-                                                                <button className="search-icon"></button>
+                                                        <div style={{display:'flex', justifyContent:'center'}}>
+                                                                <select 
+                                                                        value={companySearchKey}
+                                                                        onChange={(e) => setCompanyOutSearchKey(e.target.value)}
+                                                                        className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px', marginTop:'5PX' }}
+                                                                >
+                                                                        <option value="businessName">이름</option>
+                                                                        <option value="userid">아이디</option>
+                                                                        <option value="email">이메일</option>
+                                                                        <option value="tel">전화번호</option>
+                                                                </select>
+                                                                <div className="search-bar">
+                                                                        <input type="text" placeholder="검색어를 입력해주세요."
+                                                                                value={companyOutSearchWord}
+                                                                                onChange={(e)=> setCompanyOutSearchWord(e.target.value)}
+                                                                                onKeyDown={(e)=>e.key === 'Enter'&&handleCompanySearch()}
+                                                                        />
+                                                                        <button className="search-icon" onClick={handleCompanySearch}></button>
+                                                                </div>
                                                         </div>
                                                 </div>
                                                 <hr />
@@ -828,7 +980,7 @@ function Manager() {
                                                 {invisibleCompanys
                                                         .filter(company=>company.isOut !=='N')
                                                                 .map((company)=>(
-                                                                        <div key={company} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                        <div key={company.cid} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
                                                                                 <div className="col-1 border-start">{company.cid}</div>
                                                                                 <div className="col-2 border-start">{company.userid}</div>
                                                                                 <div className="col-2 border-start">{company.name}</div>
@@ -860,43 +1012,67 @@ function Manager() {
                                                 <div style={{ textAlign: 'left', width: '500px' }}>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
                                                                 <p>카테고리 :</p>
-                                                                <select className="cat1" style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}>
-                                                                        <option value="null">대분류</option>
-                                                                        <option value="category">카테고리1</option>
-                                                                        <option value="category">카테고리2</option>
+                                                                <select className="cat1"
+                                                                        value={productBCategory}
+                                                                        onChange={(e) => setProductBCategory(e.target.value)}
+                                                                        style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}
+                                                                >
+                                                                        <option value="">대분류</option>
+                                                                        {[...new Set(products.map(pd => pd.b_category))].map((cat) => (
+                                                                                <option key={cat} value={cat}>{cat}</option>
+                                                                        ))}
                                                                 </select>
-                                                                <select className="cat1" style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}>
-                                                                        <option value="null">소분류</option>
-                                                                        <option value="category">카테고리1</option>
-                                                                        <option value="category">카테고리2</option>
+                                                                <select className="cat1"
+                                                                        value={productSCategory}
+                                                                        onChange={(e) => setProductSCategory(e.target.value)}
+                                                                        style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}
+                                                                >
+                                                                        <option value="">소분류</option>
+                                                                        {[...new Set(products.map(pd => pd.s_category))].map((cat) => (
+                                                                                <option key={cat} value={cat}>{cat}</option>
+                                                                        ))}
                                                                 </select>
                                                         </div>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                                 <p>검색어 :</p>
-                                                                <select className="cat1" style={{ width: '100px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}>
+                                                                <select
+                                                                        className="cat1" style={{ width: '100px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px' }}
+                                                                        value={productSearchKey} onChange={(e) => setProductSearchKey(e.target.value)}
+                                                                >
                                                                         <option value="null">전체</option>
-                                                                        <option value="category">상품명</option>
-                                                                        <option value="category">기업명</option>
+                                                                        <option value="name">상품명</option>
+                                                                        <option value="businessName">기업명</option>
                                                                 </select>
-                                                                <input type='text' style={{ width: '320px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px', border: '1px solid #333333' }} placeholder="검색어를 입력하세요."></input>
+                                                                <input type='text' value={productSearchWord} onChange={(e) => setProductSearchWord(e.target.value)}
+                                                                        style={{ width: '320px', padding: '3px', borderRadius: '10px', fontSize: '0.8em',
+                                                                        height: '30px', border: '1px solid #333333' }} placeholder="검색어를 입력하세요."
+                                                                ></input>
                                                         </div>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                                 <p style={{ width: "80px d-inline-flex" }}>등록일자 :</p>
                                                                 <div className="row mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
-                                                                        <div className="col p-1 text-center" onClick={() => handleDatePreset('day')}>당일</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDatePreset('week')}>일주일</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDatePreset('month', 1)}>1개월</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDatePreset('month', 3)}>3개월</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDatePreset('year')}>1년</div>
+                                                                        <div className="col p-1 text-center" onClick={() => handleDateProductPreset('day')}>당일</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('week')}>일주일</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('month', 1)}>1개월</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('month', 3)}>3개월</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('year')}>1년</div>
                                                                 </div>
                                                         </div>
                                                         <div style={{ marginLeft: "85px" }}>
                                                                 <div style={{ display: "flex", gap: "10px", fontSize: "0.8em", padding: "10px" }}>
-                                                                        <input type='date' className='calendar' value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                                                                        <input type='date' className='calendar' value={productStartDate} onChange={(e) => setProductStartDate(e.target.value)} />
                                                                         <b>~</b>
-                                                                        <input type='date' className='calendar' value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                                                                        <input type='date' className='calendar' value={productEndDate} onChange={(e) => setProductEndDate(e.target.value)} />
                                                                 </div>
                                                         </div>
+                                                        {/* <button
+                                                                onClick={() => {}}
+                                                                className='button2'
+                                                                style={{marginLeft: 'auto', display: 'block'}}
+                                                        >
+                                                                검색
+                                                        </button> */}
                                                 </div>
                                                 {/* 상품 목록 */}
                                                 <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '20px' }}>상품 목록</h4>
@@ -920,17 +1096,17 @@ function Manager() {
                                                                         <th style={{ backgroundColor: '#eeeeee' }}>목록 수정/삭제</th>
                                                                 </tr>
                                                         </thead>
-                                                        {products.map((pd) => (
-                                                                <tbody key={pd.id}>
+                                                        {filteredProducts.map((pd) => (
+                                                                <tbody key={pd.pid}>
                                                                         <tr>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
                                                                                         <input type="checkbox" aria-label="항목 선택" />
                                                                                 </td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.comname}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.category}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.title}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.cost}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.writedate}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.company?.businessName}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.b_category}〉{pd.s_category}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.name}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.price}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.writedate.slice(0, 10)}</td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.count}</td>
                                                                                 <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                                                                                         <div className="col-7" style={{
@@ -976,14 +1152,16 @@ function Manager() {
                                         <div className='category-content'>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>문의 목록</h4>
-                                                        <div className="search-bar">
-                                                                <select className="cat1" style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}>
+                                                        <div style={{display:'flex', justifyContent:'center'}}>
+                                                                <select className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px', marginTop:'5PX' }}>
                                                                         <option value="username">이름</option>
-                                                                        <option value="userid">아이디</option>
-                                                                        <option value="email">이메일</option>
+                                                                        <option value="writedate">작성일</option>
+                                                                        <option value="subject">제목</option>
                                                                 </select>
-                                                                <input type="text" placeholder="검색할 단어 및 문장을 입력해주세요." />
-                                                                <button className="search-icon"></button>
+                                                                <div className="search-bar">
+                                                                        <input type="text" placeholder="검색어를 입력해주세요." />
+                                                                        <button className="search-icon"></button>
+                                                                </div>
                                                         </div>
                                                 </div>
                                                 <hr />
@@ -1090,17 +1268,21 @@ function Manager() {
                                                                 <p style={{ width: "80px d-inline-flex" }}>등록일자 :</p>
                                                                 <div className="row mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
                                                                         <div className="col p-1 text-center" onClick={() => handleDatePreset('day')}>당일</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDatePreset('week')}>일주일</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDatePreset('month', 1)}>1개월</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDatePreset('month', 3)}>3개월</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDatePreset('year')}>1년</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleProductDatePreset('week')}>일주일</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleProductDatePreset('month', 1)}>1개월</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleProductDatePreset('month', 3)}>3개월</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleProductDatePreset('year')}>1년</div>
                                                                 </div>
                                                         </div>
                                                         <div style={{ marginLeft: "85px" }}>
                                                                 <div style={{ display: "flex", gap: "10px", fontSize: "0.8em", padding: "10px" }}>
-                                                                        <input type='date' className='calendar' value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                                                                        <input type='date' className='calendar'
+                                                                        value={productStartDate}
+                                                                        onChange={(e) => setProductStartDate(e.target.value)}
+                                                                        />
                                                                         <b>~</b>
-                                                                        <input type='date' className='calendar' value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                                                                        <input type='date' className='calendar' value={productEndDate}
+                                                                        onChange={(e) => setProductEndDate(e.target.value)} />
                                                                 </div>
                                                         </div>
                                                 </div>

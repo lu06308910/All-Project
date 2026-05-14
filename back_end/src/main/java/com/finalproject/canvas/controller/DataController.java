@@ -69,6 +69,7 @@ public class DataController {
 
         return ResponseEntity.badRequest().body("지원하지 않는 usertype 입니다.");
     }
+
     // 로그인(DB조회:select)
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> loginData, HttpSession session) {
@@ -141,18 +142,49 @@ public class DataController {
         session.invalidate();
         return "OK";
     }
+
     //회원선택
-    @PostMapping("/getJoins")
-    public DataEntity getData(@RequestBody DataEntity entity){
-        log.info("회원선택=>"+entity.getUserid());
+    @PostMapping("/getmember")
+    public DataEntity getData(@RequestBody DataEntity entity) {
+        log.info("회원선택=>" + entity.getUserid());
         return dataService.dataSelect(entity.getUserid());
     }
-    //회원수정
-    @PostMapping("/joinsEdit")
-    public DataEntity dataEdit(@RequestBody DataEntity entity){
-        log.info("회원수정확인->"+entity.toString());
 
-        return dataService.dataUpdate(entity);
+    // 기존 정보 가져오기
+    @GetMapping("/edit")
+    public ResponseEntity<?> getEditData(@RequestParam("userid") String userid,
+                                         @RequestParam("usertype") String usertype) {
+        log.info("수정 데이터 조회 요청 -> ID: {}, Type: {}", userid, usertype);
+
+        if ("PERSONAL".equals(usertype)) {
+            DataEntity user = dataService.dataSelect(userid);
+            if (user != null) return ResponseEntity.ok(user);
+        } else if ("BUSINESS".equals(usertype)) {
+            CpDataEntity biz = dataService.businessSelect(userid);
+            if (biz != null) return ResponseEntity.ok(biz);
+        }
+        return ResponseEntity.status(404).body("사용자 정보를 찾을 수 없습니다.");
+    }
+
+    //회원수정
+    @PostMapping("/edit")
+    public ResponseEntity<?> updateMemberData(@RequestBody DataEntity entity) {
+        log.info("수정 요청 ID: {}", entity.getUserid());
+
+        DataEntity updated = dataService.dataUpdate(entity);
+        if (updated != null) return ResponseEntity.ok(updated);
+        return ResponseEntity.status(401).body("비밀번호 불일치 또는 수정 실패");
+    }
+
+    // 기업 회원 수정
+    @PostMapping("/businessedit")
+    public ResponseEntity<?> businessEdit(@RequestBody CpDataEntity entity) {
+        log.info("기업 회원 수정 요청 아이디: {}", entity.getUserid());
+        log.info("기업 새비번: {}", entity.getNewPassword());
+
+        CpDataEntity updated = dataService.businessUpdate(entity);
+        if (updated != null) return ResponseEntity.ok(updated);
+        return ResponseEntity.status(401).body("수정 실패");
     }
 
     //회원탈퇴
@@ -167,12 +199,13 @@ public class DataController {
     }
 
     //모든 회원 정보 가져오기 (관리자 페이지)
-    @GetMapping("/all")
-    public List<DataEntity> getMembers(){
+    @GetMapping("/all/member")
+    public List<DataEntity> getMembers() {
         return dataService.getAllMembers();
     }
+
     @GetMapping("/all/business")
-    public List<CpDataEntity> getCpMembers(){
+    public List<CpDataEntity> getCpMembers() {
         return dataService.getAllCpMembers();
     }
 }

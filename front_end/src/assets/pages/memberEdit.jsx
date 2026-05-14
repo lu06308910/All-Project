@@ -117,8 +117,8 @@ const memberEdit = () => {
                                 newPassword: formData.userpwd  // 실제 바뀔 비밀번호
                         };
 
-                        const response = await axios.get(url, {
-                                params: submitData,
+                        const response = await axios.post(url, submitData,{
+
                                 withCredentials: true
                         });
 

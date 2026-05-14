@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+# Gradle
+.gradle/
+gradle/caches/
+gradle/wrapper/dists/
+build/

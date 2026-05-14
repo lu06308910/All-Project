@@ -60,6 +60,17 @@
         padding: 5px;
         border: 1px solid;
 }
+/* 대쉬보드 */
+.dash-board{
+        display: 'flex';
+        width: 50%;
+        height: 300px;
+        overflow-x: auto;
+        padding:10px;
+        border-radius: 10px;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+
+}
 /* 캘린더 */
 .calendar{
         padding: 2px;
