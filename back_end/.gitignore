@@ -40,3 +40,10 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# Gradle 캐시 및 빌드 파일 제외
+.gradle/
+gradle/
+build/
+back_end/gradle/caches/
+back_end/gradle/wrapper/dists/

@@ -5,7 +5,7 @@ import './../css/kdh.css';
 const memberEdit = () => {
         //  초기 데이터 상태 (회원가입 필드와 매칭)
         const [formData, setFormData] = useState({
-                usertype: sessionStorage.getItem('usertype') || 'PERSONAL', // 서버에서 받아올 정보
+                userType: sessionStorage.getItem('usertype') || 'PERSONAL', // 서버에서 받아올 정보
                 userid: sessionStorage.getItem('logId') || '',
                 oldPassword: '', // 기존 pwd와 대조할 현재 비밀번호
                 userpwd: '',
@@ -109,15 +109,16 @@ const memberEdit = () => {
 
                 try {
                         const url = formData.usertype === 'PERSONAL'
-                                ? 'http://localhost:9991/member/edit'
-                                : 'http://localhost:9991/member/businessedit';
+                                ? 'http://localhost:9989/member/edit'
+                                : 'http://localhost:9989/member/business/Edit';
                         const submitData = {
                                 ...formData,
                                 userpwd: formData.oldPassword, // 서버가 DB와 비교할 비밀번호
                                 newPassword: formData.userpwd  // 실제 바뀔 비밀번호
                         };
 
-                        const response = await axios.post(url, submitData,{
+                        const response = await axios.get(url, {
+                                params: submitData,
                                 withCredentials: true
                         });
 
@@ -151,7 +152,7 @@ const memberEdit = () => {
                                         </div>
 
                                         {/* 기업 회원의 경우 상호명/사업자번호 표시 */}
-                                        {formData.usertype === 'BUSINESS' && (
+                                        {formData.userType === 'BUSINESS' && (
                                                 <>
                                                         <div className="input-group">
                                                                 <p>COMPANY NAME</p>

@@ -1,0 +1,115 @@
+[33m42c8a32[m[33m ([m[1;36mHEAD[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: pull origin main --rebase (start): checkout 42c8a32de25c8c4e6e8395c42a0c4230cd9f3df4
+[33m9cfc050[m[33m ([m[1;31morigin/sale[m[33m, [m[1;32msale[m[33m, [m[1;32mmain[m[33m)[m HEAD@{1}: checkout: moving from sale to main
+[33m9cfc050[m[33m ([m[1;31morigin/sale[m[33m, [m[1;32msale[m[33m, [m[1;32mmain[m[33m)[m HEAD@{2}: checkout: moving from sale to sale
+[33m9cfc050[m[33m ([m[1;31morigin/sale[m[33m, [m[1;32msale[m[33m, [m[1;32mmain[m[33m)[m HEAD@{3}: checkout: moving from main to sale
+[33m9cfc050[m[33m ([m[1;31morigin/sale[m[33m, [m[1;32msale[m[33m, [m[1;32mmain[m[33m)[m HEAD@{4}: merge sale: Fast-forward
+[33m45a21e7[m[33m ([m[1;32mlogin[m[33m)[m HEAD@{5}: checkout: moving from sale to main
+[33m9cfc050[m[33m ([m[1;31morigin/sale[m[33m, [m[1;32msale[m[33m, [m[1;32mmain[m[33m)[m HEAD@{6}: filter-branch: rewrite
+[33m7da1f8e[m HEAD@{7}: commit: 진짜 관리자페이지 검색 기능 추가 및 업로드 -0514
+[33m327283d[m HEAD@{8}: commit: 회원관리 검색 기능 추가 0514 -가영
+[33m1288d21[m HEAD@{9}: pull origin main: Merge made by the 'ort' strategy.
+[33m7ff4a31[m HEAD@{10}: commit: 폴더 중첩 삭제 후 커밋 수정본
+[33mc5183e9[m HEAD@{11}: checkout: moving from main to sale
+[33m402bcf2[m HEAD@{12}: checkout: moving from sale to main
+[33mc5183e9[m HEAD@{13}: commit: 폴더 중첩 정리 후 커밋
+[33mad38276[m HEAD@{14}: reset: moving to head~
+[33mcf81fcb[m HEAD@{15}: commit: 전체폴더 중복파일 삭제 후 커밋
+[33mad38276[m HEAD@{16}: commit: 파일정리
+[33m6a3949e[m HEAD@{17}: commit: 관리자 페이지 더보기 추기 0513-가영
+[33mc7e8e57[m HEAD@{18}: commit: 관리자 페이지 유저 연결 및 탈퇴 기능 추가
+[33m89220c2[m HEAD@{19}: commit (merge): 관리자페이지수정 0513 -가영
+[33m9238382[m HEAD@{20}: reset: moving to HEAD
+[33m9238382[m HEAD@{21}: commit: 진짜 관리자 프론트 수정 0513 - 가영
+[33m2ebea97[m HEAD@{22}: checkout: moving from manager to sale
+[33m8176bdf[m HEAD@{23}: checkout: moving from manager-back to manager
+[33m2ebea97[m HEAD@{24}: reset: moving to HEAD
+[33m2ebea97[m HEAD@{25}: checkout: moving from manager-back to manager-back
+[33m2ebea97[m HEAD@{26}: checkout: moving from sale to manager-back
+[33m2ebea97[m HEAD@{27}: checkout: moving from manager to sale
+[33m8176bdf[m HEAD@{28}: checkout: moving from sale to manager
+[33m2ebea97[m HEAD@{29}: commit: 관리자페이지 프론트 수정 0513-가영
+[33m06ee05a[m HEAD@{30}: pull origin sale: Merge made by the 'ort' strategy.
+[33m52a3faa[m HEAD@{31}: commit (merge): 일단 커밋을 함
+[33mc622acd[m HEAD@{32}: reset: moving to HEAD
+[33mc622acd[m HEAD@{33}: reset: moving to HEAD
+[33mc622acd[m HEAD@{34}: reset: moving to HEAD
+[33mc622acd[m HEAD@{35}: commit: 모델링 수정 0513-가영
+[33mb7beffd[m HEAD@{36}: commit: 파일폭사0512-가영
+[33mfbd6806[m HEAD@{37}: commit: 확인용 커밋 0512-가영
+[33m1e6813f[m HEAD@{38}: checkout: moving from login to sale
+[33m402bcf2[m HEAD@{39}: checkout: moving from main to login
+[33m402bcf2[m HEAD@{40}: checkout: moving from main to main
+[33m402bcf2[m HEAD@{41}: checkout: moving from login to main
+[33m402bcf2[m HEAD@{42}: pull origin main: Fast-forward
+[33md96b625[m HEAD@{43}: reset: moving to HEAD
+[33md96b625[m HEAD@{44}: commit: 기업 엔티티 롤 수정 0512-가영
+[33m9b6bc4f[m HEAD@{45}: commit: 기업 엔티티 생성 0512-가영
+[33m8a70d52[m HEAD@{46}: Branch: renamed refs/heads/main to refs/heads/login
+[33m8a70d52[m HEAD@{48}: pull origin main: Fast-forward
+[33m6d3b165[m HEAD@{49}: reset: moving to origin/main
+[33m6d3b165[m HEAD@{50}: reset: moving to origin/main
+[33md2b7152[m HEAD@{51}: checkout: moving from sale to main
+[33m1e6813f[m HEAD@{52}: reset: moving to origin/main
+[33mf0e9f08[m HEAD@{53}: commit: 관리자 페이지통계도표수정 0508-가영
+[33m1e6813f[m HEAD@{54}: pull origin main: Fast-forward
+[33md2b7152[m HEAD@{55}: checkout: moving from main to sale
+[33md2b7152[m HEAD@{56}: checkout: moving from main to main
+[33md2b7152[m HEAD@{57}: Branch: renamed refs/heads/sale to refs/heads/main
+[33md2b7152[m HEAD@{59}: commit: 관리자 페이지 표 글자 조정 0508-가영
+[33m9a9088f[m HEAD@{60}: pull origin main: Merge made by the 'ort' strategy.
+[33m36aa7c8[m HEAD@{61}: commit: 관리자 페이지 표 크기 세부 조정 0508-가영
+[33m40d2aaf[m HEAD@{62}: commit: 구매 페이지 수정 후 머지 0508 가영
+[33ma7d60ff[m HEAD@{63}: commit: 파일 커밋 0508-가영
+[33ma5edf81[m HEAD@{64}: pull origin main: Fast-forward
+[33m132e6d3[m HEAD@{65}: Branch: renamed refs/heads/main to refs/heads/sale
+[33m132e6d3[m HEAD@{67}: Branch: renamed refs/heads/sale to refs/heads/main
+[33m132e6d3[m HEAD@{69}: commit: 재업로드 0507-가영
+[33m88c5c33[m HEAD@{70}: pull origin main: Merge made by the 'ort' strategy.
+[33m35e914f[m HEAD@{71}: commit: 재업로드 0507-가영
+[33mace40d6[m HEAD@{72}: commit (merge): 합쳐서 보내기 0506-가영
+[33m9563646[m HEAD@{73}: pull origin main: Merge made by the 'ort' strategy.
+[33m23a60d9[m HEAD@{74}: commit: 구매 주소입력창 제작 중 0506
+[33mf0ef744[m HEAD@{75}: commit: 장바구니 프론트 최종 수정 완료 0506 -가영
+[33m2d8f92d[m HEAD@{76}: pull origin main: Merge made by the 'ort' strategy.
+[33mc4b842c[m HEAD@{77}: commit: 장바구니 유의사항까지 구현
+[33m6f387f0[m HEAD@{78}: pull origin main: Fast-forward
+[33m11a3ddb[m HEAD@{79}: commit: 장바구니 유의사항 전까지 구현
+[33m76057b9[m HEAD@{80}: pull origin main: Fast-forward
+[33m3db34b6[m HEAD@{81}: commit: 장바구니 리스트 설정완료 0504
+[33ma326215[m HEAD@{82}: commit: 0504 장바구니 추가 후 merge -가영
+[33m1e2f544[m HEAD@{83}: pull origin main: Merge made by the 'ort' strategy.
+[33m28ac92c[m HEAD@{84}: commit: 0504 장바구니 추가
+[33m1a331bd[m HEAD@{85}: commit (merge): sale 수정본 최종 업데이트 0504-가영
+[33m5de8fe1[m HEAD@{86}: commit: sale및 매니저 프론트 수정 0504-가영
+[33m258757c[m HEAD@{87}: Branch: renamed refs/heads/main to refs/heads/sale
+[33m258757c[m HEAD@{89}: Branch: renamed refs/heads/main to refs/heads/main
+[33m258757c[m HEAD@{91}: commit: 5/4 깃테스트 중-가영
+[33mf0f4feb[m HEAD@{92}: Branch: renamed refs/heads/sale to refs/heads/main
+[33mf0f4feb[m HEAD@{94}: Branch: renamed refs/heads/main to refs/heads/sale
+[33mf0f4feb[m HEAD@{96}: pull origin main: Fast-forward
+[33mc083697[m HEAD@{97}: commit: 할인상품 페이지 생성
+[33ma5f6189[m HEAD@{98}: checkout: moving from manager to main
+[33m8176bdf[m HEAD@{99}: checkout: moving from main to manager
+[33ma5f6189[m HEAD@{100}: commit (merge): 20260501 manager merge
+[33m787a12e[m HEAD@{101}: checkout: moving from manager to main
+[33m8176bdf[m HEAD@{102}: reset: moving to HEAD
+[33m8176bdf[m HEAD@{103}: commit: 관리자 페이지 프론트 최종
+[33m84edea7[m HEAD@{104}: pull origin main: Fast-forward
+[33m8f8e782[m HEAD@{105}: commit: 게시글 관리 서브 카테고리 추가 중
+[33mdf3ffd3[m HEAD@{106}: checkout: moving from main to manager
+[33m787a12e[m HEAD@{107}: commit: canvas, manager 통합 0429
+[33m06d484c[m HEAD@{108}: checkout: moving from manager to main
+[33mdf3ffd3[m HEAD@{109}: commit (merge): canvas, manager 통합 0429
+[33m4dcdafa[m HEAD@{110}: commit: 상품관리 수정 완료
+[33me741756[m HEAD@{111}: commit: 메인크기조절
+[33md8a8065[m HEAD@{112}: commit: 2일차 코드 합성
+[33m711b4fa[m HEAD@{113}: pull origin main: Fast-forward
+[33m11d7d35[m HEAD@{114}: checkout: moving from main to manager
+[33m06d484c[m HEAD@{115}: commit: 상품관리수정중
+[33m11d7d35[m HEAD@{116}: pull origin canvas: updating HEAD
+[33m11d7d35[m HEAD@{117}: pull origin canvas: updating HEAD
+[33m11d7d35[m HEAD@{118}: commit: 회원관리추가
+[33m73220ed[m HEAD@{119}: commit: 관리자페이지작성1일차
+[33m78edeae[m HEAD@{120}: commit: 관리자페이지작성1일차
+[33m3d42159[m HEAD@{121}: checkout: moving from main to main
+[33m3d42159[m HEAD@{122}: commit: 프로젝트파일생성

@@ -49,22 +49,26 @@ function Manager() {
         //회원 업데이트
         const [users, setUsers] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9991/member/all')
+                axios.get('http://localhost:9989/member/all/member')
                 .then(res => setUsers(res.data))
                 .catch(err => console.log(err));
         }, []);
         const [companys, setCompanys] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9991/member/all/business')
+                axios.get('http://localhost:9989/member/all/business')
                 .then(res => setCompanys(res.data))
                 .catch(err => console.log(err));
         }, []);
 
         //상품관리
-        const products =[
-                {id:1, comname:"기업명1", category:'야외 〉조경', title:'상품명1', cost:'2,555,000원', count:'152', writedate:'2023-09-26' },
-                {id:2, comname:"기업명1", category:'야외 〉조경', title:'상품명1', cost:'2,555,000원', count:'0', writedate:'2023-09-26' },
-        ]
+        const [products, setProducts] = useState([]);
+        useEffect(() => {
+                axios.get('http://localhost:9989/all/product')
+                .then(res => setProducts(res.data))
+                .catch(err => console.log(err));
+        }, []);
+        console.log(products)
+        
         //문의
         const ask = [
                 { id: 1, subject: '🔒사고 싶은 옷이 찜목록에서 삭제됐어요.', username: '김희*', writedate: '2026-04-26', state: '답변 미작성', answer: null},
@@ -126,23 +130,22 @@ function Manager() {
         //회원 삭제 명령어
         const handleBulkUnregister = () => {
         const targets = selectedItems['회원관리'] || [];
-        if (targets.length === 0) return alert("탈퇴처리할 회원을 선택해주세요.");
-        if (!window.confirm(`선택한 ${targets.length}명을 탈퇴처리 하시겠습니까?`)) return;
+                if (targets.length === 0) return alert("탈퇴처리할 회원을 선택해주세요.");
+                if (!window.confirm(`선택한 ${targets.length}명을 탈퇴처리 하시겠습니까?`)) return;
 
         Promise.all(
                 targets.map(mid =>
-                axios.patch(`http://localhost:9991/member/unregister/${mid}`)
+                axios.patch(`http://localhost:9989/member/unregister/${mid}`)
                 )
         )
         .then(() => {
                 alert("탈퇴처리 완료");
-                axios.get('http://localhost:9991/member/all')
+                axios.get('http://localhost:9989/member/all')
                 .then(res => setUsers(res.data));
                 setSelectedItems(prev => ({ ...prev, '회원관리': [] }));
         })
         .catch(err => console.log(err));
         }
-
 
         const deleteSelected = (menu) => {
                 const targets = selectedItems[menu] || [];
@@ -153,20 +156,63 @@ function Manager() {
                 }
         }
 
+        //검색 함수
+        const [userSearchKey, setUserSearchKey] = useState('userid');
+        const [userSearchWord, setUserSearchWord] = useState('');
+        const [companySearchKey, setCompanySearchKey] = useState('userid');
+        const [companySearchWord, setCompanySearchWord] = useState('');
+
+        const [userOutSearchKey, setUserOutSearchKey] = useState('userid');
+        const [userOutSearchWord, setUserOutSearchWord] = useState('');
+        const [companyOutSearchKey, setCompanyOutSearchKey] = useState('userid');
+        const [companyOutSearchWord, setCompanyOutSearchWord] = useState('');
+
+        const handleUserSearch = () => {
+                axios.post('http://localhost:9989/member/search',{
+                        searchKey: userSearchKey,
+                        searchWord: userSearchWord
+                })
+                .then(res => setUsers(res.data))
+                .catch(err => console.log(err));
+        }
+
+        const handleCompanySearch = () => {
+                axios.post('http://localhost:9989/member/search/business',{
+                        searchKey: companySearchKey,
+                        searchWord: companySearchWord
+                })
+                .then(res => setCompanys(res.data))
+                .catch(err => console.log(err));
+        }
+
         // 더보기
         const [showMore, setShowMore] = useState(false);
         const [showMoreOut, setShowMoreOut] = useState(false);
         const [cshowMore, setCShowMore] = useState(false);
         const [cshowMoreOut, setCShowMoreOut] = useState(false);
-        const visibleUsers = showMore ? users : users.slice(0, 5);
-        const invisibleUsers = showMoreOut ? users : users.slice(0, 5);
-        const visibleCompanys = showMore ? companys : companys.slice(0, 5);
-        const invisibleCompanys = showMoreOut ? companys : companys.slice(0, 5);
+        // 활동 중 회원
+        const activeUsers = users
+                .filter(u => u.isOut === 'N')
+                .filter(u => !userSearchWord || u[userSearchKey]?.includes(userSearchWord));
+        const visibleUsers = showMore ? activeUsers : activeUsers.slice(0, 5);
 
-        const handleToggle = (id) => {
-                // 이미 열려있는 걸 다시 누르면 닫고(null), 아니면 해당 ID를 엽니다.
-                setOpenId(openId === id ? null : id);
-        };
+        // 탈퇴 회원
+        const outUsers = users
+                .filter(u => u.isOut !== 'N')
+                .filter(u => !userOutSearchWord || u[userOutSearchKey]?.includes(userOutSearchWord));
+        const invisibleUsers = showMoreOut ? outUsers : outUsers.slice(0, 5);
+
+        // 활동 중 기업
+        const activeCompanys = companys
+                .filter(c => c.isOut === 'N')
+                .filter(c => !companySearchWord || c[companySearchKey]?.includes(companySearchWord));
+        const visibleCompanys = cshowMore ? activeCompanys : activeCompanys.slice(0, 5);
+
+        // 탈퇴 기업
+        const outCompanys = companys
+                .filter(c => c.isOut !== 'N')
+                .filter(c => !companyOutSearchWord || c[companyOutSearchKey]?.includes(companyOutSearchWord));
+        const invisibleCompanys = cshowMoreOut ? outCompanys : outCompanys.slice(0, 5);
 
         const menus = ['대시보드', '회원 관리', '기업 관리', '상품 관리', '게시글 관리', '문의 관리', '통계', '정산'];
         const submenus = ['-예약', '-이벤트 관리']
@@ -667,10 +713,26 @@ function Manager() {
                                         <div className='category-content'>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>회원 검색</h4>
-                                                        <div className="search-bar">
-
-                                                                <input type="text" placeholder="검색할 상품을 입력해주세요." />
-                                                                <button className="search-icon"></button>
+                                                        <div style={{display:'flex', justifyContent:'center'}}>
+                                                                <select 
+                                                                        value={userSearchKey}
+                                                                        onChange={(e) => setUserSearchKey(e.target.value)}
+                                                                        className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px', marginTop:'5PX' }}
+                                                                >
+                                                                        <option value="username">이름</option>
+                                                                        <option value="userid">아이디</option>
+                                                                        <option value="email">이메일</option>
+                                                                        <option value="tel">전화번호</option>
+                                                                </select>
+                                                                <div className="search-bar">
+                                                                        <input type="text" placeholder="검색어를 입력해주세요."
+                                                                                value={userSearchWord}
+                                                                                onChange={(e)=> setUserSearchWord(e.target.value)}
+                                                                                onKeyDown={(e)=>e.key === 'Enter'&&handleUserSearch()}
+                                                                        />
+                                                                        <button className="search-icon" onClick={handleUserSearch}></button>
+                                                                </div>
                                                         </div>
                                                 </div>
                                                 <hr />
@@ -684,7 +746,6 @@ function Manager() {
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
                                                 {visibleUsers
-                                                        .filter(user => user.isOut =="N")
                                                         .map((user) => (
                                                                 <div key={user.mid} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
                                                                         <div className="col-1 border-start" style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
@@ -721,9 +782,26 @@ function Manager() {
                                         <div className='category-content'>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>탈퇴회원 검색</h4>
-                                                        <div className="search-bar">
-                                                                <input type="text" placeholder="검색할 상품을 입력해주세요." />
-                                                                <button className="search-icon"></button>
+                                                        <div style={{display:'flex', justifyContent:'center'}}>
+                                                                <select 
+                                                                        value={userSearchKey}
+                                                                        onChange={(e) => setUserOutSearchKey(e.target.value)}
+                                                                        className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px', marginTop:'5PX' }}
+                                                                >
+                                                                        <option value="username">이름</option>
+                                                                        <option value="userid">아이디</option>
+                                                                        <option value="email">이메일</option>
+                                                                        <option value="tel">전화번호</option>
+                                                                </select>
+                                                                <div className="search-bar">
+                                                                        <input type="text" placeholder="검색어를 입력해주세요."
+                                                                                value={userOutSearchWord}
+                                                                                onChange={(e)=> setUserOutSearchWord(e.target.value)}
+                                                                                onKeyDown={(e)=>e.key === 'Enter'&&handleUserSearch()}
+                                                                        />
+                                                                        <button className="search-icon" onClick={handleUserSearch}></button>
+                                                                </div>
                                                         </div>
                                                 </div>
                                                 <hr />
@@ -766,9 +844,26 @@ function Manager() {
                                         <div className='category-content'>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>기업 검색</h4>
-                                                        <div className="search-bar">
-                                                                <input type="text" placeholder="검색할 상품을 입력해주세요." />
-                                                                <button className="search-icon"></button>
+                                                        <div style={{display:'flex', justifyContent:'center'}}>
+                                                                <select 
+                                                                        value={companySearchKey}
+                                                                        onChange={(e) => setCompanySearchKey(e.target.value)}
+                                                                        className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px', marginTop:'5PX' }}
+                                                                >
+                                                                        <option value="businessName">이름</option>
+                                                                        <option value="userid">아이디</option>
+                                                                        <option value="email">이메일</option>
+                                                                        <option value="tel">전화번호</option>
+                                                                </select>
+                                                                <div className="search-bar">
+                                                                        <input type="text" placeholder="검색어를 입력해주세요."
+                                                                                value={companySearchWord}
+                                                                                onChange={(e)=> setCompanySearchWord(e.target.value)}
+                                                                                onKeyDown={(e)=>e.key === 'Enter'&&handleCompanySearch()}
+                                                                        />
+                                                                        <button className="search-icon" onClick={handleCompanySearch}></button>
+                                                                </div>
                                                         </div>
                                                 </div>
                                                 <hr />
@@ -782,9 +877,8 @@ function Manager() {
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
                                                 {visibleCompanys
-                                                        .filter(company=>company.isOut =='N')
                                                                 .map((company)=>(
-                                                                        <div key={company} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                        <div key={company.cid} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
                                                                                 <div className="col-1 border-start" style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
                                                                                                 <input type="checkbox" aria-label="항목 선택" />
                                                                                 </div>
@@ -810,9 +904,26 @@ function Manager() {
                                         <div className='category-content'>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>탈퇴기업 검색</h4>
-                                                        <div className="search-bar">
-                                                                <input type="text" placeholder="검색할 상품을 입력해주세요." />
-                                                                <button className="search-icon"></button>
+                                                        <div style={{display:'flex', justifyContent:'center'}}>
+                                                                <select 
+                                                                        value={companySearchKey}
+                                                                        onChange={(e) => setCompanyOutSearchKey(e.target.value)}
+                                                                        className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px', marginTop:'5PX' }}
+                                                                >
+                                                                        <option value="businessName">이름</option>
+                                                                        <option value="userid">아이디</option>
+                                                                        <option value="email">이메일</option>
+                                                                        <option value="tel">전화번호</option>
+                                                                </select>
+                                                                <div className="search-bar">
+                                                                        <input type="text" placeholder="검색어를 입력해주세요."
+                                                                                value={companyOutSearchWord}
+                                                                                onChange={(e)=> setCompanyOutSearchWord(e.target.value)}
+                                                                                onKeyDown={(e)=>e.key === 'Enter'&&handleCompanySearch()}
+                                                                        />
+                                                                        <button className="search-icon" onClick={handleCompanySearch}></button>
+                                                                </div>
                                                         </div>
                                                 </div>
                                                 <hr />
@@ -828,7 +939,7 @@ function Manager() {
                                                 {invisibleCompanys
                                                         .filter(company=>company.isOut !=='N')
                                                                 .map((company)=>(
-                                                                        <div key={company} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                        <div key={company.cid} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
                                                                                 <div className="col-1 border-start">{company.cid}</div>
                                                                                 <div className="col-2 border-start">{company.userid}</div>
                                                                                 <div className="col-2 border-start">{company.name}</div>
@@ -861,14 +972,16 @@ function Manager() {
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
                                                                 <p>카테고리 :</p>
                                                                 <select className="cat1" style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}>
-                                                                        <option value="null">대분류</option>
-                                                                        <option value="category">카테고리1</option>
-                                                                        <option value="category">카테고리2</option>
+                                                                        <option value="">대분류</option>
+                                                                        {[...new Set(products.map(pd => pd.b_category))].map((cat) => (
+                                                                                <option key={cat} value={cat}>{cat}</option>
+                                                                        ))}
                                                                 </select>
                                                                 <select className="cat1" style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}>
                                                                         <option value="null">소분류</option>
-                                                                        <option value="category">카테고리1</option>
-                                                                        <option value="category">카테고리2</option>
+                                                                        {[...new Set(products.map(pd => pd.s_category))].map((cat) => (
+                                                                                <option key={cat} value={cat}>{cat}</option>
+                                                                        ))}
                                                                 </select>
                                                         </div>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -921,15 +1034,15 @@ function Manager() {
                                                                 </tr>
                                                         </thead>
                                                         {products.map((pd) => (
-                                                                <tbody key={pd.id}>
+                                                                <tbody key={pd.pid}>
                                                                         <tr>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
                                                                                         <input type="checkbox" aria-label="항목 선택" />
                                                                                 </td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.comname}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.category}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.title}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.cost}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.company?.businessName}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.b_category}〉{pd.s_category}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.name}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.price}</td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.writedate}</td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.count}</td>
                                                                                 <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
@@ -976,14 +1089,16 @@ function Manager() {
                                         <div className='category-content'>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>문의 목록</h4>
-                                                        <div className="search-bar">
-                                                                <select className="cat1" style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}>
+                                                        <div style={{display:'flex', justifyContent:'center'}}>
+                                                                <select className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px', marginTop:'5PX' }}>
                                                                         <option value="username">이름</option>
-                                                                        <option value="userid">아이디</option>
-                                                                        <option value="email">이메일</option>
+                                                                        <option value="writedate">작성일</option>
+                                                                        <option value="subject">제목</option>
                                                                 </select>
-                                                                <input type="text" placeholder="검색할 단어 및 문장을 입력해주세요." />
-                                                                <button className="search-icon"></button>
+                                                                <div className="search-bar">
+                                                                        <input type="text" placeholder="검색어를 입력해주세요." />
+                                                                        <button className="search-icon"></button>
+                                                                </div>
                                                         </div>
                                                 </div>
                                                 <hr />

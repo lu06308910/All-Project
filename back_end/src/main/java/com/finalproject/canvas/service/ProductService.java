@@ -1,5 +1,6 @@
 package com.finalproject.canvas.service;
 
+import com.finalproject.canvas.entity.DataEntity;
 import com.finalproject.canvas.entity.FileEntity;
 import com.finalproject.canvas.entity.ProductEntity;
 import com.finalproject.canvas.repository.FileRepository;
@@ -74,6 +75,11 @@ public class ProductService {
         ProductEntity entity = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 상품이 없습니다."));
         productRepository.delete(entity);
+    }
+
+    //모든 product 정보 가져오기(관리자 페이지)
+    public List<ProductEntity> getAllProducts(){
+        return productRepository.findAll();
     }
 
 }
