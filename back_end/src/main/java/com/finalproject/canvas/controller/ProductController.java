@@ -3,6 +3,7 @@ package com.finalproject.canvas.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.finalproject.canvas.entity.CpDataEntity;
+import com.finalproject.canvas.entity.DataEntity;
 import com.finalproject.canvas.entity.FileEntity;
 import com.finalproject.canvas.entity.ProductEntity;
 import com.finalproject.canvas.service.ProductService;
@@ -264,5 +265,10 @@ public class ProductController {
         }
 
         return "OK";
+    }
+    //모든 제품 정보 가져오기 (관리자 페이지)
+    @GetMapping("/all/product")
+    public List<ProductEntity> getProducts(){
+        return productService.getAllProducts();
     }
 }

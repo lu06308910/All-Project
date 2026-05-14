@@ -2,8 +2,10 @@ package com.finalproject.canvas.service;
 
 import com.finalproject.canvas.entity.CpDataEntity;
 import com.finalproject.canvas.entity.DataEntity;
+import com.finalproject.canvas.entity.SearchVO;
 import com.finalproject.canvas.repository.CpDataRepository;
 import com.finalproject.canvas.repository.DataRepository;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,43 +56,32 @@ public class DataService {
     // 일반 회원 정보 수정
     @Transactional
     public DataEntity dataUpdate(DataEntity entity) {
+        // DB에서 기존 정보를 가져옴
         DataEntity orgEntity = dataRepository.findByUserid(entity.getUserid());
 
-        // 1. 기존 비번(oldPassword)과 DB 비번이 일치하는지 확인
         if (orgEntity != null && entity.getUserpwd().equals(orgEntity.getUserpwd())) {
-
-            // 2. 만약 새 비밀번호가 들어왔다면, 그걸로 교체!
-            if (entity.getNewPassword() != null && !entity.getNewPassword().isEmpty()) {
-                entity.setUserpwd(entity.getNewPassword());
-            } else {
-                // 새 비번을 안 적었다면 기존 비번 유지
-                entity.setUserpwd(orgEntity.getUserpwd());
-            }
-
-            entity.setMId(orgEntity.getMId());
+            // 비밀번호가 일치하면 업데이트 수행
+            entity.setMId(orgEntity.getMId()); // 기존의 PK를 세팅해줌
             return dataRepository.save(entity);
+        } else {
+            // 3. 비밀번호 불일치 혹은 회원이 없음
+            return null;
         }
-        return null;
     }
 
     // 기업 회원 수정
     @Transactional
     public CpDataEntity businessUpdate(CpDataEntity entity) {
+        // DB에서 기존 기업 정보 가져옴
         CpDataEntity orgEntity = cpDataRepository.findByUserid(entity.getUserid());
 
         if (orgEntity != null && entity.getUserpwd().equals(orgEntity.getUserpwd())) {
-
-            // 새 비밀번호가 넘어왔을 때만 교체하는 로직 추가
-            if (entity.getNewPassword() != null && !entity.getNewPassword().isEmpty()) {
-                entity.setUserpwd(entity.getNewPassword());
-            } else {
-                entity.setUserpwd(orgEntity.getUserpwd());
-            }
-
-            entity.setCId(orgEntity.getCId());
+            // 비밀번호 일치 시 업데이트
+            entity.setCId(orgEntity.getCId()); // 기존 기업 PK(c_id) 세팅
             return cpDataRepository.save(entity);
+        } else {
+            return null;
         }
-        return null;
     }
 
     // 일반 회원 탈퇴
@@ -114,7 +105,31 @@ public class DataService {
     public List<CpDataEntity> getAllCpMembers(){
         return cpDataRepository.findAll();
     }
+    
+    //일반회원 검색
+    public List<DataEntity> searchMembers(SearchVO searchVO){
+        String key = searchVO.getSearchKey();
+        String word = searchVO.getSearchWord();
 
+        if(word == null || word.isBlank()) return dataRepository.findAll();
 
+        if ("userid".equals(key)) return dataRepository.findByUseridContaining(word);
+        else if ("username".equals(key)) return dataRepository.findByUsernameContaining(word);
+        else if ("email".equals(key)) return dataRepository.findByEmailContaining(word);
+        else if ("tel".equals(key)) return dataRepository.findByTelContaining(word);
+        else return dataRepository.findByUseridContaining(word);
+    }
+    //기업회원 검색
+    public List<CpDataEntity> searchCpMembers(SearchVO searchVO) {
+        String key = searchVO.getSearchKey();
+        String word = searchVO.getSearchWord();
 
+        if (word == null || word.isBlank()) return cpDataRepository.findAll();
+
+        if ("userid".equals(key)) return cpDataRepository.findByUseridContaining(word);
+        else if ("businessName".equals(key)) return cpDataRepository.findByBusinessNameContaining(word);
+        else if ("email".equals(key)) return cpDataRepository.findByEmailContaining(word);
+        else if ("tel".equals(key)) return cpDataRepository.findByTelContaining(word);
+        else return cpDataRepository.findByUseridContaining(word);
+    }
 }
