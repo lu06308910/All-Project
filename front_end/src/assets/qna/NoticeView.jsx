@@ -1,40 +1,47 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
+import axios from "axios";
 import './../css/seul.css';
 
 function NoticeView() {
+    const { id } = useParams(); // URL 파라미터에서 공지사항 ID 추출
+    const [notice, setNotice] = useState(null); // 데이터 상태 관리
+
+    // 백엔드에서 상세 데이터 가져오기
+    useEffect(() => {
+        console.log("보내는 ID값:", id);
+        axios.get(`http://localhost:9991/notice/view/${id}`)
+            .then(response => {
+                console.log("상세 데이터 확인:", response.data);
+                setNotice(response.data);
+            })
+            .catch(error => {
+                console.error("데이터 로딩 중 오류 발생:", error);
+                alert("존재하지 않는 게시글이거나 서버 오류입니다.");
+            });
+    }, [id]);
+
+    // 데이터 로딩 전 처리
+    if (!notice) return <div style={{ marginTop: '200px', textAlign: 'center' }}>데이터를 불러오는 중입니다...</div>;
 
     return (
-        <div
-            style={{
-                marginTop: '150px',
-                marginBottom: '100px',
-                width: '90%',
-                display: 'flex',
-                gap: '60px'
-            }}
-        >
+        <div style={{
+            marginTop: '150px',
+            marginBottom: '100px',
+            width: '90%',
+            display: 'flex',
+            gap: '60px'
+        }}>
 
             {/* 왼쪽 사이드 메뉴 */}
-            <div
-                className="side-menu"
-                style={{ width: '220px' }}
-            >
-
+            <div className="side-menu" style={{ width: '220px' }}>
                 {/* 타이틀 */}
-                <div
-                    style={{
-                        borderBottom: '2px solid #000',
-                        paddingBottom: '12px',
-                        marginBottom: '25px'
-                    }}
-                >
-                    <h2
-                        style={{
-                            margin: 0,
-                            fontSize: '22px'
-                        }}
-                    >
+                <div style={{
+                    borderBottom: '2px solid #000',
+                    paddingBottom: '12px',
+                    marginBottom: '25px'
+                }}>
+                    <h2 style={{ margin: 0, fontSize: '22px' }}>
                         서비스 지원
                     </h2>
                 </div>
@@ -51,90 +58,52 @@ function NoticeView() {
                 <div className="qna-menu active">
                     <Link to="/qna/noticelist">공지사항</Link>
                 </div>
-
             </div>
 
             {/* 오른쪽 컨텐츠 */}
             <div style={{ flexGrow: 1 }}>
 
                 {/* 페이지 제목 */}
-                <h2
-                    style={{
-                        borderBottom: '2px solid #000',
-                        paddingBottom: '15px',
-                        marginBottom: '10px'
-                    }}
-                >
+                <h2 style={{ borderBottom: '2px solid #000', paddingBottom: '15px', marginBottom: '10px' }}>
                     공지사항
                 </h2>
 
                 {/* 제목 영역 */}
-                <div
-                    style={{
-                        margin:'0',
-                        borderBottom: '1px solid #ddd',
-                        padding: '20px 10px'
-                    }}
-                >
-
-                    <h3
-                        style={{
-                            margin: '0 0 15px 0',
-                            fontSize: '22px'
-                        }}
-                    >
-                        [정기점검 발표] 20년 03월 교육기관 일정 안내
+                <div style={{ margin: '0', borderBottom: '1px solid #ddd', padding: '20px 10px' }}>
+                    <h3 style={{ margin: '0 0 15px 0', fontSize: '22px' }}>
+                        {notice.subject}
                     </h3>
-
-                    <div
-                        style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            color: '#777',
-                            fontSize: '14px'
-                        }}
-                    >
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        color: '#777',
+                        fontSize: '14px'
+                    }}>
                         <span>CANVAS</span>
-                        <span>2020.04.13</span>
+                        <div>
+                            <span style={{ marginRight: '15px' }}>
+                                {new Date(notice.writedate).toLocaleDateString()}
+                            </span>
+                            <span>조회수 {notice.hit}</span>
+                        </div>
                     </div>
 
                 </div>
 
                 {/* 내용 영역 */}
-                <div
-                    style={{
-                        minHeight: '350px',
-                        padding: '40px 10px',
-                        lineHeight: '1.9',
-                        borderBottom: '1px solid #ddd'
-                    }}
-                >
-
-                    안녕하세요 CANVAS 입니다.
-                    <br /><br />
-
-                    20년 03월 교육기관 일정 관련 공지사항 안내드립니다.
-                    <br /><br />
-
-                    보다 안정적인 서비스 제공을 위해
-                    정기 점검이 진행될 예정입니다.
-                    <br /><br />
-
-                    이용에 참고 부탁드립니다.
-                    <br /><br />
-
-                    감사합니다.
-
+                <div style={{
+                    minHeight: '350px',
+                    padding: '40px 10px',
+                    lineHeight: '1.9',
+                    borderBottom: '1px solid #ddd'
+                }}  dangerouslySetInnerHTML={{ __html: notice.context}}>       
                 </div>
 
                 {/* 목록 버튼 */}
-                <div
-                    style={{
-                        marginTop: '30px',
-                        textAlign: 'center'
-                    }}
-                >
-
+                <div style={{
+                    marginTop: '30px',
+                    textAlign: 'center'
+                }}>
                     <Link to="/qna/noticelist">
                         <button
                             style={{
@@ -144,16 +113,12 @@ function NoticeView() {
                                 color: '#fff',
                                 cursor: 'pointer',
                                 borderRadius: '5px'
-                            }}
-                        >
+                            }}>
                             목록
                         </button>
                     </Link>
-
                 </div>
-
             </div>
-
         </div>
     );
 }
