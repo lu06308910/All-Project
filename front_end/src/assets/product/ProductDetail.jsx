@@ -1,51 +1,91 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Carousel } from 'react-bootstrap';
+import axios from "axios";
 import './../css/seul.css';
 
 function ProductDetail() {
         const [count, setCount] = useState(1);
         const [showDetail, setShowDetail] = useState(false);
 
-        // 상품이미지 배열
-        const images = [
-                "/p1.png",
-                "/p2.png",
-                "/p3.png"
-        ];
+        const { id } = useParams()
+        const [filelist, setFilelist] = useState([]) // ['a.png','b.jpg','c.jpeg']
+        const [data, setData] = useState({})
+
+        const mounted = useRef(false)
+
+        // 선택한 옵션값
+        const [color, setColor] = useState("");
+        const [colors, setColors] = useState([]);
+        const [extraOption, setExtraOption] = useState("");
+        const [selectedOptions, setSelectedOptions] = useState([]);
+
+        // 사이즈 옵션
+        const [sizes, setSizes] = useState([]);
 
         // 메인 상품 이미지 상태
-        const [mainImage, setMainImage] = useState(images[0]);
+        const [mainImage, setMainImage] = useState("");
+
+        const loginUserId = sessionStorage.getItem("loginUserId");
+
+        // 리뷰 
+        const [reviewFilter, setReviewFilter] = useState("all"); // 리뷰글보기 , 사진만 보기 버튼
+        const [zoomImage, setZoomImage] = useState(null); // 리뷰 확대 사진
+
+        useEffect(() => {
+                if (filelist.length > 0) {
+                        const first = filelist[0];
+                        setMainImage(first.url);
+                }
+        }, [filelist]);
+
+        // 좋아요
+        useEffect(() => {
+                const loginUserId = sessionStorage.getItem("loginUserId");
+                const mId = sessionStorage.getItem("mId");
+
+                if (!loginUserId) return;
+
+                axios.get(`http://localhost:9990/like/list/${mId}`)
+                        .then(res => setLikedItems(res.data))
+                        .catch(err => console.log(err));
+        }, []);
+
+        useEffect(() => {
+                if (!color || !filelist) return;
+
+                // 선택된 색상의 이미지만 필터링
+                const filtered = filelist.filter(f => f.colorName === color);
+
+                if (filtered.length > 0) {
+                        setMainImage(filtered[0].url);
+                }
+
+        }, [color, filelist]);
+
+        useEffect(() => {
+
+                getDataDetail()
+
+        }, [])
+
+        // 상품이미지 배열
+        const images = filelist;
+
+
 
         //  탭 메뉴 선택
         const [activeTab, setActiveTab] = useState("detail");
         // detail | related | review | qna
 
         // 좋아요 상태 저장
-        const productId = 1;
         const [likedItems, setLikedItems] = useState([]);
+
+
         const toggleMenu = (menuName) => {
                 setOpenMenu(openMenu === menuName ? null : menuName);
         };
-        // 좋아요 클릭
-        const handleLike = (id) => {
-
-                if (likedItems.includes(id)) {
-                        setLikedItems(likedItems.filter((item) => item !== id));
-                } else {
-                        setLikedItems([...likedItems, id]);
-                }
-
-        };
-
-        // 선택한 옵션값
-        const [color, setColor] = useState("");
-        const [extraOption, setExtraOption] = useState("");
-        const [selectedOptions, setSelectedOptions] = useState([]);
-
-        // 리뷰 
-        const [reviewFilter, setReviewFilter] = useState("all"); // 리뷰글보기 , 사진만 보기 버튼
-        const [zoomImage, setZoomImage] = useState(null); // 리뷰 확대 사진
 
         // 제품 데이터 배열, 관련상품 
         const products = [
@@ -89,6 +129,84 @@ function ProductDetail() {
         const [openQna, setOpenQna] = useState(false);
         const [openAnswer, setOpenAnswer] = useState(null);
 
+        // 백엔드
+        function getDataDetail() {
+                axios.get(`http://localhost:9990/productDetail/${id}`)
+
+                        .then((response) => {
+
+                                const d = response.data;   // 핵심 수정
+
+                                const colorsArr = d.product?.color
+                                        ? d.product.color.split(",")
+                                        : [];
+                                setColors(colorsArr);
+
+                                // 사이즈 배열 
+                                let sizeArr = [];
+                                if (d.product?.size) {
+                                        try {
+                                                sizeArr = JSON.parse(d.product.size);
+                                        } catch (e) {
+                                                console.log("size JSON parse error:", e);
+                                        }
+                                }
+                                setSizes(sizeArr);
+
+                                console.log("data", d);
+
+                                setData({
+                                        id: d.product?.pid,
+                                        username: d.product?.company?.name,
+                                        name: d.product?.name,
+                                        price: d.product?.price,
+                                        content: d.product?.context
+                                });
+
+                                //  이미지
+                                const file = [];
+                                d.fileList?.forEach((f) => {
+                                        file.push({
+                                                color: f.colorName,
+                                                url: `http://localhost:9990/upload/${f.filename}.${f.extname}`
+                                        });
+                                });
+                                setFilelist(file);
+                        })
+                        .catch((error) => {
+                                console.log("상품상세보기 에러==>", error)
+                        })
+
+
+
+        }
+
+        // 좋아요 백엔드
+        function handleLike(productId) {
+                const mId = sessionStorage.getItem("mId");
+                console.log("mId:", mId);
+                console.log("productId:", productId);
+
+                if (!mId || !productId) {
+                        console.log("값 없음", mId, productId);
+                        return;
+                }
+
+                axios.post("http://localhost:9990/like/toggle", {
+                        memberId: mId,
+                        productId: productId
+                })
+                        .then(res => {
+                                const { liked } = res.data;
+
+                                setLikedItems(prev =>
+                                        liked
+                                                ? [...prev, productId]
+                                                : prev.filter(id => id !== productId)
+                                );
+                        })
+                        .catch(err => console.log(err));
+        }
         return (
                 <div className="product-detail-container">
 
@@ -104,45 +222,40 @@ function ProductDetail() {
 
                                         {/* 썸네일 리스트 */}
                                         <div className="thumb-list">
-
-                                                {images.map((img, index) => (
+                                                {filelist.map((img, index) => (
                                                         <img
                                                                 key={index}
-                                                                src={img}
-                                                                alt=""
+                                                                src={img.url}
                                                                 className="thumb-img"
-                                                                onClick={() => setMainImage(img)}
+                                                                onClick={() => setMainImage(img.url)}
                                                         />
                                                 ))}
-
                                         </div>
 
                                         {/* 메인 이미지 */}
-                                        <div className="main-img-box">
-                                                <img
-                                                        src={mainImage}
-                                                        alt=""
-                                                        className="main-img"
-                                                />
-                                        </div>
+                                        <img
+                                                src={mainImage ? mainImage : "/no-image.png"}
+                                                className="main-img"
+                                        />
 
                                 </div>
 
                                 {/* 오른쪽 상품 정보 */}
                                 <div className="info-section">
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <h3>BILLY 빌리, 120cm</h3>
+                                                <h3>{data?.name}</h3>
                                                 <span>
                                                         <img
                                                                 src={
-                                                                        likedItems.includes(productId)
-                                                                                ? "public/like2.png"
-                                                                                : "public/like.png"
+                                                                        likedItems.includes(data?.id)
+                                                                                ? "/like2.png"
+                                                                                : "/like.png"
                                                                 }
                                                                 alt="like"
                                                                 onClick={(e) => {
-                                                                        e.preventDefault(); // Link 이동 방지
-                                                                        handleLike(productId);
+                                                                        console.log("data:", data);
+                                                                        e.preventDefault();
+                                                                        handleLike(data.id);
                                                                 }}
                                                                 style={{
                                                                         width: "30px",
@@ -150,18 +263,13 @@ function ProductDetail() {
                                                                         cursor: "pointer"
                                                                 }}
                                                         />
-
                                                 </span>
                                         </div>
 
-                                        <p className="price">89,900원</p>
+                                        <p className="price">{data?.price}원</p>
 
                                         <div className="rating">
-                                                <img src="public/bal.png" />
-                                                <img src="public/bal.png" />
-                                                <img src="public/bal.png" />
-                                                <img src="public/bal.png" />
-                                                <img src="public/bal.png" />
+                                                <span style={{ fontSize: '20px' }}>★★★★★</span>
                                                 <span>(168)</span>
                                         </div>
 
@@ -169,17 +277,24 @@ function ProductDetail() {
                                         <div className="option-box">
                                                 <select value={color} onChange={(e) => setColor(e.target.value)}>
                                                         <option value="">색상 선택</option>
-                                                        <option value="화이트">화이트</option>
-                                                        <option value="브라운">브라운</option>
-                                                        <option value="블루">블루</option>
+
+                                                        {colors.map((c, idx) => (
+                                                                <option key={idx} value={c}>
+                                                                        {c}
+                                                                </option>
+                                                        ))}
                                                 </select>
 
                                                 <select value={extraOption} onChange={(e) => setExtraOption(e.target.value)}>
                                                         <option value="">사이즈 선택</option>
-                                                        <option value="S">S</option>
-                                                        <option value="M">M(+100,000원)</option>
-                                                        <option value="L">L(+200,000원)</option>
 
+                                                        {sizes.map((item, idx) => (
+                                                                <option key={idx} value={item.size}>
+                                                                        {item.price && item.price !== "0"
+                                                                                ? `${item.size} (+${Number(item.price).toLocaleString()}원)`
+                                                                                : item.size}
+                                                                </option>
+                                                        ))}
                                                 </select>
                                         </div>
                                         <div className="count-add-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '10px 0' }}>
@@ -277,8 +392,10 @@ function ProductDetail() {
                                         <div className="detail-toggle-wrapper" style={{ textAlign: 'center', margin: '40px 0' }}>
 
                                                 <div className={`detail-content ${showDetail ? "open" : ""}`}>
-                                                        <img src="public/p-detail2.png" alt="detail" />
-                                                        <img src="public/p-detail3.png" alt="detail" />
+                                                        <div
+                                                                className="detail-html"
+                                                                dangerouslySetInnerHTML={{ __html: data?.content }}
+                                                        />
                                                 </div>
 
                                                 {!showDetail && (

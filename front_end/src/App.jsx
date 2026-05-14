@@ -45,7 +45,7 @@ function App() {
           <Route path='/mypage' element={<Mypage />}></Route>
           <Route path='/mypage/addproduct' element={<AddProduct />}></Route>
           <Route path='/allproduct' element={<AllRroduct />}></Route>
-          <Route path='/productDetail' element={<ProductDetail />}></Route>
+          <Route path='/productDetail/:id' element={<ProductDetail />}></Route>
           <Route path='/spaceproduct' element={<Space />}></Route>
           <Route path='/sale' element={<Sale />}></Route>
           <Route path='/categoryproduct' element={<CategoryProduct />}></Route>
