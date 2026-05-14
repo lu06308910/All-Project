@@ -2,6 +2,7 @@ package com.finalproject.canvas.controller;
 
 import com.finalproject.canvas.entity.CpDataEntity;
 import com.finalproject.canvas.entity.DataEntity;
+import com.finalproject.canvas.entity.SearchVO;
 import com.finalproject.canvas.service.DataService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;

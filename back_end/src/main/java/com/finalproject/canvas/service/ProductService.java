@@ -1,8 +1,6 @@
 package com.finalproject.canvas.service;
 
-import com.finalproject.canvas.entity.DataEntity;
-import com.finalproject.canvas.entity.FileEntity;
-import com.finalproject.canvas.entity.ProductEntity;
+import com.finalproject.canvas.entity.*;
 import com.finalproject.canvas.repository.FileRepository;
 import com.finalproject.canvas.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -81,5 +79,15 @@ public class ProductService {
     public List<ProductEntity> getAllProducts(){
         return productRepository.findAll();
     }
+    //제품 검색
+    public List<ProductEntity> searchProducts(SearchVO searchVO) {
+        String key = searchVO.getSearchKey();
+        String word = searchVO.getSearchWord();
 
+        if (word == null || word.isBlank()) return productRepository.findAll();
+
+        if ("name".equals(key)) return productRepository.findByNameContaining(word);
+        if ("businessName".equals(key)) return productRepository.findByCompany_BusinessNameContaining(word);
+        else return productRepository.findByCompany_BusinessNameContaining(word);
+    }
 }
