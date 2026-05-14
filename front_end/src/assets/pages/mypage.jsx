@@ -1,11 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './../css/kdh.css';
 
 const MyPage = () => {
 
-        // 로그인 조건 : true - 기업 / false - 일반
-        const [isCorporate] = useState(true);
-        const [userName] = useState(isCorporate ? "DB(기업)" : "DB(일반)"); //
+        // 1. 상태 관리: 사용자 데이터 및 타입
+        const [userInfo, setUserInfo] = useState(null);
+        const [loading, setLoading] = useState(true);
+
+        // 세션에서 정보 가져오기 (로그인 시 저장했던 값)
+        const logId = sessionStorage.getItem("logId");
+        const usertype = sessionStorage.getItem("usertype");
+        const isCorporate = usertype === 'BUSINESS';
+
+        // 2. 서버에서 데이터 불러오기
+        useEffect(() => {
+                const fetchUserInfo = async () => {
+                        try {
+                                const response = await axios.get(`http://localhost:9991/member/edit?userid=${logId}&usertype=${usertype}`);
+                                setUserInfo(response.data);
+                        } catch (error) {
+                                console.error("데이터 호출 실패:", error);
+                        } finally {
+                                setLoading(false);
+                        }
+                };
+
+                if (logId) fetchUserInfo();
+        }, [logId, usertype]);
+
+        // 3. 이름/기업명 동적 할당 (DataEntity: username / CpDataEntity: businessName)
+        const userName = isCorporate
+                ? userInfo?.businessName  // 기업일 때 
+                : userInfo?.username;     // 일반일 때
+
         const [activeMenu, setActiveMenu] = useState(isCorporate ? '판매 현황' : '주문내역');
 
         const userMenus = ['주문내역', '취소/반품/교환 내역', '찜', '이벤트', '문의 내역'];
@@ -22,7 +50,6 @@ const MyPage = () => {
                 { id: 102, brand: "CANVAS", name: "크로켓 2000 거실장[1200 / 1500 / 2000]", option: "월넛 / 1200cm / 1개", price: "230,000", status: "반품 신청", date: "26.04.11(토)" },
                 { id: 103, brand: "CANVAS", name: "크로켓 2000 거실장[1200 / 1500 / 2000]", option: "월넛 / 1200cm / 1개", price: "230,000", status: "교환 신청", date: "26.04.11(토)" }
         ]);
-        
         const [inquiries] = useState([
                 {
                         id: 301,
@@ -109,12 +136,14 @@ const MyPage = () => {
         // --------------------------------------------------마이스토어 공통 ---------------------------------------
         return (
                 <div className="mypage-container">
-                        <h1 className="mypage-title">마이스토어({userName} 님)</h1>
+                        <h1 className="mypage-title">마이스토어 {`(${userName}) 님`}</h1>
 
                         <section className="info-box">
                                 <div className="profile-header">
-                                        <div className="nickname-link">{userName}님 〉</div>
-                                        <div className="settings-icon"><a href="/member/memberedit">⚙️</a></div>
+                                        <div className="nickname-link">
+                                                <a href={`/member/memberEdit?userid=${logId}&usertype=${usertype}`}>
+                                                        {userName}님 〉
+                                                </a></div>
                                 </div>
                                 <div className="info-stats">
                                         {isCorporate ? (

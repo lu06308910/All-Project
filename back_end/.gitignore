@@ -1,5 +1,8 @@
 HELP.md
-.gradle
+back_end/gradle/
+back_end/build/
+*.log
+.gradle/
 build/
 bin/
 *.lock
