@@ -186,7 +186,7 @@ function Manager() {
         }
 
         const handleProductSearch = () => {
-                axios.post('http://localhost:9989/search/product', {
+                axios.post('http://localhost:9991/search/product', {
                         searchKey: productSearchKey,
                         searchWord: productSearchWord
                 })
