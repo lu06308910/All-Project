@@ -12,7 +12,43 @@ function QnaWrite() {
         context: "",
         agree: false
     });
-    const [agree, setAgree] = useState(false);
+
+    // 2. 입력 핸들러
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData({
+            ...formData,
+            [name]: type === 'checkbox' ? checked : value
+        });
+    };
+
+    // 3. 전송 핸들러
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        if (!formData.agree) {
+            alert("개인정보 수집 및 이용에 동의해주세요.");
+            return;
+        }
+
+        // 필수 값 체크
+        if (!formData.writer || !formData.subject || !formData.context) {
+            alert("별표(*) 항목은 필수 입력 사항입니다.");
+            return;
+        }
+
+        // axios 전송
+        axios.post("http://localhost:9991/qna/write", formData)
+            .then(response => {
+                alert("문의가 성공적으로 접수되었습니다!");
+                // useNavigate 대신 고전적인 방식으로 이동
+                window.location.href = "/qna";
+            })
+            .catch(error => {
+                console.error("오류 발생:", error);
+                alert("접수 중 오류가 발생했습니다.");
+            });
+    };
 
     return (
         <div style={{
@@ -25,7 +61,6 @@ function QnaWrite() {
 
             {/* ▷ 왼쪽 사이드 메뉴 */}
             <div className="side-menu">
-
                 {/* 사이드 메뉴 타이틀 */}
                 <div style={{
                     width: '220px',
@@ -44,7 +79,6 @@ function QnaWrite() {
 
             {/* ▷ 오른쪽 컨텐츠 */}
             <div style={{ width: '100%' }}>
-
                 {/* 상단 제목 */}
                 <div style={{
                     borderBottom: '2px solid #000',
@@ -112,23 +146,22 @@ function QnaWrite() {
                 </div>
 
                 {/* ▽ 문의 작성 폼 */}
-                <form style={{ marginTop: '40px' }}>
+                <form onSubmit={handleSubmit} style={{ marginTop: '40px' }}>
 
                     {/* 문의유형 */}
                     <div style={{ marginBottom: '25px' }}>
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>문의구분</label>
                         <div style={{ display: 'flex', gap: '10px' }}>
-                            <select style={{ padding: '10px', width: '200px', border: '1px solid #ccc' }}>
-                                <option>회원/ 정보문의</option>
-                                <option>배송문의</option>
-                                <option>환불문의</option>
-                                <option>교환문의</option>
-                            </select>
-                            <select style={{ padding: '10px', width: '200px', border: '1px solid #ccc' }}>
-                                <option>구분</option>
-                            </select>
-                            <select style={{ padding: '10px', width: '200px', border: '1px solid #ccc' }}>
-                                <option>상세구분</option>
+                            <select
+                                name="category"
+                                value={formData.category}
+                                onChange={handleChange}
+                                style={{ padding: '10px', width: '200px', border: '1px solid #ccc' }}
+                            >
+                                <option value="회원/ 정보문의">회원/ 정보문의</option>
+                                <option value="배송문의">배송문의</option>
+                                <option value="환불문의">환불문의</option>
+                                <option value="교환문의">교환문의</option>
                             </select>
                         </div>
                     </div>
