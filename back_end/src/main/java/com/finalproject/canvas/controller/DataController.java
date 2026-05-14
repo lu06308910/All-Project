@@ -144,9 +144,11 @@ public class DataController {
         log.info("회원선택=>"+entity.getUserid());
         return dataService.dataSelect(entity.getUserid());
     }
-    //회원수정
+
+    // 기존 정보 가져오기
     @GetMapping("/edit")
-    public ResponseEntity<?> getEditData(@RequestParam("userid") String userid, @RequestParam("usertype") String usertype) {
+    public ResponseEntity<?> getEditData(@RequestParam("userid") String userid,
+                                         @RequestParam("usertype") String usertype) {
         log.info("수정 데이터 조회 요청 -> ID: {}, Type: {}", userid, usertype);
 
         if ("PERSONAL".equals(usertype)) {
@@ -156,21 +158,30 @@ public class DataController {
             CpDataEntity biz = dataService.businessSelect(userid);
             if (biz != null) return ResponseEntity.ok(biz);
         }
-
         return ResponseEntity.status(404).body("사용자 정보를 찾을 수 없습니다.");
     }
 
-    @PostMapping("/business/Edit")
+    //회원수정
+    @PostMapping("/edit")
+    public ResponseEntity<?> updateMemberData(@RequestBody DataEntity entity) {
+        // 이제 빨간 줄 안 뜨고 로그도 잘 찍힐 거예요!
+        log.info("수정 요청 ID: {}", entity.getUserid());
+        log.info("전달된 새비번: {}", entity.getNewPassword());
+
+        DataEntity updated = dataService.dataUpdate(entity);
+        if (updated != null) return ResponseEntity.ok(updated);
+        return ResponseEntity.status(401).body("비밀번호 불일치 또는 수정 실패");
+    }
+
+    // 기업 회원 수정 (동일한 로직)
+    @PostMapping("/businessedit")
     public ResponseEntity<?> businessEdit(@RequestBody CpDataEntity entity) {
-        log.info("기업 회원 수정 요청 -> ID: {}", entity.getUserid());
+        log.info("기업 회원 수정 요청 아이디: {}", entity.getUserid());
+        log.info("기업 새비번: {}", entity.getNewPassword());
 
         CpDataEntity updated = dataService.businessUpdate(entity);
-
-        if (updated != null) {
-            return ResponseEntity.ok(updated);
-        } else {
-            return ResponseEntity.status(401).body("비밀번호가 일치하지 않거나 사업자 정보를 찾을 수 없습니다.");
-        }
+        if (updated != null) return ResponseEntity.ok(updated);
+        return ResponseEntity.status(401).body("수정 실패");
     }
 
     //회원탈퇴
