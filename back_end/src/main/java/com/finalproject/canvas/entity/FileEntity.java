@@ -29,11 +29,14 @@ public class FileEntity {
     @Column(nullable = false)
     private int size;
 
+    // 프론트 보낼때 필요
+    private String filePath;
+
 
 
     //원글 정보
     @ManyToOne
+    @JoinColumn(name = "p_id")
     @JsonBackReference
-    @JoinColumn(name="P_ID")
     private ProductEntity productEntity;
 }

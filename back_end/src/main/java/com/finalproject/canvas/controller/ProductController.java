@@ -9,6 +9,10 @@ import com.finalproject.canvas.service.ProductService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,7 +48,7 @@ public class ProductController {
         cp.setCId(1);
         productEntity.setCompany(cp);
 
-        String uploadPath = session.getServletContext().getRealPath("/uploads");
+        String uploadPath = "C:/upload/";
         List<FileEntity> fileEntities = null;
 
         try {
@@ -163,18 +167,40 @@ public class ProductController {
 
         return uploadFiles;
     }
+    /**
+     * 모든 상품 리스트
+     */
+    @GetMapping("/allproduct")
+    public Map<String, Object> productlist(
+            @PageableDefault(sort = "pId", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
 
+        Page<ProductEntity> result = productService.productList(pageable);
+
+        Map<String, Object> map = new HashMap<>();
+
+        map.put("dataList", result.getContent());
+        map.put("totalPages", result.getTotalPages());
+        map.put("totalElements", result.getTotalElements());
+        map.put("currentPage", result.getNumber());
+        map.put("size", result.getSize());
+
+        return map;
+    }
     /**
      * 상품 상세 조회
      */
-    @GetMapping("/product/{id}")
+    @GetMapping("/productDetail/{id}")
     public Map<String, Object> productDetail(@PathVariable("id") int id){
 
         Map<String, Object> result = new HashMap<>();
 
-        result.put("product", productService.productSelect(id).orElse(null));
+        ProductEntity product = productService.productSelect(id)
+                .orElseThrow(() -> new RuntimeException("상품 없음"));
 
         List<FileEntity> fileList = productService.fileSelect(id);
+
+        result.put("product", product);
         result.put("fileList", fileList);
 
         return result;
@@ -189,7 +215,7 @@ public class ProductController {
             HttpSession session
     ){
 
-        String uploadPath = session.getServletContext().getRealPath("/uploads");
+        String uploadPath = "C:/upload/";
         List<FileEntity> newUploadedFiles = null;
 
         try {
@@ -243,7 +269,7 @@ public class ProductController {
     @DeleteMapping("/product/{id}")
     public String deleteProduct(@PathVariable("id") Integer id, HttpSession session){
 
-        String uploadPath = session.getServletContext().getRealPath("/uploads");
+        String uploadPath = "C:/upload/";
 
         try {
             // 상품에 연결된 파일 리스트

@@ -5,7 +5,8 @@ import com.finalproject.canvas.entity.ProductEntity;
 import com.finalproject.canvas.repository.FileRepository;
 import com.finalproject.canvas.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,10 +34,16 @@ public class ProductService {
         return cnt;
     }
 
+    // 모든상품 리스트
+    public Page<ProductEntity> productList(Pageable pageable) {
+        return productRepository.findAllWithFiles(pageable);
+    }
+
     // 상품 상세 조회
     public Optional<ProductEntity> productSelect(int id){
         return productRepository.findById(id);
     }
+
 
     // 특정 상품에 연결된 파일 조회
     // FileEntity 필드명이 productEntity 로 되어있다고 가정
@@ -75,5 +82,6 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("해당 상품이 없습니다."));
         productRepository.delete(entity);
     }
+
 
 }

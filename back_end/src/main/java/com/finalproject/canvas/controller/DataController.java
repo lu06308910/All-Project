@@ -117,6 +117,8 @@ public class DataController {
             result.put("username", user.getUsername());
             result.put("userid", user.getUserid());
             result.put("usertype", "PERSONAL");
+
+            result.put("mId", user.getMId());
         } else {
             CpDataEntity biz = (CpDataEntity) loginUser;
             session.setAttribute("logId", biz.getUserid());
@@ -125,6 +127,7 @@ public class DataController {
             result.put("username", biz.getBusinessName());
             result.put("userid", biz.getUserid());
             result.put("usertype", "BUSINESS");
+
         }
 
         result.put("status", "OK");
