@@ -20,6 +20,8 @@ public class CpDataEntity {
     private String userid;
     @Column(nullable = false, length = 20)
     private String userpwd;
+    @Transient // 따로 컬럼이 생성되진 않음
+    private String newPassword; // 비밀번호 수정을 위한 임시 보관함
     @Column(name = "businessName", nullable = false, length =10)
     private String businessName;
     @Column(name ="businessNum", nullable = false, length=20)

@@ -497,6 +497,11 @@
         font-weight: 700;
         margin-bottom: 30px;
 }
+.nickname-link a{
+        text-decoration : none;
+        cursor: pointer;
+        color : #333;
+}
 
 /* 상단 요약 카드 섹션 */
 .info-box {
