@@ -67,7 +67,6 @@ function Manager() {
                 .then(res => setProducts(res.data))
                 .catch(err => console.log(err));
         }, []);
-        console.log(products)
         
         //문의
         const ask = [
@@ -97,9 +96,6 @@ function Manager() {
         const postsPerPage2 = 5;
         const totalPosts2 = 10;
         const totalPages2 = Math.ceil(totalPosts2 / postsPerPage2);
-
-        const indexOfLastPost = currentPage * postsPerPage;
-        const indexOfFirstPost = indexOfLastPost - postsPerPage;
 
         // 페이지 이동 함수
         const paginate = (pageNumber, e) => {
@@ -161,6 +157,10 @@ function Manager() {
         const [userSearchWord, setUserSearchWord] = useState('');
         const [companySearchKey, setCompanySearchKey] = useState('userid');
         const [companySearchWord, setCompanySearchWord] = useState('');
+        const [productSearchKey, setProductSearchKey] = useState('name');
+        const [productSearchWord, setProductSearchWord] = useState('');
+        const [productBCategory, setProductBCategory] = useState('');
+        const [productSCategory, setProductSCategory] = useState('');
 
         const [userOutSearchKey, setUserOutSearchKey] = useState('userid');
         const [userOutSearchWord, setUserOutSearchWord] = useState('');
@@ -182,6 +182,15 @@ function Manager() {
                         searchWord: companySearchWord
                 })
                 .then(res => setCompanys(res.data))
+                .catch(err => console.log(err));
+        }
+
+        const handleProductSearch = () => {
+                axios.post('http://localhost:9989/search/product', {
+                        searchKey: productSearchKey,
+                        searchWord: productSearchWord
+                })
+                .then(res => setProducts(res.data))
                 .catch(err => console.log(err));
         }
 
@@ -216,36 +225,53 @@ function Manager() {
 
         const menus = ['대시보드', '회원 관리', '기업 관리', '상품 관리', '게시글 관리', '문의 관리', '통계', '정산'];
         const submenus = ['-예약', '-이벤트 관리']
-        const handleCategoryClick = (CategoryName) => {
-                setActiveCategory(CategoryName);
-        }
 
         //날짜 변수
         const [startDate, setStartDate] = useState('');
         const [endDate, setEndDate] = useState('');
+        const [productStartDate, setProductStartDate] = useState('');
+        const [productEndDate, setProductEndDate] = useState('');
 
-        const handleDatePreset = (period, value) => {
+        const handleDateProductPreset = (period, value) => {
                 const today = new Date();
                 const start = new Date();
-
-                // 종료일은 언제나 오늘
-                setEndDate(formatDate(today));
-
-                // 기간 설정
+                setProductEndDate(formatDate(today));
                 if (period === 'day') {
-                        // 당일: 시작일도 오늘
-                        setStartDate(formatDate(today));
+                        setProductStartDate(formatDate(today));
                 } else if (period === 'week') {
                         start.setDate(today.getDate() - 7);
-                        setStartDate(formatDate(start));
+                        setProductStartDate(formatDate(start));
                 } else if (period === 'month') {
                         start.setMonth(today.getMonth() - value);
-                        setStartDate(formatDate(start));
+                        setProductStartDate(formatDate(start));
                 } else if (period === 'year') {
                         start.setFullYear(today.getFullYear() - 1);
-                        setStartDate(formatDate(start));
+                        setProductStartDate(formatDate(start));
                 }
         };
+
+        const filteredProducts = products
+                .filter(pd => {
+                        // 1. 카테고리 필터
+                        if (productBCategory && pd.b_category !== productBCategory) return false;
+                        if (productSCategory && pd.s_category !== productSCategory) return false;
+                return true;
+                })
+                .filter(pd => {
+                        // 2. 날짜 필터
+                        if (!productStartDate && !productEndDate) return true;
+                        const writedate = pd.writedate?.split('T')[0];
+                        if (productStartDate && writedate < productStartDate) return false;
+                        if (productEndDate && writedate > productEndDate) return false;
+                return true;
+                })
+                .filter(pd => {
+                        // 3. 검색어 필터
+                        if (!productSearchWord) return true;
+                        if (productSearchKey === 'name') return pd.name?.includes(productSearchWord);
+                        if (productSearchKey === 'businessName') return pd.company?.businessName?.includes(productSearchWord);
+                        return true;
+                });
 
         // 날짜를 YYYY-MM-DD 형식으로 변환하는 보조 함수
         const formatDate = (date) => {
@@ -539,23 +565,6 @@ function Manager() {
                         }
                 ],
         };
-        const data3 = {
-                labels: [
-                        'A기업',
-                        'B기업',
-                        'C기업'
-                ],
-                datasets: [{
-                        label: 'My First Dataset',
-                        data: [300, 50, 100],
-                        backgroundColor: [
-                                'rgb(255, 99, 132)',
-                                'rgb(54, 162, 235)',
-                                'rgb(255, 205, 86)'
-                        ],
-                        hoverOffset: 4
-                }]
-        };
         const ChartData = {
                 type: 'doughnut',
                 data: data
@@ -588,10 +597,6 @@ function Manager() {
                                 },
                         }
                 },
-        };
-        const ChartData3 = {
-                type: 'doughnut',
-                data: data
         };
         const ChartModel = () => (
                 <div style={{
@@ -669,32 +674,6 @@ function Manager() {
                         {/* 대시보드 페이지 */}
                         {activeMenu == '대시보드' && (
                                 <div className='category-content'>
-                                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>매출 현황</h4>
-                                        <hr />
-                                        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                                                <div style={{ flex: 3, height: '350px' }}>
-                                                        <Line
-                                                                data={data2}
-                                                                options={{
-                                                                        ...ChartData.options2,
-                                                                        maintainAspectRatio: false
-                                                                }}
-                                                        />
-                                                </div>
-                                                <div style={{ flex: 1.5, height: '350px' }}>
-                                                        <Doughnut
-                                                                data={data3}
-                                                                options={{
-                                                                        ...ChartData.options3,
-                                                                        maintainAspectRatio: false
-                                                                }}
-                                                        />
-                                                </div>
-                                        </div>
-                                        <div style={{ marginTop: '20px', display: 'flex', gap: '20px', alignItems: 'center' }}>
-                                                <div style={{ marginLeft: '215px' }}>CANVAS 전체 매출 현황</div>
-                                                <div style={{ marginLeft: '400px' }}>기업 매출 상위 분포도</div>
-                                        </div>
                                         <h4 style={{ marginTop: '60px', textAlign: 'left', fontWeight: '600' }}>상위 리스트</h4>
                                         <hr />
                                         <div className="row" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', textAlign: 'center' }}>
@@ -704,6 +683,41 @@ function Manager() {
                                         <div className="row" style={{ fontSize: '0.8em', textAlign: 'center' }}>
                                                 <div className="col p-2">게시글(상품) 이름</div>
                                                 <div className="col p-2">게시글(상품) 이름</div>
+                                        </div>
+                                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>매출 현황</h4>
+                                        <hr />
+                                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'space-evenly' }}>
+                                                <div className='dash-board'>
+                                                        <Line
+                                                                data={data2}
+                                                                options={{
+                                                                        ...ChartData.options2,
+                                                                        maintainAspectRatio: false
+                                                                }}
+                                                        />
+                                                </div>
+                                                <div className='dash-board' style={{ overflowX: 'auto' }}>
+                                                        <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', marginTop:'10px' }}>
+                                                                <thead>
+                                                                        <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업명</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>카테고리</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>상품명</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>판매가</th>
+                                                                        </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                        {filteredProducts.slice(0, 6).map((pd) => (
+                                                                        <tr key={pd.pId} style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.company?.businessName}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.b_category}〉{pd.s_category}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pd.name}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.price}</td>
+                                                                        </tr>
+                                                                        ))}
+                                                                </tbody>
+                                                        </table>
+                                                </div>
                                         </div>
                                 </div>
                         )}
@@ -971,14 +985,22 @@ function Manager() {
                                                 <div style={{ textAlign: 'left', width: '500px' }}>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
                                                                 <p>카테고리 :</p>
-                                                                <select className="cat1" style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}>
+                                                                <select className="cat1"
+                                                                        value={productBCategory}
+                                                                        onChange={(e) => setProductBCategory(e.target.value)}
+                                                                        style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}
+                                                                >
                                                                         <option value="">대분류</option>
                                                                         {[...new Set(products.map(pd => pd.b_category))].map((cat) => (
                                                                                 <option key={cat} value={cat}>{cat}</option>
                                                                         ))}
                                                                 </select>
-                                                                <select className="cat1" style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}>
-                                                                        <option value="null">소분류</option>
+                                                                <select className="cat1"
+                                                                        value={productSCategory}
+                                                                        onChange={(e) => setProductSCategory(e.target.value)}
+                                                                        style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}
+                                                                >
+                                                                        <option value="">소분류</option>
                                                                         {[...new Set(products.map(pd => pd.s_category))].map((cat) => (
                                                                                 <option key={cat} value={cat}>{cat}</option>
                                                                         ))}
@@ -986,30 +1008,44 @@ function Manager() {
                                                         </div>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                                 <p>검색어 :</p>
-                                                                <select className="cat1" style={{ width: '100px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}>
+                                                                <select
+                                                                        className="cat1" style={{ width: '100px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px' }}
+                                                                        value={productSearchKey} onChange={(e) => setProductSearchKey(e.target.value)}
+                                                                >
                                                                         <option value="null">전체</option>
-                                                                        <option value="category">상품명</option>
-                                                                        <option value="category">기업명</option>
+                                                                        <option value="name">상품명</option>
+                                                                        <option value="businessName">기업명</option>
                                                                 </select>
-                                                                <input type='text' style={{ width: '320px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px', border: '1px solid #333333' }} placeholder="검색어를 입력하세요."></input>
+                                                                <input type='text' value={productSearchWord} onChange={(e) => setProductSearchWord(e.target.value)}
+                                                                        style={{ width: '320px', padding: '3px', borderRadius: '10px', fontSize: '0.8em',
+                                                                        height: '30px', border: '1px solid #333333' }} placeholder="검색어를 입력하세요."
+                                                                ></input>
                                                         </div>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                                 <p style={{ width: "80px d-inline-flex" }}>등록일자 :</p>
                                                                 <div className="row mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
-                                                                        <div className="col p-1 text-center" onClick={() => handleDatePreset('day')}>당일</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDatePreset('week')}>일주일</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDatePreset('month', 1)}>1개월</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDatePreset('month', 3)}>3개월</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDatePreset('year')}>1년</div>
+                                                                        <div className="col p-1 text-center" onClick={() => handleDateProductPreset('day')}>당일</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('week')}>일주일</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('month', 1)}>1개월</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('month', 3)}>3개월</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('year')}>1년</div>
                                                                 </div>
                                                         </div>
                                                         <div style={{ marginLeft: "85px" }}>
                                                                 <div style={{ display: "flex", gap: "10px", fontSize: "0.8em", padding: "10px" }}>
-                                                                        <input type='date' className='calendar' value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                                                                        <input type='date' className='calendar' value={productStartDate} onChange={(e) => setProductStartDate(e.target.value)} />
                                                                         <b>~</b>
-                                                                        <input type='date' className='calendar' value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                                                                        <input type='date' className='calendar' value={productEndDate} onChange={(e) => setProductEndDate(e.target.value)} />
                                                                 </div>
                                                         </div>
+                                                        {/* <button
+                                                                onClick={() => {}}
+                                                                className='button2'
+                                                                style={{marginLeft: 'auto', display: 'block'}}
+                                                        >
+                                                                검색
+                                                        </button> */}
                                                 </div>
                                                 {/* 상품 목록 */}
                                                 <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '20px' }}>상품 목록</h4>
@@ -1033,7 +1069,7 @@ function Manager() {
                                                                         <th style={{ backgroundColor: '#eeeeee' }}>목록 수정/삭제</th>
                                                                 </tr>
                                                         </thead>
-                                                        {products.map((pd) => (
+                                                        {filteredProducts.map((pd) => (
                                                                 <tbody key={pd.pid}>
                                                                         <tr>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
@@ -1043,7 +1079,7 @@ function Manager() {
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.b_category}〉{pd.s_category}</td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.name}</td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.price}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.writedate}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.writedate.slice(0, 10)}</td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.count}</td>
                                                                                 <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                                                                                         <div className="col-7" style={{
@@ -1205,17 +1241,21 @@ function Manager() {
                                                                 <p style={{ width: "80px d-inline-flex" }}>등록일자 :</p>
                                                                 <div className="row mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
                                                                         <div className="col p-1 text-center" onClick={() => handleDatePreset('day')}>당일</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDatePreset('week')}>일주일</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDatePreset('month', 1)}>1개월</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDatePreset('month', 3)}>3개월</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDatePreset('year')}>1년</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleProductDatePreset('week')}>일주일</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleProductDatePreset('month', 1)}>1개월</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleProductDatePreset('month', 3)}>3개월</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleProductDatePreset('year')}>1년</div>
                                                                 </div>
                                                         </div>
                                                         <div style={{ marginLeft: "85px" }}>
                                                                 <div style={{ display: "flex", gap: "10px", fontSize: "0.8em", padding: "10px" }}>
-                                                                        <input type='date' className='calendar' value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                                                                        <input type='date' className='calendar'
+                                                                        value={productStartDate}
+                                                                        onChange={(e) => setProductStartDate(e.target.value)}
+                                                                        />
                                                                         <b>~</b>
-                                                                        <input type='date' className='calendar' value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                                                                        <input type='date' className='calendar' value={productEndDate}
+                                                                        onChange={(e) => setProductEndDate(e.target.value)} />
                                                                 </div>
                                                         </div>
                                                 </div>

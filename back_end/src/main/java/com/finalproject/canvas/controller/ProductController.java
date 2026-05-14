@@ -2,10 +2,7 @@ package com.finalproject.canvas.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.finalproject.canvas.entity.CpDataEntity;
-import com.finalproject.canvas.entity.DataEntity;
-import com.finalproject.canvas.entity.FileEntity;
-import com.finalproject.canvas.entity.ProductEntity;
+import com.finalproject.canvas.entity.*;
 import com.finalproject.canvas.service.ProductService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -270,5 +267,11 @@ public class ProductController {
     @GetMapping("/all/product")
     public List<ProductEntity> getProducts(){
         return productService.getAllProducts();
+    }
+    //제품 검색
+    @PostMapping("/search/product")
+    public List<ProductEntity> searchProducts(@RequestBody SearchVO searchVO){
+        log.info("상품검색=>"+searchVO.toString());
+        return productService.searchProducts(searchVO);
     }
 }
