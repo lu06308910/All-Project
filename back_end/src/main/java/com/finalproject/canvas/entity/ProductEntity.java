@@ -5,8 +5,10 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +39,10 @@ public class ProductEntity {
 
     @Column(columnDefinition = "LONGTEXT")
     private String context;
+
+    @CreationTimestamp
+    @Column(name = "writedate", nullable=false, updatable =false)
+    private LocalDateTime writedate;
 
     // ───────── 파일 / 이미지 엔티티 관계 ─────────
     @OneToMany(

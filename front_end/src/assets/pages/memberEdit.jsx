@@ -109,16 +109,16 @@ const memberEdit = () => {
 
                 try {
                         const url = formData.usertype === 'PERSONAL'
-                                ? 'http://localhost:9989/member/edit'
-                                : 'http://localhost:9989/member/business/Edit';
+                                ? 'http://localhost:9991/member/edit'
+                                : 'http://localhost:9991/member/businessedit';
                         const submitData = {
                                 ...formData,
                                 userpwd: formData.oldPassword, // 서버가 DB와 비교할 비밀번호
                                 newPassword: formData.userpwd  // 실제 바뀔 비밀번호
                         };
 
-                        const response = await axios.get(url, {
-                                params: submitData,
+                        const response = await axios.post(url, submitData,{
+
                                 withCredentials: true
                         });
 
