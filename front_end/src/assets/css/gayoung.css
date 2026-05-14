@@ -63,13 +63,23 @@
 /* 대쉬보드 */
 .dash-board{
         display: 'flex';
-        width: 50%;
-        height: 300px;
+        justify-content: space-evenly;
         overflow-x: auto;
-        padding:10px;
+        padding:20px;
+        width: 33%;
         border-radius: 10px;
         box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-
+        animation: fadeIn 0.4s ease-out;
+}
+@keyframes fadeIn {
+    from {
+        opacity: 0;            /* 시작은 투명하게 */
+        transform: translateY(5px); /* 아래에서 위로 살짝 올라오는 느낌 */
+    }
+    to {
+        opacity: 1;            /* 끝은 선명하게 */
+        transform: translateY(0);    /* 원래 위치로 */
+    }
 }
 /* 캘린더 */
 .calendar{

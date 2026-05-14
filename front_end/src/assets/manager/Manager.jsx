@@ -4,7 +4,7 @@ import './../css/top.css'
 import './../css/kdh.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
-import { Line, Doughnut } from 'react-chartjs-2';
+import { Line, Doughnut, Bar } from 'react-chartjs-2';
 import {
         Chart as ChartJS,
         CategoryScale,
@@ -14,6 +14,7 @@ import {
         Title,
         Tooltip,
         Legend,
+        BarElement,
         ArcElement
 } from 'chart.js';
 import axios from 'axios';
@@ -24,6 +25,7 @@ ChartJS.register(
         LineElement,
         ArcElement,
         Title,
+        BarElement,
         Tooltip,
         Legend
 );
@@ -565,6 +567,26 @@ function Manager() {
                         }
                 ],
         };
+        const labels = ['일반회원', '기업회원'];
+        const barData = {
+    labels: ['회원 수'],  // X축은 하나
+        datasets: [
+                {
+                label: '일반회원',   // 범례 1
+                        data: [65],
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgb(255, 99, 132)',
+                        borderWidth: 1
+                },
+                {
+                label: '기업회원',   // 범례 2
+                        data: [59],
+                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                        borderColor: 'rgb(255, 159, 64)',
+                        borderWidth: 1
+                }
+        ]
+        };
         const ChartData = {
                 type: 'doughnut',
                 data: data
@@ -674,30 +696,23 @@ function Manager() {
                         {/* 대시보드 페이지 */}
                         {activeMenu == '대시보드' && (
                                 <div className='category-content'>
-                                        <h4 style={{ marginTop: '60px', textAlign: 'left', fontWeight: '600' }}>상위 리스트</h4>
+                                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>CANVAS 총 매출</h4>
                                         <hr />
-                                        <div className="row" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', textAlign: 'center' }}>
-                                                <div className="col p-2">인기 상품 TOP 5</div>
-                                                <div className="col p-2">조회수 TOP 5</div>
+                                        <div className='dash-board' style={{width:'80%', scrollbarWidth: 'none', margin:'0 auto'}}>
+                                                <Line
+                                                        data={data2}
+                                                        options={{
+                                                                ...ChartData.options2,
+                                                                maintainAspectRatio: false
+                                                        }}
+                                                />
                                         </div>
-                                        <div className="row" style={{ fontSize: '0.8em', textAlign: 'center' }}>
-                                                <div className="col p-2">게시글(상품) 이름</div>
-                                                <div className="col p-2">게시글(상품) 이름</div>
-                                        </div>
-                                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>매출 현황</h4>
+                                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop:'50px' }}>매출 현황</h4>
                                         <hr />
                                         <div style={{ display: 'flex', gap: '20px', justifyContent: 'space-evenly' }}>
-                                                <div className='dash-board'>
-                                                        <Line
-                                                                data={data2}
-                                                                options={{
-                                                                        ...ChartData.options2,
-                                                                        maintainAspectRatio: false
-                                                                }}
-                                                        />
-                                                </div>
                                                 <div className='dash-board' style={{ overflowX: 'auto' }}>
-                                                        <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', marginTop:'10px' }}>
+                                                        <h6 style={{textAlign:'center'}}>상위매출 TOP5</h6>
+                                                        <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
                                                                 <thead>
                                                                         <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
                                                                         <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업명</th>
@@ -707,7 +722,38 @@ function Manager() {
                                                                         </tr>
                                                                 </thead>
                                                                 <tbody>
-                                                                        {filteredProducts.slice(0, 6).map((pd) => (
+                                                                        {filteredProducts.slice(0, 5).map((pd) => (
+                                                                        <tr key={pd.pId} style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.company?.businessName}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.b_category}〉{pd.s_category}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pd.name}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.price}</td>
+                                                                        </tr>
+                                                                        ))}
+                                                                </tbody>
+                                                        </table>
+                                                </div>
+                                                <div className='dash-board' style={{ overflowX: 'auto', height: '400px', scrollbarWidth: 'none'}}>
+                                                        <h6 style={{textAlign:'center'}}>사용자 비율(기업/일반)</h6>
+                                                        <Bar
+                                                                style={{height:'350px', padding:'20px'}}
+                                                                data={barData}
+                                                                options={{ maintainAspectRatio: false }}
+                                                        />
+                                                </div>
+                                                <div className='dash-board' style={{ overflowX: 'auto' }}>
+                                                        <h6 style={{textAlign:'center'}}>카테고리 판매량 순위</h6>
+                                                        <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
+                                                                <thead>
+                                                                        <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업명</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>카테고리</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>상품명</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>판매가</th>
+                                                                        </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                        {filteredProducts.slice(0, 5).map((pd) => (
                                                                         <tr key={pd.pId} style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
                                                                                 <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.company?.businessName}</td>
                                                                                 <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.b_category}〉{pd.s_category}</td>
