@@ -1,0 +1,41 @@
+package com.finalproject.canvas.repository;
+
+import com.finalproject.canvas.entity.ProductEntity;
+import jakarta.transaction.Transactional;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+
+public interface ProductRepository extends JpaRepository<ProductEntity, Integer> {
+
+    // 전체 상품 수
+    int countBy();
+
+    // 상품명 검색 (name LIKE %searchWord%)
+    int countByNameContaining(String searchWord);
+
+    // 상세설명 검색 (context LIKE %searchWord%)
+    int countByContextContaining(String searchWord);
+
+    // 상세설명 검색 + 최신순 정렬
+    List<ProductEntity> findByContextContainingOrderByPIdDesc(String searchWord, PageRequest pageRequest);
+
+    // 상품명 검색 + 최신순 정렬
+    List<ProductEntity> findByNameContainingOrderByPIdDesc(String search, PageRequest page);
+
+
+    // 상품 수정
+    @Modifying
+    @Transactional
+    @Query("update ProductEntity p set p.name = :name, p.context = :context, p.price = :price where p.pId = :id")
+    int updateProduct(
+            @Param("id") int id,
+            @Param("name") String name,
+            @Param("context") String context,
+            @Param("price") String price
+    );
+}
