@@ -45,7 +45,7 @@ function Login() {
         // 로그인 실행(db후 마무리)
         const loginStart = async (e) => {
                 e.preventDefault();
-                window.alert("현재 코드상의 주소: http://localhost:9989/api/member/login");
+                window.alert("현재 코드상의 주소: http://localhost:9990/api/member/login");
 
                 if (!formData.userId || !formData.password) {
                         alert("아이디와 비밀번호를 모두 입력해주세요.");
@@ -54,7 +54,7 @@ function Login() {
 
                 try {
                         // formData에 userType이 포함되어 서버로 전송됩니다.
-                        const response = await axios.post('http://localhost:9989/api/member/login', {
+                        const response = await axios.post('http://localhost:9990/api/member/login', {
                                 userId: formData.userId,
                                 password: formData.password
                         });

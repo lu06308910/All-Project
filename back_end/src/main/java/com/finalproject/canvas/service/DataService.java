@@ -6,6 +6,7 @@ import com.finalproject.canvas.repository.CpDataRepository;
 import com.finalproject.canvas.repository.DataRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -40,22 +41,56 @@ public class DataService {
     public CpDataEntity loginBusiness(String userid, String userpwd) {
         return cpDataRepository.findByUseridAndUserpwd(userid, userpwd);
     }
-
-    // 일반 회원 선택
+    // 일반 회원 조회
     public DataEntity dataSelect(String userid) {
         return dataRepository.findByUserid(userid);
     }
 
+    // 기업 회원 조회
+    public CpDataEntity businessSelect(String userid) {
+        return cpDataRepository.findByUserid(userid);
+    }
+
     // 일반 회원 정보 수정
+    @Transactional
     public DataEntity dataUpdate(DataEntity entity) {
         DataEntity orgEntity = dataRepository.findByUserid(entity.getUserid());
 
-        // 비밀번호 일치 확인
+        // 1. 기존 비번(oldPassword)과 DB 비번이 일치하는지 확인
         if (orgEntity != null && entity.getUserpwd().equals(orgEntity.getUserpwd())) {
+
+            // 2. 만약 새 비밀번호가 들어왔다면, 그걸로 교체!
+            if (entity.getNewPassword() != null && !entity.getNewPassword().isEmpty()) {
+                entity.setUserpwd(entity.getNewPassword());
+            } else {
+                // 새 비번을 안 적었다면 기존 비번 유지
+                entity.setUserpwd(orgEntity.getUserpwd());
+            }
+
+            entity.setMId(orgEntity.getMId());
             return dataRepository.save(entity);
-        } else {
-            return null;
         }
+        return null;
+    }
+
+    // 기업 회원 수정
+    @Transactional
+    public CpDataEntity businessUpdate(CpDataEntity entity) {
+        CpDataEntity orgEntity = cpDataRepository.findByUserid(entity.getUserid());
+
+        if (orgEntity != null && entity.getUserpwd().equals(orgEntity.getUserpwd())) {
+
+            // 새 비밀번호가 넘어왔을 때만 교체하는 로직 추가
+            if (entity.getNewPassword() != null && !entity.getNewPassword().isEmpty()) {
+                entity.setUserpwd(entity.getNewPassword());
+            } else {
+                entity.setUserpwd(orgEntity.getUserpwd());
+            }
+
+            entity.setCId(orgEntity.getCId());
+            return cpDataRepository.save(entity);
+        }
+        return null;
     }
 
     // 일반 회원 탈퇴

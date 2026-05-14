@@ -151,6 +151,7 @@ public class DataController {
 
         return dataService.dataUpdate(entity);
     }
+
     //회원탈퇴
     //is_out만 탈퇴 형식으로 바꾸기
     @PatchMapping("/unregister/{id}")

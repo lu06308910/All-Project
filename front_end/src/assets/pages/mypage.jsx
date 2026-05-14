@@ -113,7 +113,7 @@ const MyPage = () => {
 
                         <section className="info-box">
                                 <div className="profile-header">
-                                        <div className="nickname-link">db데이터_로그인닉네임 님 〉</div>
+                                        <div className="nickname-link">{userName}님 〉</div>
                                         <div className="settings-icon"><a href="/member/memberedit">⚙️</a></div>
                                 </div>
                                 <div className="info-stats">

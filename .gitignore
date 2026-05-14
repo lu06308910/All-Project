@@ -1,26 +1,18 @@
-# Logs
-logs
+# IDE 설정 파일
+.idea/
+
+# 백엔드 관련 (대용량 캐시 및 빌드 파일)
+back_end/.gradle/
+back_end/build/
+back_end/gradle/caches/
+back_end/gradle/daemon/
+back_end/gradle/wrapper/
+*.jar
+
+# 프론트엔드 관련
+front_end/node_modules/
+front_end/dist/
+
+# 기타 로그 및 백업 파일
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-back_end/gradle/
+*.bak

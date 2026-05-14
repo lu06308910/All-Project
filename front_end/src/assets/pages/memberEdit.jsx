@@ -5,8 +5,9 @@ import './../css/kdh.css';
 const memberEdit = () => {
         //  초기 데이터 상태 (회원가입 필드와 매칭)
         const [formData, setFormData] = useState({
-                userType: 'PERSONAL', // 서버에서 받아올 정보
-                userid: '',
+                userType: sessionStorage.getItem('usertype') || 'PERSONAL', // 서버에서 받아올 정보
+                userid: sessionStorage.getItem('logId') || '',
+                oldPassword: '', // 기존 pwd와 대조할 현재 비밀번호
                 userpwd: '',
                 pwdCheck: '',
                 username: '',
@@ -26,20 +27,26 @@ const memberEdit = () => {
 
         //  초기 데이터 가져오기
         useEffect(() => {
+                const logId = sessionStorage.getItem('logId');
+                let usertype = sessionStorage.getItem('usertype');
+
+                console.log("현재 로그인 세션 정보:", { logId, usertype });
+
                 const fetchUserData = async () => {
                         try {
-                                // 실제 구현 시 세션이나 토큰을 통해 사용자 정보를 가져옵니다.
-                                const response = await axios.get('/api/member/profile');
+                                const response = await axios.get(`http://localhost:9990/member/edit?userid=${logId}&usertype=${usertype}`);
                                 if (response.data) {
                                         setFormData(prev => ({
                                                 ...prev,
                                                 ...response.data,
-                                                userpwd: '', // 비밀번호는 보안상 빈 값으로 초기화
-                                                pwdCheck: ''
+                                                userpwd: '',
+                                                pwdCheck: '',
+                                                oldPassword: ''
                                         }));
                                 }
                         } catch (error) {
-                                console.error("Data Load Error:", error);
+                                console.error("불러오기 실패:", error);
+                                alert("회원 정보를 불러올 수 없습니다.");
                         }
                 };
                 fetchUserData();
@@ -64,7 +71,7 @@ const memberEdit = () => {
                 }).open();
         };
 
-        // 입력 변화 처리 및 유효성 검사 (회원가입 로직 활용)
+        // 입력 변화 처리 및 유효성 검사
         const handleChange = (e) => {
                 const { name, value } = e.target;
                 setFormData(prev => ({ ...prev, [name]: value }));
@@ -73,7 +80,7 @@ const memberEdit = () => {
                         const reg = /^[A-Za-z0-9!@#]{8,12}$/;
                         setMessages(prev => ({
                                 ...prev,
-                                pwdMsg: value === '' ? { text: '', isError: false } : // 입력 안하면 검사 패스
+                                pwdMsg: value === '' ? { text: '', isError: false } :
                                         reg.test(value) ? { text: '사용 가능한 비밀번호입니다.', isError: false }
                                                 : { text: '8~12자의 영문/숫자/!@#만 가능합니다.', isError: true }
                         }));
@@ -89,21 +96,44 @@ const memberEdit = () => {
 
         const handleUpdate = async (e) => {
                 e.preventDefault();
-                if (messages.pwdMsg.isError || messages.pwdCheckMsg.isError) {
-                        alert("입력 정보를 다시 확인해주세요.");
+                if (!formData.oldPassword) {
+                        alert("본인 확인을 위해 현재 비밀번호를 입력해주세요.");
+                        return;
+                }
+
+                // 새 비밀번호를 입력했을 경우에만 유효성 검사
+                if (formData.userpwd && (messages.pwdMsg.isError || messages.pwdCheckMsg.isError)) {
+                        alert("새 비밀번호 형식이 올바르지 않습니다.");
                         return;
                 }
 
                 try {
-                        const response = await axios.put('/api/member/update', formData);
-                        if (response.data.status === 'success') {
-                                alert("회원정보가 성공적으로 수정되었습니다.");
+                        const url = formData.usertype === 'PERSONAL'
+                                ? 'http://localhost:9990/member/edit'
+                                : 'http://localhost:9990/member/business/Edit';
+                        const submitData = {
+                                ...formData,
+                                userpwd: formData.oldPassword, // 서버가 DB와 비교할 비밀번호
+                                newPassword: formData.userpwd  // 실제 바뀔 비밀번호
+                        };
+
+                        const response = await axios.get(url, {
+                                params: submitData,
+                                withCredentials: true
+                        });
+
+                        if (response.status === 200) {
+                                alert("정보가 성공적으로 수정되었습니다.");
+                                window.location.href = "/mypage";
                         }
                 } catch (error) {
-                        alert("수정 중 오류가 발생했습니다.");
+                        if (error.response && error.response.status === 401) {
+                                alert("현재 비밀번호가 일치하지 않습니다.");
+                        } else {
+                                alert("수정 중 오류가 발생했습니다.");
+                        }
                 }
         };
-
         return (
                 <div className="login-wrapper">
                         <div className="login-container signup-container">
@@ -134,6 +164,17 @@ const memberEdit = () => {
                                                         </div>
                                                 </>
                                         )}
+                                        <div className="input-group">
+                                                <p>CURRENT PASSWORD (본인 확인용)</p>
+                                                <input
+                                                        type="password"
+                                                        name="oldPassword"  // name을 반드시 oldPassword로!
+                                                        value={formData.oldPassword}
+                                                        placeholder="현재 비밀번호를 입력하세요"
+                                                        onChange={handleChange}
+                                                        required
+                                                />
+                                        </div>
 
                                         <div className="input-group">
                                                 <p>NEW PASSWORD (변경 시에만 입력)</p>
@@ -152,7 +193,7 @@ const memberEdit = () => {
                                         </div>
 
                                         <div className="input-group">
-                                                <p>{formData.userType === 'BUSINESS' ? 'MANAGER NAME' : 'NAME'}</p>
+                                                <p>{formData.usertype === 'BUSINESS' ? 'MANAGER NAME' : 'NAME'}</p>
                                                 <input type="text" name="username" value={formData.username} onChange={handleChange} />
                                         </div>
 

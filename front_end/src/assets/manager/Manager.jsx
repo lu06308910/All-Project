@@ -49,13 +49,13 @@ function Manager() {
         //회원 업데이트
         const [users, setUsers] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9989/member/all')
+                axios.get('http://localhost:9990/member/all')
                 .then(res => setUsers(res.data))
                 .catch(err => console.log(err));
         }, []);
         const [companys, setCompanys] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9989/member/all/business')
+                axios.get('http://localhost:9990/member/all/business')
                 .then(res => setCompanys(res.data))
                 .catch(err => console.log(err));
         }, []);
@@ -131,12 +131,12 @@ function Manager() {
 
         Promise.all(
                 targets.map(mid =>
-                axios.patch(`http://localhost:9989/member/unregister/${mid}`)
+                axios.patch(`http://localhost:9990/member/unregister/${mid}`)
                 )
         )
         .then(() => {
                 alert("탈퇴처리 완료");
-                axios.get('http://localhost:9989/member/all')
+                axios.get('http://localhost:9990/member/all')
                 .then(res => setUsers(res.data));
                 setSelectedItems(prev => ({ ...prev, '회원관리': [] }));
         })
