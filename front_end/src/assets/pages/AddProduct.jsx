@@ -185,11 +185,7 @@ function AddProduct() {
 
 
                 //  전송
-<<<<<<< HEAD
                 axios.post("http://localhost:9991/mypage/addproduct", formData)
-=======
-                axios.post("http://localhost:9990/mypage/addproduct", formData)
->>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
                         .then((response) => {
                                 console.log("response.data", response.data);
 

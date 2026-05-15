@@ -3,6 +3,7 @@ package com.finalproject.canvas.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import com.finalproject.canvas.entity.OutStatus;
 
 import java.time.LocalDateTime;
 
@@ -47,8 +48,4 @@ public class CpDataEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "is_out")
     private OutStatus isOut = OutStatus.N;
-
-    public enum OutStatus {
-        Y, N
-    }
 }

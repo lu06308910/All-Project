@@ -55,11 +55,7 @@ function AllProduct() {
                 "&searchWord=" + searchData.searchWord;
         }
 
-<<<<<<< HEAD
         axios.get(`http://localhost:9991/allproduct${url}`)
-=======
-        axios.get(`http://localhost:9990/allproduct${url}`)
->>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
             .then((response) => {
 
                 console.log(response.data);
@@ -71,11 +67,7 @@ function AllProduct() {
                         title: record.name,
                         price: record.price,
                         img: record.fileList?.[0]
-<<<<<<< HEAD
                             ? `http://localhost:9991/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
-=======
-                            ? `http://localhost:9990/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
->>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
                             : "/no-image.png"
                     };
                 });
