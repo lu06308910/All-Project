@@ -204,6 +204,32 @@ function ProductDetail() {
 
 
         }
+        // 좋아요 백엔드
+        function handleLike(productId) {
+                const mId = sessionStorage.getItem("mId");
+                console.log("mId:", mId);
+                console.log("productId:", productId);
+
+                if (!mId || !productId) {
+                        console.log("값 없음", mId, productId);
+                        return;
+                }
+
+                axios.post("http://localhost:9990/like/toggle", {
+                        memberId: mId,
+                        productId: productId
+                })
+                        .then(res => {
+                                const { liked } = res.data;
+
+                                setLikedItems(prev =>
+                                        liked
+                                                ? [...prev, productId]
+                                                : prev.filter(id => id !== productId)
+                                );
+                        })
+                        .catch(err => console.log(err));
+        }
 
         // 리뷰 작성
 
@@ -652,8 +678,25 @@ function ProductDetail() {
                                                                                 <p style={{ color: '#7a7a7a', margin: '0px' }}>
                                                                                         {r.writedate}
                                                                                 </p>
+
                                                                         </div>
                                                                 ))}
+                                                                {/*  리뷰 작성 버튼 */}
+                                                                <div style={{ textAlign: "center", marginTop: "30px" }}>
+                                                                        <button
+                                                                                onClick={() => setOpenReviewModal(true)}
+                                                                                style={{
+                                                                                        padding: "10px 20px",
+                                                                                        background: "#000",
+                                                                                        color: "#fff",
+                                                                                        border: "none",
+                                                                                        borderRadius: "6px",
+                                                                                        cursor: "pointer"
+                                                                                }}
+                                                                        >
+                                                                                리뷰 작성하기
+                                                                        </button>
+                                                                </div>
 
                                                                 {/* 리뷰작성 모달 */}
                                                                 {openReviewModal && (
