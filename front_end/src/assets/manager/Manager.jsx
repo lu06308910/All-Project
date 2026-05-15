@@ -81,7 +81,7 @@ function Manager() {
                 axios.get('http://localhost:9989/support/list/all')
                 .then(res=>setAsks(res.data))
                 .catch(err=>console.log(err))
-        })
+        }, [])
 
         const tonggyea = [
                 {id:1, writedate:'2026-01-22', code:'L001', category:"야외 〉조경", title:'나무원목의자', comname:'기업명1', cost:'70,000', count:'15', deliver:'69,000', susuryo:'151,600'},
