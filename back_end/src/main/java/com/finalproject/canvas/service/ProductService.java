@@ -3,6 +3,7 @@ package com.finalproject.canvas.service;
 import com.finalproject.canvas.entity.FileEntity;
 import com.finalproject.canvas.entity.ProductEntity;
 import com.finalproject.canvas.entity.*;
+import com.finalproject.canvas.repository.EventRepository;
 import com.finalproject.canvas.repository.FileRepository;
 import com.finalproject.canvas.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final FileRepository fileRepository;
+    private final EventRepository eventRepository;
 
     // 상품 등록
     public ProductEntity productInsert(ProductEntity productEntity) {
@@ -79,6 +81,7 @@ public class ProductService {
 
     // 상품 삭제
     public void productDelete(Integer id) {
+        eventRepository.deleteByProduct_pId(id);
         ProductEntity entity = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 상품이 없습니다."));
         productRepository.delete(entity);
