@@ -47,7 +47,7 @@ function ProductDetail() {
 
                 if (!loginUserId) return;
 
-                axios.get(`http://localhost:9989/like/list/${mId}`)
+                axios.get(`http://localhost:9991/like/list/${mId}`)
                         .then(res => setLikedItems(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -131,7 +131,7 @@ function ProductDetail() {
 
         // 백엔드
         function getDataDetail() {
-                axios.get(`http://localhost:9989/productDetail/${id}`)
+                axios.get(`http://localhost:9991/productDetail/${id}`)
 
                         .then((response) => {
 
@@ -168,7 +168,7 @@ function ProductDetail() {
                                 d.fileList?.forEach((f) => {
                                         file.push({
                                                 color: f.colorName,
-                                                url: `http://localhost:9989/upload/${f.filename}.${f.extname}`
+                                                url: `http://localhost:9991/upload/${f.filename}.${f.extname}`
                                         });
                                 });
                                 setFilelist(file);
@@ -192,7 +192,7 @@ function ProductDetail() {
                         return;
                 }
 
-                axios.post("http://localhost:9989/like/toggle", {
+                axios.post("http://localhost:9991/like/toggle", {
                         memberId: mId,
                         productId: productId
                 })

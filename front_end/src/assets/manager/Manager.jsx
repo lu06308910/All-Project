@@ -51,13 +51,13 @@ function Manager() {
         //회원 업데이트
         const [users, setUsers] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9989/member/all/member')
+                axios.get('http://localhost:9991/member/all/member')
                 .then(res => setUsers(res.data))
                 .catch(err => console.log(err));
         }, []);
         const [companys, setCompanys] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9989/member/all/business')
+                axios.get('http://localhost:9991/member/all/business')
                 .then(res => setCompanys(res.data))
                 .catch(err => console.log(err));
         }, []);
@@ -65,7 +65,7 @@ function Manager() {
         //상품관리
         const [products, setProducts] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9989/all/product')
+                axios.get('http://localhost:9991/all/product')
                 .then(res => setProducts(res.data))
                 .catch(err => console.log(err));
         }, []);
@@ -133,12 +133,12 @@ function Manager() {
 
         Promise.all(
                 targets.map(mid =>
-                axios.patch(`http://localhost:9989/member/unregister/${mid}`)
+                axios.patch(`http://localhost:9991/member/unregister/${mid}`)
                 )
         )
         .then(() => {
                 alert("탈퇴처리 완료");
-                axios.get('http://localhost:9989/member/all')
+                axios.get('http://localhost:9991/member/all')
                 .then(res => setUsers(res.data));
                 setSelectedItems(prev => ({ ...prev, '회원관리': [] }));
         })
@@ -170,7 +170,7 @@ function Manager() {
         const [companyOutSearchWord, setCompanyOutSearchWord] = useState('');
 
         const handleUserSearch = () => {
-                axios.post('http://localhost:9989/member/search',{
+                axios.post('http://localhost:9991/member/search',{
                         searchKey: userSearchKey,
                         searchWord: userSearchWord
                 })
@@ -179,7 +179,7 @@ function Manager() {
         }
 
         const handleCompanySearch = () => {
-                axios.post('http://localhost:9989/member/search/business',{
+                axios.post('http://localhost:9991/member/search/business',{
                         searchKey: companySearchKey,
                         searchWord: companySearchWord
                 })
@@ -188,7 +188,7 @@ function Manager() {
         }
 
         const handleProductSearch = () => {
-                axios.post('http://localhost:9989/search/product', {
+                axios.post('http://localhost:9991/search/product', {
                         searchKey: productSearchKey,
                         searchWord: productSearchWord
                 })
