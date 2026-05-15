@@ -33,21 +33,26 @@ ChartJS.register(
 function Manager() {
 
         //게시글관리
-        const preevents = [
-                { id: 1, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", finaldate: "2026-06-04", state:"Y" },
-                { id: 2, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", finaldate: "2026-06-04", state:"Y" },
-                { id: 3, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-04-28", finaldate: "2026-05-04", state:"N" }
-        ];
-        const resevents = [
-                { id: 1, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", writedate: "2026-05-28", updatedate: "2026-06-04", state:"N" },
-                { id: 2, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", writedate: "2026-05-28", updatedate: "2026-06-04", state:"N" },
-                { id: 3, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", writedate: "2026-04-28", updatedate: "2026-05-04", state:"Y" }
-        ];
-        const endevents = [
-                { id: 1, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", enddate: "2026-06-04", state:"N" },
-                { id: 2, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-05-28", enddate: "2026-06-04", state:"Y" },
-                { id: 3, category: "야외 〉조경", subject: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", startdate: "2026-04-28", enddate: "2026-05-04", state:"N" }
-        ];
+        const [events, setEvents] = useState([]);
+        useEffect(() => {
+                axios.get('http://localhost:9989/event/all')
+                .then(res => setEvents(res.data))
+                .catch(err => console.log(err));
+        }, []);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); //자정 기준
+
+        //예약
+        const reservedEvents = events.filter((item)=>{
+                const updatedate = item.updatedate ? new Date(item.updatedate):null;
+                return updatedate && updatedate>today;
+        })
+        //기간 후 종료 전환
+        const endedEvents = events.filter((item)=>{
+                const enddate = item.enddate ? new Date(item.enddate) : null;
+                return enddate && enddate < today && item.upload == 'N';
+        })
+
         //회원 업데이트
         const [users, setUsers] = useState([]);
         useEffect(() => {
@@ -90,6 +95,7 @@ function Manager() {
         const [openId, setOpenId] = useState(null); // 현재 열려있는 게시글의 ID 저장
         //선택 변수 저장
         const [selectedItems, setSelectedItems] = useState({});
+        const [selectedProIds, setSelectedProIds] = useState([]);
 
         const postsPerPage = 10;
         const totalPosts = 30;
@@ -123,7 +129,12 @@ function Manager() {
                         return { ...prev, [menu]: Array.from(currentSet) };
                 });
         };
-        
+
+        const handleProCheck = (pid)=>{
+                setSelectedProIds(prev =>
+                        prev.includes(pid) ? prev.filter(id=>id!==pid):[...prev, pid]
+                );
+        };
 
         //회원 삭제 명령어
         const handleBulkUnregister = () => {
@@ -153,6 +164,27 @@ function Manager() {
                         setSelectedItems(prev => ({ ...prev, [menu]: [] }));
                 }
         }
+
+        const handleProDelete = (pid) =>{
+                if(!window.confirm('상품을 삭제하시겠습니까?')) return;
+                axios.delete(`http://localhost:9989/product/${pid}`)
+                .then(()=>{
+                        alert('삭제 완료');
+                        axios.get('http://localhost:9989/all/product').then(res=>setProducts(res.data));
+                })
+                .catch(err=>console.log(err));
+        };
+
+        const handleBulkProDelete = () =>{
+                if (selectedProIds.length==0) return alert('삭제할 제품을 선택해 주세요.');
+                if (!window.confirm(`선택한 ${selectedProIds.length}개의 글을 삭제하시겠습니까?`)) return;
+                Promise.all(selectedProIds.map(id=>axios.delete(`http://localhost:9989/product/${id}`)))
+                       .then(()=>{
+                        setSelectedProIds([]);
+                        axios.get('http://localhost:9989/all/product').then(res=>setProducts(res.data));
+                       })
+                       .catch(err=>console.log(err));
+        };
 
         //검색 함수
         const [userSearchKey, setUserSearchKey] = useState('userid');
@@ -225,7 +257,7 @@ function Manager() {
                 .filter(c => !companyOutSearchWord || c[companyOutSearchKey]?.includes(companyOutSearchWord));
         const invisibleCompanys = cshowMoreOut ? outCompanys : outCompanys.slice(0, 5);
 
-        const menus = ['대시보드', '회원 관리', '기업 관리', '상품 관리', '게시글 관리', '문의 관리', '통계', '정산'];
+        const menus = ['대시보드', '회원 관리', '기업 관리', '상품 관리', '세일 관리', '문의 관리', '통계', '정산'];
         const submenus = ['-예약', '-이벤트 관리']
 
         //날짜 변수
@@ -305,28 +337,28 @@ function Manager() {
                                                 <th style={{ backgroundColor: '#eeeeee' }}>목록 수정/삭제</th>
                                         </tr>
                                 </thead>
-                                {resevents.map((item) => (
-                                        <tbody key={item.id}>
+                                {reservedEvents.map((item) => (
+                                        <tbody key={item.e_id}>
                                                 <tr>
                                                         <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
                                                                 <input type="checkbox" aria-label="항목 선택" />
                                                         </td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.category}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.s_category}</td>
                                                         <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
                                                                 <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                                         {item.subject}
                                                                 </div>
                                                         </td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.writedate}</td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.writedate?.slice(0, 10)}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
                                                         <td>
                                                                 <span style={{
-                                                                        background: item.state == 'N' ? '#ffebee' : '#e3f2fd',
-                                                                        color: item.state == 'N' ? '#c62828' : '#1976d2',
+                                                                        background: item.upload == "N" ? '#ffebee' : '#e3f2fd',
+                                                                        color: item.upload == "N" ? '#c62828' : '#1976d2',
                                                                         padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
                                                                         textAlign: 'center', verticalAlign: 'middle'
                                                                 }}>
-                                                                        {item.state=='N'?'미공개':'공개'}
+                                                                        {item.upload=="N"?'미공개':'공개'}
                                                                 </span>
                                                         </td>
                                                         <td>
@@ -366,31 +398,33 @@ function Manager() {
                                                 <th style={{ backgroundColor: '#eeeeee' }}>목록 수정/삭제</th>
                                         </tr>
                                 </thead>
-                                {preevents.map((item) => (
-                                        <tbody key={item.id}>
+                                {events
+                                .filter((item) => item.upload=='Y')
+                                .map((item) => (
+                                        <tbody key={item.e_id}>
                                                 <tr>
                                                         <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
                                                                 <input type="checkbox"
                                                                         aria-label="항목 선택"
-                                                                        checked={(selectedItems['게시글 관리'] || []).includes(item.id)}
-                                                                        onChange={() => handleCheck('게시글 관리', item.id)}
+                                                                        checked={(selectedItems['세일 관리'] || []).includes(item.e_id)}
+                                                                        onChange={() => handleCheck('세일 관리', item.e_id)}
                                                                 />
                                                         </td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.category}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.s_category}</td>
                                                         <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
                                                                 <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                                         {item.subject}
                                                                 </div></td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.startdate}</td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.finaldate}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.enddate?.slice(0, 10)}</td>
                                                         <td>
                                                                 <span style={{
-                                                                        background: item.state == 'N' ? '#ffebee' : '#e3f2fd',
-                                                                        color: item.state == 'N' ? '#c62828' : '#1976d2',
+                                                                        background: item.upload == 'N' ? '#ffebee' : '#e3f2fd',
+                                                                        color: item.upload == 'N' ? '#c62828' : '#1976d2',
                                                                         padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
                                                                         textAlign: 'center', verticalAlign: 'middle'
                                                                 }}>
-                                                                        {item.state=='N'?'비공개':'공개'}
+                                                                        {item.upload=='N'?'비공개':'공개'}
                                                                 </span>
                                                         </td>
                                                         <td>
@@ -412,7 +446,7 @@ function Manager() {
                         <button className='button' style={{
                                 border: '1px solid blue', backgroundColor: 'blue', marginLeft: '10px'
                         }}
-                                onClick={() => deleteSelected('게시글 관리')}
+                                onClick={() => deleteSelected('세일 관리')}
                         >
                                 선택삭제
                         </button>
@@ -428,28 +462,29 @@ function Manager() {
                                                 <th style={{ backgroundColor: '#eeeeee' }}>목록 수정/삭제</th>
                                         </tr>
                                 </thead>
-                                {endevents.map((item) => (
+                                {endedEvents
+                                .map((item) => (
                                         <tbody key={item}>
                                                 <tr>
                                                         <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
                                                                 <input type="checkbox" aria-label="항목 선택" />
                                                         </td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.category}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.s_category}</td>
                                                         <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
                                                                 <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                                         {item.subject}
                                                                 </div>
                                                         </td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.startdate}</td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.enddate}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.enddate?.slice(0, 10)}</td>
                                                         <td>
                                                                 <span style={{
-                                                                        background: item.state == 'N' ? '#ffebee' : '#e3f2fd',
-                                                                        color: item.state == 'N' ? '#c62828' : '#1976d2',
+                                                                        background: item.upload == 'N' ? '#ffebee' : '#e3f2fd',
+                                                                        color: item.upload == 'N' ? '#c62828' : '#1976d2',
                                                                         padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
                                                                         textAlign: 'center', verticalAlign: 'middle'
                                                                 }}>
-                                                                        {item.state=='N'?'비공개':'공개'}
+                                                                        {item.upload=='N'?'비공개':'공개'}
                                                                 </span>
                                                         </td>
                                                         <td>
@@ -569,24 +604,68 @@ function Manager() {
         };
         const labels = ['일반회원', '기업회원'];
         const barData = {
-    labels: ['회원 수'],  // X축은 하나
-        datasets: [
-                {
-                label: '일반회원',   // 범례 1
-                        data: [65],
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderColor: 'rgb(255, 99, 132)',
-                        borderWidth: 1
-                },
-                {
-                label: '기업회원',   // 범례 2
-                        data: [59],
-                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                        borderColor: 'rgb(255, 159, 64)',
-                        borderWidth: 1
-                }
-        ]
+                labels: ['회원 수'],  // X축은 하나
+                        datasets: [
+                                {
+                                label: '일반회원',   // 범례 1
+                                        data: [65],
+                                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                        borderColor: 'rgb(255, 99, 132)',
+                                        borderWidth: 1
+                                },
+                                {
+                                label: '기업회원',   // 범례 2
+                                        data: [59],
+                                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                        borderColor: 'rgb(255, 159, 64)',
+                                        borderWidth: 1
+                                }
+                        ]
+                };
+        
+        const dounutData = {
+                labels: [
+                        '기업1',
+                        '기업2',
+                        '기업3',
+                        '기업4',
+                        '기업5'
+                ],
+                datasets: [{
+                        label: 'My First Dataset',
+                        data: [300, 50, 100, 200, 150],
+                        backgroundColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 205, 86)',
+                        'rgb(86, 255, 100)',
+                        'rgb(249, 86, 255)'
+                ],
+                        hoverOffset: 4
+                }]
         };
+        const doughnutData = {
+                labels: [
+                        '기업1',
+                        '기업2',
+                        '기업3',
+                        '기업4',
+                        '기업5'
+                ],
+                datasets: [{
+                        label: 'My First Dataset',
+                        data: [300, 50, 100, 200, 150],
+                        backgroundColor: [
+                        'rgb(255, 173, 191)',
+                        'rgb(175, 223, 255)',
+                        'rgb(255, 240, 206)',
+                        'rgb(199, 255, 204)',
+                        'rgb(253, 207, 255)'
+                ],
+                        hoverOffset: 4
+                }]
+        };
+        
         const ChartData = {
                 type: 'doughnut',
                 data: data
@@ -661,14 +740,14 @@ function Manager() {
                                                                 }}
                                                                 onClick={() => {
                                                                         setActiveMenu(menu);
-                                                                        if (menu == '게시글 관리') setIsPostOpen(!isPostOpen);
+                                                                        if (menu == '세일 관리') setIsPostOpen(!isPostOpen);
                                                                 }}
                                                         >
                                                                 {menu}
                                                         </div>
 
                                                         {/* 서브메뉴 조건부 렌더링 */}
-                                                        {menu === '게시글 관리' && (isPostOpen || submenus.includes(activeMenu)) && (
+                                                        {menu === '세일 관리' && (isPostOpen || submenus.includes(activeMenu)) && (
                                                                 <div style={{ backgroundColor: '#222222' }}>
                                                                         {submenus.map((sub) => (
                                                                                 <p
@@ -698,7 +777,7 @@ function Manager() {
                                 <div className='category-content'>
                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>CANVAS 총 매출</h4>
                                         <hr />
-                                        <div className='dash-board' style={{width:'80%', scrollbarWidth: 'none', margin:'0 auto'}}>
+                                        <div className='dash-board' style={{width:'80%', scrollbarWidth: 'none', margin:'0 auto', height:'400px'}}>
                                                 <Line
                                                         data={data2}
                                                         options={{
@@ -711,25 +790,23 @@ function Manager() {
                                         <hr />
                                         <div style={{ display: 'flex', gap: '20px', justifyContent: 'space-evenly' }}>
                                                 <div className='dash-board' style={{ overflowX: 'auto' }}>
-                                                        <h6 style={{textAlign:'center'}}>상위매출 TOP5</h6>
+                                                        <h6 style={{textAlign:'center'}}>사용자 비율(기업/일반)</h6>
                                                         <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
                                                                 <thead>
                                                                         <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업명</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>카테고리</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>상품명</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>판매가</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>유저 분류</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>수치</th>
                                                                         </tr>
                                                                 </thead>
                                                                 <tbody>
-                                                                        {filteredProducts.slice(0, 5).map((pd) => (
-                                                                        <tr key={pd.pId} style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.company?.businessName}</td>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.b_category}〉{pd.s_category}</td>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pd.name}</td>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.price}</td>
+                                                                        <tr style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>유저</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>54</td>
                                                                         </tr>
-                                                                        ))}
+                                                                        <tr style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>41</td>
+                                                                        </tr>
                                                                 </tbody>
                                                         </table>
                                                 </div>
@@ -741,6 +818,41 @@ function Manager() {
                                                                 options={{ maintainAspectRatio: false }}
                                                         />
                                                 </div>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'space-evenly' }}>
+                                                <div className='dash-board' style={{ overflowX: 'auto' }}>
+                                                        <h6 style={{textAlign:'center'}}>상위 매출 기업 TOP5</h6>
+                                                        <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
+                                                                <thead>
+                                                                        <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업명</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>카테고리</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>상품명</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>판매가</th>
+                                                                        </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                        {filteredProducts.slice(0, 5).map((pd) => (
+                                                                        <tr key={pd.pid} style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.company?.businessName}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.b_category}〉{pd.s_category}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pd.name}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.price}</td>
+                                                                        </tr>
+                                                                        ))}
+                                                                </tbody>
+                                                        </table>
+                                                </div>
+                                                <div className='dash-board' style={{ overflowX: 'auto', height: '400px', scrollbarWidth: 'none'}}>
+                                                        <h6 style={{textAlign:'center'}}>상위 매출 기업 TOP5</h6>
+                                                        <Doughnut
+                                                                style={{height:'350px', padding:'20px'}}
+                                                                data={dounutData}
+                                                                options={{ maintainAspectRatio: false }}
+                                                        />
+                                                </div>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'space-evenly' }}>
                                                 <div className='dash-board' style={{ overflowX: 'auto' }}>
                                                         <h6 style={{textAlign:'center'}}>카테고리 판매량 순위</h6>
                                                         <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
@@ -754,7 +866,7 @@ function Manager() {
                                                                 </thead>
                                                                 <tbody>
                                                                         {filteredProducts.slice(0, 5).map((pd) => (
-                                                                        <tr key={pd.pId} style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
+                                                                        <tr key={pd.pid} style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
                                                                                 <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.company?.businessName}</td>
                                                                                 <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.b_category}〉{pd.s_category}</td>
                                                                                 <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pd.name}</td>
@@ -763,6 +875,14 @@ function Manager() {
                                                                         ))}
                                                                 </tbody>
                                                         </table>
+                                                </div>
+                                                <div className='dash-board' style={{ overflowX: 'auto', height: '400px', scrollbarWidth: 'none'}}>
+                                                        <h6 style={{textAlign:'center'}}>상위매출 TOP5</h6>
+                                                        <Doughnut
+                                                                style={{height:'350px', padding:'20px'}}
+                                                                data={doughnutData}
+                                                                options={{ maintainAspectRatio: false }}
+                                                        />
                                                 </div>
                                         </div>
                                 </div>
@@ -1097,7 +1217,7 @@ function Manager() {
                                                 <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '20px' }}>상품 목록</h4>
                                                 <hr />
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                                                        <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue', marginLeft: '10px' }}>선택삭제</button>
+                                                        <button onClick={handleBulkProDelete} className='button' style={{ border: '1px solid blue', backgroundColor: 'blue', marginLeft: '10px' }}>선택삭제</button>
                                                         <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}>상품등록</button>
                                                 </div>
 
@@ -1119,7 +1239,9 @@ function Manager() {
                                                                 <tbody key={pd.pid}>
                                                                         <tr>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                                        <input type="checkbox" aria-label="항목 선택" />
+                                                                                        <input type="checkbox" checked={selectedProIds.includes(pd.pid)}
+                                                                                                onChange={()=>handleProCheck(pd.pid)}
+                                                                                        />
                                                                                 </td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.company?.businessName}</td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.b_category}〉{pd.s_category}</td>
@@ -1139,7 +1261,7 @@ function Manager() {
                                                                                 </td>
                                                                                 <td>
                                                                                         <button className='button2' style={{ marginRight: '10px' }}>수정</button>
-                                                                                        <button className='button2'>삭제</button>
+                                                                                        <button className='button2' onClick={()=> handleProDelete(pd.pid)}>삭제</button>
                                                                                 </td>
                                                                         </tr>
                                                                 </tbody>
@@ -1148,8 +1270,8 @@ function Manager() {
                                         </div>
                                 </div>
                         )}
-                        {/* 게시글관리 페이지 */}
-                        {activeMenu == '게시글 관리' && (
+                        {/* 세일관리 페이지 */}
+                        {activeMenu == '세일 관리' && (
                                 <div className='category-content'>
                                         <Reservation />
                                         <Event />
