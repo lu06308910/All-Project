@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
 import './../css/seul.css';
 
@@ -12,6 +13,7 @@ function AllProduct() {
         setOpenMenu(openMenu === menuName ? null : menuName);
     };
 
+    
     // 제품 데이터 배열
     const products = [
         { id: 1, img: "/p1.png", title: "BILLY 빌리", price: "89,900" },
@@ -23,8 +25,9 @@ function AllProduct() {
         { id: 7, img: "/p3.png", title: "BILLY 빌리", price: "89,900" },
     ];
 
+    const [list, setList] = useState([]);
     // 처음 4개 + showMore true면 전체
-    const visibleProducts = showMore ? products : products.slice(0, 4);
+    const visibleProducts = showMore ? list : list.slice(0, 4);
 
     // 좋아요 클릭
     const handleLike = (id) => {
@@ -36,6 +39,46 @@ function AllProduct() {
         }
 
     };
+    // 검색키와 검색어를 담을 변수
+    const [searchData, setSearchData] = useState({ searchKey: 'subject', searchWord: '' });
+    useEffect(() => {
+
+        getDataList(1);
+
+    }, []);
+    // springboot 서버에서 비동기식으로 정보를 가져올 함수
+    function getDataList(page) {
+        let url = "?";
+
+        if (searchData.searchWord !== '') {
+            url += "searchKey=" + searchData.searchKey +
+                "&searchWord=" + searchData.searchWord;
+        }
+
+        axios.get(`http://localhost:9990/allproduct${url}`)
+            .then((response) => {
+
+                console.log(response.data);
+                
+
+                const newList = response.data.dataList.map((record) => {
+                    return {
+                        id: record.pid,
+                        title: record.name,
+                        price: record.price,
+                        img: record.fileList?.[0]
+                            ? `http://localhost:9990/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
+                            : "/no-image.png"
+                    };
+                });
+
+                setList(newList);
+
+            })
+            .catch((error) => {
+                console.log("목록조회 에러발생==>", error);
+            });
+    }
 
     return (
         <div className="all-product-wrap">
@@ -122,7 +165,7 @@ function AllProduct() {
                     {visibleProducts.map((item) => (
 
                         <Link
-                            to="/productDetail"
+                            to={`/productDetail/${item.id}`}
                             className="product-link"
                             key={item.id}
                         >
@@ -151,7 +194,7 @@ function AllProduct() {
                                     />
 
                                     {/* 좋아요 버튼 */}
-                                    <img 
+                                    <img
                                         className="like-btn"
                                         src={
                                             likedItems.includes(item.id)
@@ -165,7 +208,6 @@ function AllProduct() {
                                         }}
                                     />
 
-                                    
 
                                 </div>
 

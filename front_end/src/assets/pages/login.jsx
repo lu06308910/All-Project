@@ -53,11 +53,15 @@ function Login() {
 
                 try {
                         // formData에 userType이 포함되어 서버로 전송됩니다.
-                        const response = await axios.post('http://localhost:9991/member/login', formData);
+                        const response = await axios.post('http://localhost:9990/member/login', formData);
 
                         if (response.data.status === "OK") {
                                 // 로그인 성공: 객체가 존재하면 성공
                                 sessionStorage.setItem('logStatus', 'Y');
+
+                                sessionStorage.setItem("loginUserId", response.data.userid);
+                                sessionStorage.setItem("mId", response.data.mId);
+
                                 sessionStorage.setItem('logId', response.data.userid);
                                 sessionStorage.setItem('logName', response.data.username);
                                 sessionStorage.setItem('usertype', response.data.usertype);
@@ -69,6 +73,7 @@ function Login() {
                         } else {
                                 alert(response.data.message || "로그인 정보를 확인해주세요.");
                         }
+                        console.log("LOGIN RESPONSE:", response.data);
                 } catch (error) {
                         console.error("Login Error:", error);
                         alert("로그인에 실패하였습니다.");

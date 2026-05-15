@@ -3,7 +3,9 @@ package com.finalproject.canvas.repository;
 import com.finalproject.canvas.entity.CpDataEntity;
 import com.finalproject.canvas.entity.ProductEntity;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -28,6 +30,9 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Integer>
     // 상품명 검색 + 최신순 정렬
     List<ProductEntity> findByNameContainingOrderByPIdDesc(String search, PageRequest page);
 
+    // 모든 상품리스트
+    @Query("select p from ProductEntity p join fetch p.fileList")
+    Page<ProductEntity> findAllWithFiles(Pageable pageable);
 
     // 상품 수정
     @Modifying

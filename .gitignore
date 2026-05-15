@@ -16,4 +16,8 @@ front_end/dist/
 # 기타 로그 및 백업 파일
 *.log
 *.bak
+<<<<<<< HEAD
 .env.local
+=======
+.env.local
+>>>>>>> 9da567f3e054cc69c3e497830ce73c71ee8bf685

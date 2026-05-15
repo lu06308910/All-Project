@@ -1,5 +1,6 @@
 package com.finalproject.canvas.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,10 +20,11 @@ import java.util.List;
 @AllArgsConstructor
 public class ProductEntity {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "p_id")
-    private Integer pId;   // ← 필드명 CamelCase
+    private Integer pId;
 
     // --- 회사 FK ---
     @ManyToOne
@@ -39,10 +41,6 @@ public class ProductEntity {
 
     @Column(columnDefinition = "LONGTEXT")
     private String context;
-
-    @CreationTimestamp
-    @Column(name = "writedate", nullable=false, updatable =false)
-    private LocalDateTime writedate;
 
     // ───────── 파일 / 이미지 엔티티 관계 ─────────
     @OneToMany(
