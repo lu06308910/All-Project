@@ -17,7 +17,7 @@ const MyPage = () => {
         useEffect(() => {
                 const fetchUserInfo = async () => {
                         try {
-                                const response = await axios.get(`http://localhost:9989/member/edit?userid=${logId}&usertype=${usertype}`);
+                                const response = await axios.get(`http://localhost:9990/member/edit?userid=${logId}&usertype=${usertype}`);
                                 setUserInfo(response.data);
                         } catch (error) {
                                 console.error("데이터 호출 실패:", error);

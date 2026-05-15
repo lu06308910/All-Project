@@ -55,7 +55,7 @@ function AllProduct() {
                 "&searchWord=" + searchData.searchWord;
         }
 
-        axios.get(`http://localhost:9989/allproduct${url}`)
+        axios.get(`http://localhost:9990/allproduct${url}`)
             .then((response) => {
 
                 console.log(response.data);
@@ -67,7 +67,7 @@ function AllProduct() {
                         title: record.name,
                         price: record.price,
                         img: record.fileList?.[0]
-                            ? `http://localhost:9989/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
+                            ? `http://localhost:9990/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
                             : "/no-image.png"
                     };
                 });
