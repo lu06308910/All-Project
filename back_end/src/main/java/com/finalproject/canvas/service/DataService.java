@@ -41,7 +41,6 @@ public class DataService {
     public CpDataEntity loginBusiness(String userid, String userpwd) {
         return cpDataRepository.findByUseridAndUserpwd(userid, userpwd);
     }
-
     // 일반 회원 조회
     public DataEntity dataSelect(String userid) {
         return dataRepository.findByUserid(userid);

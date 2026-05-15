@@ -2,7 +2,6 @@ package com.finalproject.canvas.controller;
 
 import com.finalproject.canvas.entity.CpDataEntity;
 import com.finalproject.canvas.entity.DataEntity;
-import com.finalproject.canvas.entity.SearchVO;
 import com.finalproject.canvas.service.DataService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins="*")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -29,12 +28,12 @@ public class DataController {
     public ResponseEntity<?> signup(@RequestBody Map<String, Object> signupData) {
         String usertype = (String) signupData.get("usertype");
 
-        if (usertype == null) {
+        if(usertype == null){
             return ResponseEntity.badRequest().body("usertype 값이 필요합니다.");
         }
 
         // 일반 회원 가입
-        if (usertype.equals("PERSONAL")) {
+        if(usertype.equals("PERSONAL")) {
             DataEntity entity = new DataEntity();
             entity.setUserid((String) signupData.get("userid"));
             entity.setUserpwd((String) signupData.get("userpwd"));
@@ -51,7 +50,7 @@ public class DataController {
         }
 
         // 기업 회원 가입
-        else if (usertype.equals("BUSINESS")) {
+        else if(usertype.equals("BUSINESS")) {
             CpDataEntity cpEntity = new CpDataEntity();
             cpEntity.setUserid((String) signupData.get("userid"));
             cpEntity.setUserpwd((String) signupData.get("userpwd"));
@@ -119,6 +118,8 @@ public class DataController {
             result.put("username", user.getUsername());
             result.put("userid", user.getUserid());
             result.put("usertype", "PERSONAL");
+
+            result.put("mId", user.getMId());
         } else {
             CpDataEntity biz = (CpDataEntity) loginUser;
             session.setAttribute("logId", biz.getUserid());
@@ -127,6 +128,7 @@ public class DataController {
             result.put("username", biz.getBusinessName());
             result.put("userid", biz.getUserid());
             result.put("usertype", "BUSINESS");
+
         }
 
         result.put("status", "OK");
@@ -188,9 +190,9 @@ public class DataController {
     //회원탈퇴
     //is_out만 탈퇴 형식으로 바꾸기
     @PatchMapping("/unregister/{id}")
-    public ResponseEntity<?> unregister(@PathVariable("id") Integer id) {
+    public ResponseEntity<?> unregister(@PathVariable("id") Integer id){
         int result = dataService.unregister(id);
-        if (result != 0) {
+        if(result != 0){
             return ResponseEntity.ok("탈퇴처리 완료");
         }
         return ResponseEntity.badRequest().body("탈퇴처리 실패");

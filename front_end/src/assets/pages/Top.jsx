@@ -43,7 +43,6 @@ function Top() {
       behavior: 'smooth' // 부드럽게 올라가는 효과
     });
   }
-
   //---------------------------------------------------------------------
   return (
     <div className="layoutAll">

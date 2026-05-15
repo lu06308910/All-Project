@@ -38,7 +38,7 @@ function QnaWrite() {
         }
 
         // axios 전송
-        axios.post("http://localhost:9991/qna/write", formData)
+        axios.post("http://localhost:9989/qna/write", formData)
             .then(response => {
                 alert("문의가 성공적으로 접수되었습니다!");
                 // useNavigate 대신 고전적인 방식으로 이동
