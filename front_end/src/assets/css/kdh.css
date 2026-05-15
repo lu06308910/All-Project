@@ -519,6 +519,11 @@
         font-weight: 600;
         cursor: pointer;
 }
+.nickname-link a{
+        color: #333;
+        text-decoration: none;
+        cursor : pointer;
+}
 
 .info-stats {
         display: flex;

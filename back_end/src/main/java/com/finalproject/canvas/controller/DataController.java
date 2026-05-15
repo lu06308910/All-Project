@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins="*")
+@CrossOrigin(origins = "*")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -29,12 +29,12 @@ public class DataController {
     public ResponseEntity<?> signup(@RequestBody Map<String, Object> signupData) {
         String usertype = (String) signupData.get("usertype");
 
-        if(usertype == null){
+        if (usertype == null) {
             return ResponseEntity.badRequest().body("usertype 값이 필요합니다.");
         }
 
         // 일반 회원 가입
-        if(usertype.equals("PERSONAL")) {
+        if (usertype.equals("PERSONAL")) {
             DataEntity entity = new DataEntity();
             entity.setUserid((String) signupData.get("userid"));
             entity.setUserpwd((String) signupData.get("userpwd"));
@@ -51,7 +51,7 @@ public class DataController {
         }
 
         // 기업 회원 가입
-        else if(usertype.equals("BUSINESS")) {
+        else if (usertype.equals("BUSINESS")) {
             CpDataEntity cpEntity = new CpDataEntity();
             cpEntity.setUserid((String) signupData.get("userid"));
             cpEntity.setUserpwd((String) signupData.get("userpwd"));
@@ -70,6 +70,7 @@ public class DataController {
 
         return ResponseEntity.badRequest().body("지원하지 않는 usertype 입니다.");
     }
+
     // 로그인(DB조회:select)
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> loginData, HttpSession session) {
@@ -139,15 +140,18 @@ public class DataController {
         session.invalidate();
         return "OK";
     }
+
     //회원선택
     @PostMapping("/getmember")
-    public DataEntity getData(@RequestBody DataEntity entity){
-        log.info("회원선택=>"+entity.getUserid());
+    public DataEntity getData(@RequestBody DataEntity entity) {
+        log.info("회원선택=>" + entity.getUserid());
         return dataService.dataSelect(entity.getUserid());
     }
-    //회원수정
+
+    // 기존 정보 가져오기
     @GetMapping("/edit")
-    public ResponseEntity<?> getEditData(@RequestParam("userid") String userid, @RequestParam("usertype") String usertype) {
+    public ResponseEntity<?> getEditData(@RequestParam("userid") String userid,
+                                         @RequestParam("usertype") String usertype) {
         log.info("수정 데이터 조회 요청 -> ID: {}, Type: {}", userid, usertype);
 
         if ("PERSONAL".equals(usertype)) {
@@ -157,29 +161,36 @@ public class DataController {
             CpDataEntity biz = dataService.businessSelect(userid);
             if (biz != null) return ResponseEntity.ok(biz);
         }
-
         return ResponseEntity.status(404).body("사용자 정보를 찾을 수 없습니다.");
     }
 
-    @PostMapping("/business/Edit")
+    //회원수정
+    @PostMapping("/edit")
+    public ResponseEntity<?> updateMemberData(@RequestBody DataEntity entity) {
+        log.info("수정 요청 ID: {}", entity.getUserid());
+
+        DataEntity updated = dataService.dataUpdate(entity);
+        if (updated != null) return ResponseEntity.ok(updated);
+        return ResponseEntity.status(401).body("비밀번호 불일치 또는 수정 실패");
+    }
+
+    // 기업 회원 수정
+    @PostMapping("/businessedit")
     public ResponseEntity<?> businessEdit(@RequestBody CpDataEntity entity) {
-        log.info("기업 회원 수정 요청 -> ID: {}", entity.getUserid());
+        log.info("기업 회원 수정 요청 아이디: {}", entity.getUserid());
+        log.info("기업 새비번: {}", entity.getNewPassword());
 
         CpDataEntity updated = dataService.businessUpdate(entity);
-
-        if (updated != null) {
-            return ResponseEntity.ok(updated);
-        } else {
-            return ResponseEntity.status(401).body("비밀번호가 일치하지 않거나 사업자 정보를 찾을 수 없습니다.");
-        }
+        if (updated != null) return ResponseEntity.ok(updated);
+        return ResponseEntity.status(401).body("수정 실패");
     }
 
     //회원탈퇴
     //is_out만 탈퇴 형식으로 바꾸기
     @PatchMapping("/unregister/{id}")
-    public ResponseEntity<?> unregister(@PathVariable("id") Integer id){
+    public ResponseEntity<?> unregister(@PathVariable("id") Integer id) {
         int result = dataService.unregister(id);
-        if(result != 0){
+        if (result != 0) {
             return ResponseEntity.ok("탈퇴처리 완료");
         }
         return ResponseEntity.badRequest().body("탈퇴처리 실패");
@@ -187,23 +198,12 @@ public class DataController {
 
     //모든 회원 정보 가져오기 (관리자 페이지)
     @GetMapping("/all/member")
-    public List<DataEntity> getMembers(){
+    public List<DataEntity> getMembers() {
         return dataService.getAllMembers();
     }
+
     @GetMapping("/all/business")
-    public List<CpDataEntity> getCpMembers(){
+    public List<CpDataEntity> getCpMembers() {
         return dataService.getAllCpMembers();
-    }
-    //일반회원 검색
-    @PostMapping("/search")
-    public List<DataEntity> searchMembers(@RequestBody SearchVO searchVO){
-        log.info("회원검색=>"+searchVO.toString());
-        return dataService.searchMembers(searchVO);
-    }
-    //기업회원 검색
-    @PostMapping("/search/business")
-    public List<CpDataEntity> searchCpMembers(@RequestBody SearchVO searchVO){
-        log.info("기업검색=>"+searchVO.toString());
-        return dataService.searchCpMembers(searchVO);
     }
 }
