@@ -190,7 +190,8 @@ function AddProduct() {
                                 console.log("response.data", response.data);
 
                                 if (response.data === "OK") {
-                                        window.location.href = "/mypage/addproduct";
+                                        alert('등록이 되었습니다.');
+                                        window.history.back();
                                 }
                         })
                         .catch((error) => {

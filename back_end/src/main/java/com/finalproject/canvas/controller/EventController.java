@@ -1,14 +1,14 @@
 package com.finalproject.canvas.controller;
 
 import com.finalproject.canvas.entity.EventEntity;
+import com.finalproject.canvas.entity.FileEntity;
 import com.finalproject.canvas.service.EventService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
 import java.util.List;
 
 @CrossOrigin(origins="*")
@@ -19,9 +19,44 @@ import java.util.List;
 public class EventController {
     private final EventService eventService;
 
+    //게시글 등록
     @GetMapping("/all")
     public List<EventEntity> getMembers() {
         return eventService.getAllEvent();
     }
 
+    //게시글 단건 삭제
+    @DeleteMapping("/delete/{eId}")
+    public String deleteEvent(@PathVariable Integer eId) {
+        try {
+            eventService.deleteEvent(eId);
+            return "OK";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "FAIL";
+        }
+    }
+
+    //게시글 삭제
+    @DeleteMapping("/delete")
+    public String deleteEvents(@RequestBody List<Integer> eIds) {
+        try {
+            eventService.deleteEvents(eIds);
+            return "OK";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "FAIL";
+        }
+    }
+    //게시글 등록
+    @PostMapping("/add")
+    public String addEvent(@RequestBody EventEntity eventEntity) {
+        try {
+            eventService.addEvent(eventEntity);
+            return "OK";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "FAIL";
+        }
+    }
 }
