@@ -2,6 +2,7 @@ package com.finalproject.canvas.service;
 
 import com.finalproject.canvas.entity.CpDataEntity;
 import com.finalproject.canvas.entity.DataEntity;
+import com.finalproject.canvas.entity.OutStatus;
 import com.finalproject.canvas.repository.CpDataRepository;
 import com.finalproject.canvas.repository.DataRepository;
 import lombok.RequiredArgsConstructor;
@@ -98,7 +99,7 @@ public class DataService {
         try {
             DataEntity entity = dataRepository.findById(mId).orElse(null);
             if (entity == null) return 0;
-            entity.setIsOut(DataEntity.OutStatus.Y);
+            entity.setIsOut(OutStatus.Y);
             dataRepository.save(entity);
             return mId;
         } catch (Exception e) {

@@ -45,10 +45,6 @@ public class DataEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "is_out", nullable = false)
     private OutStatus isOut = OutStatus.N;
-
-    public enum OutStatus {
-        Y, N
-    }
 }
 
 

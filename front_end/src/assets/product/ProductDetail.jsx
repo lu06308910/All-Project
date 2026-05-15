@@ -20,6 +20,7 @@ function ProductDetail() {
         const [colors, setColors] = useState([]);
         const [extraOption, setExtraOption] = useState("");
         const [selectedOptions, setSelectedOptions] = useState([]);
+        const [openReviewModal, setOpenReviewModal] = useState(false);
 
         // 사이즈 옵션
         const [sizes, setSizes] = useState([]);
@@ -32,6 +33,15 @@ function ProductDetail() {
         // 리뷰 
         const [reviewFilter, setReviewFilter] = useState("all"); // 리뷰글보기 , 사진만 보기 버튼
         const [zoomImage, setZoomImage] = useState(null); // 리뷰 확대 사진
+        const [star, setStar] = useState(0);
+        const [content, setContent] = useState("");
+        const [file, setFile] = useState(null);
+        const [reviews, setReviews] = useState([]); // 백엔드 받아오기
+
+        // 문의
+        const [qnaTitle, setQnaTitle] = useState("");
+        const [qnaType, setQnaType] = useState("");
+        const [questions, setQuestions] = useState([]); // 백엔드 받아오기
 
         useEffect(() => {
                 if (filelist.length > 0) {
@@ -63,12 +73,24 @@ function ProductDetail() {
                 }
 
         }, [color, filelist]);
-
+        // 상품정보
         useEffect(() => {
 
                 getDataDetail()
 
         }, [])
+        // 리뷰불러오기
+        useEffect(() => {
+                if (data?.id) {
+                        getReviews();
+                }
+                console.log("reviews", reviews);
+        }, [data?.id]);
+
+        // 문의불러오기
+        useEffect(() => {
+                if (data?.id) getQuestions();
+        }, [data?.id]);
 
         // 상품이미지 배열
         const images = filelist;
@@ -128,8 +150,10 @@ function ProductDetail() {
         // 상품문의
         const [openQna, setOpenQna] = useState(false);
         const [openAnswer, setOpenAnswer] = useState(null);
+        const [questionText, setQuestionText] = useState("");
 
-        // 백엔드
+
+        // 상품 정보 백엔드
         function getDataDetail() {
                 axios.get(`http://localhost:9989/productDetail/${id}`)
 
@@ -180,7 +204,6 @@ function ProductDetail() {
 
 
         }
-
         // 좋아요 백엔드
         function handleLike(productId) {
                 const mId = sessionStorage.getItem("mId");
@@ -207,6 +230,88 @@ function ProductDetail() {
                         })
                         .catch(err => console.log(err));
         }
+
+        // 리뷰 작성
+
+        const averageStar =
+                reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.star, 0) / reviews.length).toFixed(1) : 0; // 평균별점 계산
+        const renderStar = (score) => {
+                const full = "★".repeat(Math.floor(score));
+                const empty = "☆".repeat(5 - Math.floor(score));
+                return full + empty;
+        };
+
+        function handleReviewSubmit() {
+                const mId = sessionStorage.getItem("mId");
+                const productId = data?.id;
+
+                const formData = new FormData();
+
+                console.log("mId:", mId);
+                console.log("productId:", productId);
+                console.log("star:", star);
+                console.log("content:", content);
+
+                if (!mId || !productId || !star || !content) {
+                        console.log("값 없음", mId, productId, star, content);
+                        return;
+                }
+
+                formData.append("mId", mId);
+                formData.append("pId", productId);
+                formData.append("star", star);
+                formData.append("context", content);
+
+                if (file) {
+                        formData.append("file", file);
+                }
+
+                axios.post("http://localhost:9989/review/write", formData)
+                        .then(res => {
+                                console.log("리뷰 작성 성공:", res.data);
+
+                                setOpenReviewModal(false); // 성공하면 모달 닫기
+                        })
+                        .catch(err => console.log("리뷰 에러:", err));
+        }
+        function getReviews() {
+                axios.get(`http://localhost:9989/review/list/${data?.id}`)
+                        .then(res => {
+                                setReviews(res.data);
+
+                        })
+                        .catch(err => console.log("리뷰 불러오기 에러", err));
+        }
+
+        // 문의 불러오기
+        function getQuestions() {
+                axios.get(`http://localhost:9989/question/list/${data.id}`)
+                        .then(res => setQuestions(res.data))
+                        .catch(err => console.log("문의 리스트 에러", err));
+        }
+
+
+        // 문의 작성
+        function handleQuestionSubmit() {
+                const formData = new FormData();
+                formData.append("mId", sessionStorage.getItem("mId"));
+                formData.append("pId", data.id);
+                formData.append("cId", 1);              // 문의 유형 (고정이면 임시로 1)
+                formData.append("subject", qnaTitle);
+                formData.append("context", questionText);
+
+                axios.post("http://localhost:9989/question/write", formData)
+                        .then(() => {
+                                setQuestionText("");
+                                setQnaTitle("");
+                                getQuestions();
+
+                                setOpenQna(false) // 작성 후 문의창 닫기
+                        })
+                        .catch(err => console.log("문의 작성 에러", err));
+        }
+
+
         return (
                 <div className="product-detail-container">
 
@@ -375,7 +480,7 @@ function ProductDetail() {
                                         onClick={() => setActiveTab("review")}
                                         className={activeTab === "review" ? "active" : ""}
                                 >
-                                        리뷰(1,500)
+                                        리뷰({reviews.length})
                                 </div>
 
                                 <div
@@ -483,8 +588,19 @@ function ProductDetail() {
                                                 {/* 별점 */}
                                                 <div style={{ textAlign: 'center', margin: '50px 0' }}>
                                                         <p style={{ fontWeight: 'bold', fontSize: '20px' }}>별점</p>
-                                                        <h1 style={{ fontSize: '50px' }}>4.5</h1>
-                                                        <span style={{ fontSize: '25px' }}>★★★★★</span>
+
+                                                        {/* 평균 별점 숫자 */}
+                                                        <h1 style={{ fontSize: '50px' }}>{averageStar}</h1>
+
+                                                        {/* 별 모양 (그래픽) */}
+                                                        <span style={{ fontSize: '25px' }}>
+                                                                {renderStar(averageStar)}
+                                                        </span>
+
+                                                        {/* 리뷰 개수 표시 (선택 사항) */}
+                                                        <p style={{ color: '#777', marginTop: '10px' }}>
+                                                                리뷰 {reviews.length}개
+                                                        </p>
                                                 </div>
 
                                                 {/* 정렬 버튼 */}
@@ -513,44 +629,194 @@ function ProductDetail() {
                                                                 height: reviewFilter === "photo" ? "auto" : "250px"
                                                         }}
                                                 >
-                                                        <img src="public/review1.jpg" onClick={() => setZoomImage("public/review1.jpg")} />
-                                                        <img src="public/review2.jpg" onClick={() => setZoomImage("public/review2.jpg")} />
-                                                        <img src="public/review3.jpg" onClick={() => setZoomImage("public/review3.jpg")} />
-                                                        <img src="public/review4.jpg" onClick={() => setZoomImage("public/review4.jpg")} />
-                                                        <img src="public/review5.jpg" onClick={() => setZoomImage("public/review5.jpg")} />
+                                                        {reviews
+                                                                .filter((r) => r.imgUrl) // imgUrl이 존재하는 리뷰만
+                                                                .map((r) => (
+                                                                        <img
+                                                                                key={r.id}
+                                                                                src={`http://localhost:9989/upload/review/${r.imgUrl}`} // 서버 주소 + 이미지 경로
+                                                                                onClick={() => setZoomImage(`http://localhost:9989/upload/review/${r.imgUrl}`)}
+                                                                                style={{
+                                                                                        width: "200px",
+                                                                                        height: "200px",
+                                                                                        objectFit: "cover",
+                                                                                        cursor: "pointer",
+                                                                                        marginRight: "10px"
+                                                                                }}
+                                                                        />
+                                                                ))}
                                                 </div>
 
                                                 {/* 리뷰글 */}
                                                 {reviewFilter === "all" && (
                                                         <div style={{ marginTop: "40px" }}>
-                                                                <div style={{
-                                                                        borderBottom: "1px solid #ccc",
-                                                                        paddingBottom: "20px",
-                                                                        marginBottom: "20px"
-                                                                }}>
-                                                                        <p style={{ color: '#7a7a7a', margin: '0px' }}>상품옵션 : 내추럴,기본옵션</p>
-                                                                        <div>★★★★★</div>
-                                                                        <p style={{ margin: '0' }}>이*</p>
-                                                                        <p>생각보다 튼튼하고 깔끔한 느낌이에요! 추천드려요 ㅎㅎ</p>
-                                                                        <p style={{ color: '#7a7a7a', margin: '0px' }}>2025.08.11 11:50</p>
-                                                                </div>
+                                                                {reviews.map((r) => (
 
-                                                                <div style={{
-                                                                        borderBottom: "1px solid #ccc",
-                                                                        paddingBottom: "20px",
-                                                                        marginBottom: "20px"
-                                                                }}>
-                                                                        <p style={{ color: '#7a7a7a', margin: '0px' }}>상품옵션 : 내추럴,기본옵션</p>
-                                                                        <div>★★★★☆</div>
-                                                                        <p style={{ margin: '0' }}>박*지</p>
-                                                                        <p>생각보다 작은 편이에요. 그래도 만족하고 있어요.</p>
-                                                                        <p style={{ color: '#7a7a7a', margin: '0px' }}>2025.08.11 11:50</p>
-                                                                </div>
+                                                                        <div
+                                                                                key={`${r.id}-${r.writedate}`}
+                                                                                style={{
+                                                                                        borderBottom: "1px solid #ccc",
+                                                                                        paddingBottom: "20px",
+                                                                                        marginBottom: "20px"
+                                                                                }}
+                                                                        >
+                                                                                <p style={{ color: '#7a7a7a', margin: '0px' }}>
+                                                                                        상품옵션 : {r.option}
+                                                                                </p>
+
+                                                                                <div>
+                                                                                        {"★".repeat(r.star)}
+                                                                                        {"☆".repeat(5 - r.star)}
+                                                                                </div>
+                                                                                <p style={{ margin: '0' }}>{r.member?.username}</p>
+
+
+                                                                                <p style={{ margin: '0' }}>{r.writer}</p>
+
+                                                                                <p>{r.context}</p>
+
+                                                                                <p style={{ color: '#7a7a7a', margin: '0px' }}>
+                                                                                        {r.writedate}
+                                                                                </p>
+                                                                        </div>
+                                                                ))}
+
+                                                                {/* 리뷰작성 모달 */}
+                                                                {openReviewModal && (
+                                                                        <div
+                                                                                style={{
+                                                                                        position: "fixed",
+                                                                                        top: 0,
+                                                                                        left: 0,
+                                                                                        width: "100%",
+                                                                                        height: "100%",
+                                                                                        backgroundColor: "rgba(0,0,0,0.5)",
+                                                                                        display: "flex",
+                                                                                        justifyContent: "center",
+                                                                                        alignItems: "center",
+                                                                                        zIndex: 9999
+                                                                                }}
+                                                                                onClick={() => setOpenReviewModal(false)}
+                                                                        >
+                                                                                <div
+                                                                                        onClick={(e) => e.stopPropagation()}
+                                                                                        style={{
+                                                                                                width: "520px",
+                                                                                                background: "#fff",
+                                                                                                borderRadius: "12px",
+                                                                                                padding: "25px",
+                                                                                                boxShadow: "0 10px 30px rgba(0,0,0,0.2)"
+                                                                                        }}
+                                                                                >
+
+                                                                                        {/* 헤더 */}
+                                                                                        <div style={{
+                                                                                                display: "flex",
+                                                                                                justifyContent: "space-between",
+                                                                                                alignItems: "center",
+                                                                                                marginBottom: "20px"
+                                                                                        }}>
+                                                                                                <h2 style={{ margin: 0, fontSize: "20px" }}>
+                                                                                                        리뷰 작성하기
+                                                                                                </h2>
+
+                                                                                                <button
+                                                                                                        onClick={() => setOpenReviewModal(false)}
+                                                                                                        style={{
+                                                                                                                border: "none",
+                                                                                                                background: "transparent",
+                                                                                                                fontSize: "22px",
+                                                                                                                cursor: "pointer"
+                                                                                                        }}
+                                                                                                >
+                                                                                                        ✕
+                                                                                                </button>
+                                                                                        </div>
+
+                                                                                        {/* 별점 */}
+                                                                                        <div style={{ marginBottom: "15px" }}>
+                                                                                                <label style={{ fontSize: "14px", fontWeight: "bold" }}>
+                                                                                                        별점
+                                                                                                </label>
+                                                                                                <input
+                                                                                                        type="number"
+                                                                                                        min="1"
+                                                                                                        max="5"
+                                                                                                        placeholder="1 ~ 5"
+                                                                                                        style={{
+                                                                                                                width: "100%",
+                                                                                                                marginTop: "6px",
+                                                                                                                padding: "10px",
+                                                                                                                border: "1px solid #ddd",
+                                                                                                                borderRadius: "6px"
+                                                                                                        }}
+                                                                                                        onChange={(e) => setStar(e.target.value)}
+                                                                                                />
+                                                                                        </div>
+
+                                                                                        {/* 내용 */}
+                                                                                        <div style={{ marginBottom: "15px" }}>
+                                                                                                <label style={{ fontSize: "14px", fontWeight: "bold" }}>
+                                                                                                        리뷰 내용
+                                                                                                </label>
+                                                                                                <textarea
+                                                                                                        placeholder="리뷰를 입력해주세요."
+                                                                                                        style={{
+                                                                                                                width: "100%",
+                                                                                                                height: "120px",
+                                                                                                                marginTop: "6px",
+                                                                                                                padding: "10px",
+                                                                                                                border: "1px solid #ddd",
+                                                                                                                borderRadius: "6px",
+                                                                                                                resize: "none"
+                                                                                                        }}
+                                                                                                        onChange={(e) => setContent(e.target.value)}
+                                                                                                />
+                                                                                        </div>
+
+                                                                                        {/* 이미지 */}
+                                                                                        <div style={{ marginBottom: "20px" }}>
+                                                                                                <label style={{ fontSize: "14px", fontWeight: "bold" }}>
+                                                                                                        사진
+                                                                                                </label>
+                                                                                                <input
+                                                                                                        type="file"
+                                                                                                        style={{
+                                                                                                                width: "100%",
+                                                                                                                marginTop: "6px"
+                                                                                                        }}
+                                                                                                        onChange={(e) => setFile(e.target.files[0])}
+                                                                                                />
+                                                                                        </div>
+
+                                                                                        {/* 버튼 */}
+                                                                                        <button
+                                                                                                style={{
+                                                                                                        width: "100%",
+                                                                                                        padding: "12px",
+                                                                                                        background: "#333",
+                                                                                                        color: "white",
+                                                                                                        border: "none",
+                                                                                                        borderRadius: "8px",
+                                                                                                        cursor: "pointer",
+                                                                                                        fontWeight: "bold"
+                                                                                                }}
+                                                                                                onClick={handleReviewSubmit}
+                                                                                        >
+                                                                                                리뷰 등록
+                                                                                        </button>
+                                                                                </div>
+                                                                        </div>
+                                                                )}
                                                         </div>
+
+
                                                 )}
 
                                         </div>
+
                                 )}
+
 
                                 {/*  확대 이미지 모달 (어느 모드에서도 보이도록 바깥에!) */}
                                 {zoomImage && (
@@ -578,7 +844,14 @@ function ProductDetail() {
                                                         </div>
                                                 </div>
 
-                                                <table style={{ width: '100%', borderTop: '2px solid #000', fontSize: '15px', borderCollapse: 'collapse' }}>
+                                                <table
+                                                        style={{
+                                                                width: '100%',
+                                                                borderTop: '2px solid #000',
+                                                                fontSize: '15px',
+                                                                borderCollapse: 'collapse'
+                                                        }}
+                                                >
                                                         <thead>
                                                                 <tr style={{ borderBottom: '1px solid #ccc', height: '50px' }}>
                                                                         <th style={{ width: '80px' }}>번호</th>
@@ -589,128 +862,92 @@ function ProductDetail() {
                                                         </thead>
 
                                                         <tbody>
-
-                                                                {/* 첫 번째 문의 */}
-                                                                <>
-                                                                        <tr
-                                                                                style={{
-                                                                                        borderBottom: '1px solid #eee',
-                                                                                        height: '48px',
-                                                                                        cursor: 'pointer'
-                                                                                }}
-                                                                                onClick={() =>
-                                                                                        setOpenAnswer(openAnswer === 1 ? null : 1)
-                                                                                }
-                                                                        >
-                                                                                <td>12</td>
-
-                                                                                <td
-                                                                                        style={{
-                                                                                                textAlign: 'left',
-                                                                                                paddingLeft: '60px',
-                                                                                                fontWeight: 'bold'
-                                                                                        }}
-                                                                                >
-                                                                                        상품문의 [답변완료]
+                                                                {questions.length === 0 ? (
+                                                                        <tr>
+                                                                                <td colSpan="4" style={{ textAlign: "center", padding: "30px 0" }}>
+                                                                                        등록된 문의가 없습니다.
                                                                                 </td>
-
-                                                                                <td>이*</td>
-                                                                                <td>2025.04.13</td>
                                                                         </tr>
+                                                                ) : (
+                                                                        questions.map((q) => {
+                                                                                const isOpen = openAnswer === q.id;
 
-                                                                        {openAnswer === 1 && (
-                                                                                <tr>
-                                                                                        <td
-                                                                                                colSpan="4"
-                                                                                                style={{
-                                                                                                        background: '#f8f8f8',
-                                                                                                        textAlign: 'left',
-                                                                                                        padding: '25px 60px',
-                                                                                                        lineHeight: '1.8'
-                                                                                                }}
-                                                                                        >
-                                                                                                <div style={{ marginBottom: '20px' }}>
-                                                                                                        <strong>Q.</strong>
-                                                                                                        <p style={{ marginTop: '10px' }}>
-                                                                                                                상품 사이즈가 어떻게 되나요?
-                                                                                                        </p>
-                                                                                                </div>
+                                                                                return (
+                                                                                        <React.Fragment key={q.id}>
+                                                                                                {/* 리스트 row */}
+                                                                                                <tr
+                                                                                                        style={{
+                                                                                                                borderBottom: '1px solid #eee',
+                                                                                                                height: '48px',
+                                                                                                                cursor: 'pointer'
+                                                                                                        }}
+                                                                                                        onClick={() =>
+                                                                                                                setOpenAnswer(isOpen ? null : q.id)
+                                                                                                        }
+                                                                                                >
+                                                                                                        <td>{q.id}</td>
 
-                                                                                                <div>
-                                                                                                        <strong>A.</strong>
-                                                                                                        <p style={{ marginTop: '10px' }}>
-                                                                                                                안녕하세요 고객님 🙂
-                                                                                                                <br />
-                                                                                                                해당 상품의 사이즈는
-                                                                                                                1200 x 400 x 1800(mm) 입니다.
-                                                                                                                <br />
-                                                                                                                감사합니다.
-                                                                                                        </p>
-                                                                                                </div>
-                                                                                        </td>
-                                                                                </tr>
-                                                                        )}
-                                                                </>
+                                                                                                        <td
+                                                                                                                style={{
+                                                                                                                        textAlign: 'left',
+                                                                                                                        paddingLeft: '60px',
+                                                                                                                        fontWeight: 'bold'
+                                                                                                                }}
+                                                                                                        >
+                                                                                                                {q.subject} [{q.answer ? "답변완료" : "답변대기"}]
+                                                                                                        </td>
 
-                                                                {/* 두 번째 문의 */}
-                                                                <>
-                                                                        <tr
-                                                                                style={{
-                                                                                        borderBottom: '1px solid #eee',
-                                                                                        height: '48px',
-                                                                                        cursor: 'pointer'
-                                                                                }}
-                                                                                onClick={() =>
-                                                                                        setOpenAnswer(openAnswer === 2 ? null : 2)
-                                                                                }
-                                                                        >
-                                                                                <td>11</td>
+                                                                                                        <td>{q.member.username}</td>
 
-                                                                                <td
-                                                                                        style={{
-                                                                                                textAlign: 'left',
-                                                                                                paddingLeft: '60px',
-                                                                                                fontWeight: 'bold'
-                                                                                        }}
-                                                                                >
-                                                                                        어떤 재질인지 궁금합니다. [답변완료]
-                                                                                </td>
+                                                                                                        <td>
+                                                                                                                {q.writedate
+                                                                                                                        ? new Date(q.writedate)
+                                                                                                                                .toISOString()
+                                                                                                                                .slice(0, 10)
+                                                                                                                        : ""}
+                                                                                                        </td>
+                                                                                                </tr>
 
-                                                                                <td>김*철</td>
-                                                                                <td>2025.04.10</td>
-                                                                        </tr>
+                                                                                                {/* 펼쳐지는 영역 */}
+                                                                                                {isOpen && (
+                                                                                                        <tr>
+                                                                                                                <td
+                                                                                                                        colSpan="4"
+                                                                                                                        style={{
+                                                                                                                                background: '#f8f8f8',
+                                                                                                                                textAlign: 'left',
+                                                                                                                                padding: '25px 60px',
+                                                                                                                                lineHeight: '1.8'
+                                                                                                                        }}
+                                                                                                                >
+                                                                                                                        {/* Q */}
+                                                                                                                        <div style={{ marginBottom: '20px' }}>
+                                                                                                                                <strong>Q.</strong>
+                                                                                                                                <p style={{ marginTop: '10px' }}>
+                                                                                                                                        {q.context}
+                                                                                                                                </p>
+                                                                                                                        </div>
 
-                                                                        {openAnswer === 2 && (
-                                                                                <tr>
-                                                                                        <td
-                                                                                                colSpan="4"
-                                                                                                style={{
-                                                                                                        background: '#f8f8f8',
-                                                                                                        textAlign: 'left',
-                                                                                                        padding: '25px 60px',
-                                                                                                        lineHeight: '1.8'
-                                                                                                }}
-                                                                                        >
-                                                                                                <div style={{ marginBottom: '20px' }}>
-                                                                                                        <strong>Q.</strong>
-                                                                                                        <p style={{ marginTop: '10px' }}>
-                                                                                                                어떤 소재로 만들어졌나요?
-                                                                                                        </p>
-                                                                                                </div>
-
-                                                                                                <div>
-                                                                                                        <strong>A.</strong>
-                                                                                                        <p style={{ marginTop: '10px' }}>
-                                                                                                                MDF + PB 소재로 제작되었습니다.
-                                                                                                                <br />
-                                                                                                                상세페이지 하단에서도 확인 가능합니다 🙂
-                                                                                                        </p>
-                                                                                                </div>
-                                                                                        </td>
-                                                                                </tr>
-                                                                        )}
-                                                                </>
-
+                                                                                                                        {/* A */}
+                                                                                                                        {q.answer ? (
+                                                                                                                                <div>
+                                                                                                                                        <strong>A.</strong>
+                                                                                                                                        <p style={{ marginTop: '10px' }}>
+                                                                                                                                                {q.answer}
+                                                                                                                                        </p>
+                                                                                                                                </div>
+                                                                                                                        ) : (
+                                                                                                                                <div style={{ color: "#999" }}>
+                                                                                                                                        아직 답변이 없습니다.
+                                                                                                                                </div>
+                                                                                                                        )}
+                                                                                                                </td>
+                                                                                                        </tr>
+                                                                                                )}
+                                                                                        </React.Fragment>
+                                                                                );
+                                                                        })
+                                                                )}
                                                         </tbody>
                                                 </table>
                                         </div>
@@ -777,6 +1014,9 @@ function ProductDetail() {
                                                                         type="text"
                                                                         placeholder="제목을 입력해주세요."
                                                                         style={{ width: "100%", padding: "10px", marginTop: "5px" }}
+                                                                        type="text"
+                                                                        value={qnaTitle}
+                                                                        onChange={(e) => setQnaTitle(e.target.value)}
                                                                 />
                                                         </div>
 
@@ -786,6 +1026,8 @@ function ProductDetail() {
                                                                 <textarea
                                                                         placeholder="내용을 입력해주세요."
                                                                         style={{ width: "100%", height: "150px", padding: "10px", marginTop: "5px" }}
+                                                                        value={questionText}
+                                                                        onChange={(e) => setQuestionText(e.target.value)}
                                                                 />
                                                         </div>
 
@@ -801,6 +1043,7 @@ function ProductDetail() {
                                                                         fontSize: "16px",
                                                                         cursor: "pointer"
                                                                 }}
+                                                                onClick={handleQuestionSubmit}
                                                         >
                                                                 문의하기
                                                         </button>

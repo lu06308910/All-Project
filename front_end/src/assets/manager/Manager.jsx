@@ -76,16 +76,12 @@ function Manager() {
         }, []);
         
         //문의
-        // const [asks, setAsks] = useState([]);
-        // useEffect(()=>{
-        //         axios.get('http://localhost:9989/')
-        //         .then(res=>setAsks(res.data))
-        //         .catch(err=>console.log(err))
-        // })
-        const ask = [
-                { id: 1, subject: '🔒사고 싶은 옷이 찜목록에서 삭제됐어요.', username: '김희*', writedate: '2026-04-26', state: '답변 미작성', answer: null},
-                { id: 2, subject: '🔒사고 싶은 옷이 찜목록에서 삭제됐어요.', username: '안승*', writedate: '2026-04-25', state: '답변 완료', answer:"안녕하세요, 고객님. CANVAS를 이용해 주셔서 감사합니다. 해당 상품은 현재 시즌 종료로 인해 데이터가 삭제되었습니다. 불편을 드려 죄송합니다."},
-        ]
+        const [asks, setAsks] = useState([]);
+        useEffect(()=>{
+                axios.get('http://localhost:9989/support/list/all')
+                .then(res=>setAsks(res.data))
+                .catch(err=>console.log(err))
+        })
 
         const tonggyea = [
                 {id:1, writedate:'2026-01-22', code:'L001', category:"야외 〉조경", title:'나무원목의자', comname:'기업명1', cost:'70,000', count:'15', deliver:'69,000', susuryo:'151,600'},
@@ -1398,20 +1394,20 @@ function Manager() {
                                                         <div className="col-1">답변 상태</div>
                                                         <div className="col-2">수정/삭제</div>
                                                 </div>
-                                                {ask.map(ask => (
-                                                        <div key={ask.id}>
+                                                {asks.map(ask => (
+                                                        <div key={ask.sid}>
                                                                 <div className="row" style={{ textAlign: 'center', alignItems: 'center' }}>
-                                                                        <div className="col-1" style={{ fontSize: '0.8em' }}>{ask.id}</div>
-                                                                        <div className="col-5" onClick={() => handleToggle(ask.id)} style={{ fontSize: '0.8em' }}>
+                                                                        <div className="col-1" style={{ fontSize: '0.8em' }}>{ask.sid}</div>
+                                                                        <div className="col-5" onClick={() => handleToggle(ask.sid)} style={{ fontSize: '0.8em' }}>
                                                                                 <div>{ask.subject}</div>
                                                                         </div>
-                                                                        <div className="col-1" style={{ fontSize: '0.8em' }}>{ask.username}</div>
+                                                                        <div className="col-1" style={{ fontSize: '0.8em' }}>{ask.member?.username ?? ask.writer}</div>
                                                                         <div className="col-2" style={{ fontSize: '0.8em' }}>{ask.writedate}</div>
                                                                         <div className="col-1" style={{
-                                                                                background: ask.state == '답변 미작성' ? '#ffebee' : '#e3f2fd',
-                                                                                color: ask.state == '답변 미작성' ? '#c62828' : '#1976d2',
+                                                                                background: ask.answer_ok == 'N' ? '#ffebee' : '#e3f2fd',
+                                                                                color: ask.answer_ok == 'N' ? '#c62828' : '#1976d2',
                                                                                 padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                        }}>{ask.state}</div>
+                                                                        }}>{ask.answer_ok=='N'?'답변 미작성':'답변 완료'}</div>
                                                                         <div className="col-2">
                                                                                 <button className='button2' style={{ marginRight: '10px' }}>수정</button>
                                                                                 <button className='button2'>삭제</button>
