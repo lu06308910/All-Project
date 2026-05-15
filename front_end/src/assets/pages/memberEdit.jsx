@@ -34,7 +34,11 @@ const memberEdit = () => {
 
                 const fetchUserData = async () => {
                         try {
+<<<<<<< HEAD
                                 const response = await axios.get(`http://localhost:9991/member/edit?userid=${logId}&usertype=${usertype}`);
+=======
+                                const response = await axios.get(`http://localhost:9990/member/edit?userid=${logId}&usertype=${usertype}`);
+>>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
                                 if (response.data) {
                                         setFormData(prev => ({
                                                 ...prev,
@@ -109,8 +113,13 @@ const memberEdit = () => {
 
                 try {
                         const url = formData.usertype === 'PERSONAL'
+<<<<<<< HEAD
                                 ? 'http://localhost:9991/member/edit'
                                 : 'http://localhost:9991/member/business/Edit';
+=======
+                                ? 'http://localhost:9990/member/edit'
+                                : 'http://localhost:9990/member/business/Edit';
+>>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
                         const submitData = {
                                 ...formData,
                                 userpwd: formData.oldPassword, // 서버가 DB와 비교할 비밀번호

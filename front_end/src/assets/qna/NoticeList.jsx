@@ -13,7 +13,11 @@ function NoticeList() {
 
   // 백엔드(Spring Boot)에서 공지사항 리스트 가져오기
   useEffect(() => {
+<<<<<<< HEAD
     axios.get("http://localhost:9991/notice/list")
+=======
+    axios.get("http://localhost:9990/notice/list")
+>>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
       .then(response => {
         console.log("받아온 데이터 확인:", response.data);
         // 최신글이 위로 오도록 정렬 (id 기준 내림차순)

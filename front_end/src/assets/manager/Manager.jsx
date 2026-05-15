@@ -51,13 +51,21 @@ function Manager() {
         //회원 업데이트
         const [users, setUsers] = useState([]);
         useEffect(() => {
+<<<<<<< HEAD
                 axios.get('http://localhost:9991/member/all/member')
+=======
+                axios.get('http://localhost:9990/member/all/member')
+>>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
                 .then(res => setUsers(res.data))
                 .catch(err => console.log(err));
         }, []);
         const [companys, setCompanys] = useState([]);
         useEffect(() => {
+<<<<<<< HEAD
                 axios.get('http://localhost:9991/member/all/business')
+=======
+                axios.get('http://localhost:9990/member/all/business')
+>>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
                 .then(res => setCompanys(res.data))
                 .catch(err => console.log(err));
         }, []);
@@ -65,7 +73,11 @@ function Manager() {
         //상품관리
         const [products, setProducts] = useState([]);
         useEffect(() => {
+<<<<<<< HEAD
                 axios.get('http://localhost:9991/all/product')
+=======
+                axios.get('http://localhost:9990/all/product')
+>>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
                 .then(res => setProducts(res.data))
                 .catch(err => console.log(err));
         }, []);
@@ -133,12 +145,20 @@ function Manager() {
 
         Promise.all(
                 targets.map(mid =>
+<<<<<<< HEAD
                 axios.patch(`http://localhost:9991/member/unregister/${mid}`)
+=======
+                axios.patch(`http://localhost:9990/member/unregister/${mid}`)
+>>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
                 )
         )
         .then(() => {
                 alert("탈퇴처리 완료");
+<<<<<<< HEAD
                 axios.get('http://localhost:9991/member/all')
+=======
+                axios.get('http://localhost:9990/member/all')
+>>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
                 .then(res => setUsers(res.data));
                 setSelectedItems(prev => ({ ...prev, '회원관리': [] }));
         })
@@ -170,7 +190,11 @@ function Manager() {
         const [companyOutSearchWord, setCompanyOutSearchWord] = useState('');
 
         const handleUserSearch = () => {
+<<<<<<< HEAD
                 axios.post('http://localhost:9991/member/search',{
+=======
+                axios.post('http://localhost:9990/member/search',{
+>>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
                         searchKey: userSearchKey,
                         searchWord: userSearchWord
                 })
@@ -179,7 +203,11 @@ function Manager() {
         }
 
         const handleCompanySearch = () => {
+<<<<<<< HEAD
                 axios.post('http://localhost:9991/member/search/business',{
+=======
+                axios.post('http://localhost:9990/member/search/business',{
+>>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
                         searchKey: companySearchKey,
                         searchWord: companySearchWord
                 })
@@ -188,7 +216,11 @@ function Manager() {
         }
 
         const handleProductSearch = () => {
+<<<<<<< HEAD
                 axios.post('http://localhost:9991/search/product', {
+=======
+                axios.post('http://localhost:9990/search/product', {
+>>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
                         searchKey: productSearchKey,
                         searchWord: productSearchWord
                 })

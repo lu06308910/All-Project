@@ -95,7 +95,11 @@ function Member() {
                 }
 
                 //백엔드
+<<<<<<< HEAD
                 axios.post('http://localhost:9991/member/signup', formData)
+=======
+                axios.post('http://localhost:9990/member/signup', formData)
+>>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
                         .then(function (response) {
                                 console.log(response.data);
                                 if (response.data) { // 회원가입 성공

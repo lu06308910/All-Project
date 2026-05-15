@@ -53,7 +53,11 @@ function Login() {
 
                 try {
                         // formData에 userType이 포함되어 서버로 전송됩니다.
+<<<<<<< HEAD
                         const response = await axios.post('http://localhost:9991/member/login', formData);
+=======
+                        const response = await axios.post('http://localhost:9990/member/login', formData);
+>>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
 
                         if (response.data.status === "OK") {
                                 // 로그인 성공: 객체가 존재하면 성공

@@ -10,7 +10,11 @@ function NoticeView() {
     // 백엔드에서 상세 데이터 가져오기
     useEffect(() => {
         console.log("보내는 ID값:", id);
+<<<<<<< HEAD
         axios.get(`http://localhost:9991/notice/view/${id}`)
+=======
+        axios.get(`http://localhost:9990/notice/view/${id}`)
+>>>>>>> 5192059255d8d579f5f9c48ce7037ff75b7f764e
             .then(response => {
                 console.log("상세 데이터 확인:", response.data);
                 setNotice(response.data);
