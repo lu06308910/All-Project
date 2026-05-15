@@ -3,6 +3,7 @@ package com.finalproject.canvas.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import com.finalproject.canvas.entity.OutStatus;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +13,6 @@ import java.time.LocalDateTime;
 public class DataEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     @Column(name = "m_id")
     private Integer mId;
 
