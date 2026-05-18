@@ -376,8 +376,8 @@ function ProductDetail() {
                                         <p className="price">{data?.price}원</p>
 
                                         <div className="rating">
-                                                <span style={{ fontSize: '20px' }}>★★★★★</span>
-                                                <span>(168)</span>
+                                                <span style={{ fontSize: '20px' }}>{renderStar(averageStar)}</span>
+                                                <span>({reviews.length})</span>
                                         </div>
 
                                         {/* 옵션 선택 */}
