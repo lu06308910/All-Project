@@ -5,6 +5,7 @@ import './../css/seul.css';
 
 function NoticeList() {
   const [noticeList, setNoticeList] = useState([]); // 공지사항 데이터 상태
+  const [searchTerm, setSearchTerm] = useState("");
 
   // 관리자 여부 확인 (세션 스토리지에서 직접 확인)
   const isLogin = window.sessionStorage.getItem("logStatus") === "Y";
@@ -12,20 +13,50 @@ function NoticeList() {
   const isAdmin = isLogin && logId === "admin";
 
   // 백엔드(Spring Boot)에서 공지사항 리스트 가져오기
+  const fetchNotices = async () => {
+    try {
+      const response = await axios.get("http://localhost:9991/notice/list");
+      console.log("받아온 데이터 확인:", response.data);
+
+      if (Array.isArray(response.data)) {
+        // 엔티티 PK인 n_id 기준으로 최신글이 위로 오도록 정렬
+        const sortedData = response.data.sort((a, b) => b.n_id - a.n_id);
+        setNoticeList(sortedData);
+      }
+    } catch (error) {
+      console.error("데이터 로딩 중 오류 발생:", error);
+    }
+  };
+
   useEffect(() => {
-    axios.get("http://localhost:9991/notice/list")
-      .then(response => {
-        console.log("받아온 데이터 확인:", response.data);
-        // 최신글이 위로 오도록 정렬 (id 기준 내림차순)
-        if (Array.isArray(response.data)) {
-          const sortedData = response.data.sort((a, b) => b.id - a.id);
-          setNoticeList(sortedData);
-        }
-      })
-      .catch(error => {
-        console.error("데이터 로딩 중 오류 발생:", error);
-      });
+    fetchNotices();
   }, []);
+
+  // 검색 기능 연동
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) {
+      fetchNotices(); // 검색어 없으면 전체 리스트 호출
+      return;
+    }
+    try {
+      const response = await axios.get(`http://localhost:9991/notice/list?keyword=${searchTerm}`);
+
+      if (Array.isArray(response.data)) {
+        const sortedData = response.data.sort((a, b) => b.n_id - a.n_id);
+        setNoticeList(sortedData);
+      }
+    } catch (error) {
+      console.error("검색 중 오류 발생:", error);
+    }
+  };
+
+  // 엔터키 검색 지원
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
 
   return (
     <div style={{ marginTop: '150px', marginBottom: '100px', width: '90%', display: 'flex', gap: '60px' }}>
@@ -58,9 +89,13 @@ function NoticeList() {
             padding: '15px',
             marginBottom: '20px'
           }}>
-            <input type="text" placeholder="제목을 입력해주세요"
+            <input type="text"
+              placeholder="검색어를 입력해주세요"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleKeyDown}
               style={{ border: 'none', width: '90%', outline: 'none', fontSize: '16px' }} />
-            <button className="search-icon"></button>
+            <button className="search-icon" onClick={handleSearch} style={{ cursor: 'pointer', border: 'none', background: 'none' }}></button>
           </div>
 
           {/* 상단 개수 */}
@@ -77,20 +112,20 @@ function NoticeList() {
           <table style={{ width: '100%', borderTop: '2px solid #000', fontSize: '15px', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid #ccc', height: '50px', backgroundColor: '#f9f9f9' }}>
-                <th style={{ width: '80px',textAlign: 'center' }}>번호</th>
-                <th style={{ width: '120px',textAlign: 'center' }}>작성자</th>
-                <th style={{textAlign: 'center'}}>제목</th>
-                <th style={{ width: '120px',textAlign: 'center' }}>공지일</th>
+                <th style={{ width: '80px', textAlign: 'center' }}>번호</th>
+                <th style={{ width: '120px', textAlign: 'center' }}>작성자</th>
+                <th style={{ textAlign: 'center' }}>제목</th>
+                <th style={{ width: '120px', textAlign: 'center' }}>공지일</th>
               </tr>
             </thead>
 
             <tbody>
               {noticeList.length > 0 ? (
                 noticeList.map((notice) => (
-                  <tr key={notice.id} style={{ borderBottom: '1px solid #eee', height: '52px'}}>
+                  <tr key={notice.id} style={{ borderBottom: '1px solid #eee', height: '52px' }}>
                     <td style={{ textAlign: 'center', color: '#666' }}>{notice.n_id}</td>
                     <td style={{ textAlign: 'center', color: '#666' }}>canvas</td>
-                    <td style={{ textAlign: 'left', paddingLeft: '20px',whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <td style={{ textAlign: 'left', paddingLeft: '20px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       <Link to={`/qna/noticeview/${notice.n_id}`} style={{ textDecoration: 'none', color: 'black' }}>
                         {notice.subject}
                       </Link>

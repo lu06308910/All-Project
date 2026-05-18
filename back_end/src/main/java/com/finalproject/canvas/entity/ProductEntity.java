@@ -33,7 +33,10 @@ public class ProductEntity {
 
     private String name;
     private String b_category;
-    private String s_category;
+
+    @Column(name = "s_category")
+    private String sCategory;
+
     private String price;
     private String color;
     private Integer count = 0;
@@ -47,14 +50,9 @@ public class ProductEntity {
     private String context;
 
     // ───────── 파일 / 이미지 엔티티 관계 ─────────
-    @OneToMany(
-            mappedBy = "productEntity",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "productEntity")
     @JsonManagedReference
     private List<FileEntity> fileList = new ArrayList<>();
-
 
     // ───────── 업로드용 (DB 미저장) ─────────
     @Transient

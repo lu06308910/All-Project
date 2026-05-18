@@ -151,10 +151,12 @@
 }
 
 .img-basket{
-        margin-top: 10px;
-        width: 120px;
-        height: 100px;
-        overflow: hidden;
+        width:150px;
+        height:120px;
+        object-fit:cover;
+        flex-shrink:0;
+        margin-bottom: 20px;
+        margin-left: 30px;
 }
 /* 세로줄 */
 .v-line {

@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 function Parchase(){
 
-        const [cartList, setCartList] = useState([
-                        { id: 1, name: '제품명길게썼을때잘리는지안잘리는지테스트얼마나길게써야잘리는지확인하기어디까지길어지는거예요', price: 3089000, count: 1 , newdelivery:3000, checked: false, discount:0, option:'브라운원목60cm' },
-                        { id: 2, name: '제품명길게썼을때잘리는지테스트시도는성공했는데제대로적용이되는지주기적으로확인해야함', price: 1500000, count:1, newdelivery:0, checked: false, discount:5000, option:'브라운원목60cm'}
-        ]);
+        const [cartList, setCartList] = useState([]);
+
+        useEffect(() => {
+                const items = sessionStorage.getItem('buyItems');
+                if (items) setCartList(JSON.parse(items));
+        }, []);
 
         const [formData, setFormData] = useState({
                 userType: 'PERSONAL',
@@ -23,9 +25,10 @@ function Parchase(){
                 businessNum: ''
         });
 
-        const totalProductPrice = cartList.reduce((sum, item) => sum + (item.price * item.count), 0);
+        const totalProductPrice = cartList.reduce((sum, item) => 
+                sum + (parseInt(item.product.price) * item.count), 0);
         const totalDiscount = cartList.reduce((sum, item) => sum + (item.discount || 0), 0);
-        const totalDelivery = cartList.reduce((sum, item) => sum + item.newdelivery, 0);
+        const totalDelivery = cartList.reduce((sum, item) => sum + (item.newdelivery || 0), 0);
 
         // 최종 결제 예정 금액
         const totalPayment = totalProductPrice - totalDiscount + totalDelivery;
@@ -125,12 +128,16 @@ function Parchase(){
                                         <h4 style={{textAlign:'center', marginTop:'50px'}}>총 {cartList.length}개의 상품이 담겨 있습니다.</h4>
                                 </div>
                                 <hr style={{border:'2px solid black', marginTop:'60px', opacity: 1}}/>
-                                <div class="row" style={{marginLeft:'30px', marginBottom:'-5px', marginTop:'-5px', textAlign:'center'}}>
-                                        <div class="col-7">상품 정보</div>
-                                        <div class="col-1">수량</div>
-                                        <div class="col-2">상품 금액</div>
-                                        <div class="col-2">배송 정보</div>
-                                </div>
+                                <table style={{width:'100%', tableLayout:'fixed', borderCollapse:'collapse', textAlign:'center'}}>
+                                        <thead>
+                                                <tr>
+                                                        <th style={{width:'55%'}}>상품 정보</th>
+                                                        <th style={{width:'10%'}}>수량</th>
+                                                        <th style={{width:'20%'}}>상품 금액</th>
+                                                        <th style={{width:'15%'}}>배송 정보</th>
+                                                </tr>
+                                        </thead>
+                                </table>
                                 <hr />
                                 <div style={{marginLeft:'40px', marginTop:'-5px', marginBottom:'-15px'}}>
                                         <span>
@@ -142,47 +149,47 @@ function Parchase(){
                                 </div>
                                 <hr style={{border:'1px solid black', marginTop:'30px', opacity: 1}}/>
                                 {cartList.map((item)=>(
-                                        <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', marginTop:'20px'}}>
-                                                <tbody key={item.id}>
+                                        <table key={item.cartId} style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', marginTop:'20px', textAlign:'center'}}>
+                                                <tbody>
                                                         <tr>
-                                                                <td style={{ width: '45%'}}>
+                                                                <td style={{ width: '55%'}}>
                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                                                <img src='image/bed.jpeg' className='img-basket' alt="제품" />
+                                                                                <img src='image/bed.jpeg' className='img-basket' alt="제품"/>
                                                                                 <div style={{ 
                                                                                         display: 'flex', flexDirection: 'column', gap: '4px', 
-                                                                                        flex: 1, minWidth: 0
+                                                                                        flex: 1, minWidth: 0, textAlign:'left'
                                                                                 }}>
                                                                                         <span
                                                                                         style={{overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
                                                                                         WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, whiteSpace: 'normal',
                                                                                         height: '1.5em', fontWeight: '500', width:'90%'}}>
-                                                                                                {item.name}
+                                                                                                {item.product.name}
                                                                                         </span>
                                                                                         <div>
-                                                                                                <span>{item.option}</span>
+                                                                                                <span>{item.product.option}</span>
                                                                                         </div>
                                                                                 </div>
                                                                         </div>
                                                                 </td>
-                                                                <td style={{ width: '5%', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                <td style={{ width: '10%', textAlign: 'center', verticalAlign: 'middle' }}>
                                                                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                                                                                 {item.count}
                                                                         </div>
                                                                 </td>
-                                                                <td style={{ width: '15%'}}>
+                                                                <td style={{ width: '20%'}}>
                                                                         <div style={{display:'flex', flexDirection: 'column',
                                                                                 justifyContent: 'center', textAlign:'center'
                                                                         }}>
                                                                                 <span style={{fontWeight:'600'}}>
-                                                                                        {(item.price * item.count - item.discount).toLocaleString()}원
+                                                                                        {(item.product.price * item.count - item.discount).toLocaleString()}원
                                                                                 </span>
                                                                                 <span style={{textDecoration:'line-through', color:'gray'}}>
-                                                                                        {(item.price * item.count).toLocaleString()}원    
+                                                                                        {(item.product.price * item.count).toLocaleString()}원    
                                                                                 </span>
                                                                         </div>
                                                                 </td>
                                                                 {item.newdelivery==0?(
-                                                                        <td style={{ width: '10%', textAlign: 'center'}}>
+                                                                        <td style={{ width: '15%', textAlign: 'center'}}>
                                                                                 <div style={{display:'flex', flexDirection: 'column',
                                                                                         justifyContent: 'center', textAlign:'center'}}>
                                                                                         <span style={{color:'blue', fontWeight:'600'}}>무료배송</span>
@@ -192,13 +199,14 @@ function Parchase(){
                                                                                 
                                                                         </td>
                                                                 ):(     
-                                                                        <td style={{ width: '10%', textAlign: 'center' }}>
+                                                                        <td style={{ width: '15%', textAlign: 'center' }}>
                                                                                 {item.newdelivery.toLocaleString()}원
                                                                         </td>
                                                                 )}
-                                                                
                                                         </tr>
-                                                        <hr style={{width:'100%'}}/>
+                                                        <tr>
+                                                                <td colSpan="7" style={{padding:0, borderBottom:'1px solid #ddd'}}></td>
+                                                        </tr>
                                                 </tbody>
                                         </table>
                                 ))}
@@ -206,11 +214,11 @@ function Parchase(){
                                         *배송일자 선택(배송일 예약) 가능 상품만 배송일 지정이 가능합니다. 단, 제주지역과 무통장입금의 경우에는 해당되지 않습니다.
                                 </span>
                                 <hr style={{border:'2px solid black', marginTop:'60px', opacity: 1}}/>
-                                <div class="row" style={{marginLeft:'30px', marginBottom:'-5px', marginTop:'-5px', textAlign:'center'}}>
-                                        <div class="col-3">총 상품금액</div>
-                                        <div class="col-3">총 할인금액</div>
-                                        <div class="col-3">총 배송비</div>
-                                        <div class="col-3">총 결제금액</div>
+                                <div className="row" style={{marginLeft:'30px', marginBottom:'-5px', marginTop:'-5px', textAlign:'center'}}>
+                                        <div className="col-3">총 상품금액</div>
+                                        <div className="col-3">총 할인금액</div>
+                                        <div className="col-3">총 배송비</div>
+                                        <div className="col-3">총 결제금액</div>
                                 </div>
                                 <hr />
                                 <div style={{marginLeft:'30px', marginBottom:'80px',

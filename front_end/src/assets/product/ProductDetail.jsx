@@ -33,10 +33,12 @@ function ProductDetail() {
         // 리뷰 
         const [reviewFilter, setReviewFilter] = useState("all"); // 리뷰글보기 , 사진만 보기 버튼
         const [zoomImage, setZoomImage] = useState(null); // 리뷰 확대 사진
-        const [star, setStar] = useState(0);
+        
         const [content, setContent] = useState("");
         const [file, setFile] = useState(null);
+        
         const [reviews, setReviews] = useState([]); // 백엔드 받아오기
+        const [star, setStar] = useState(0);
 
         // 문의
         const [qnaTitle, setQnaTitle] = useState("");
@@ -374,8 +376,8 @@ function ProductDetail() {
                                         <p className="price">{data?.price}원</p>
 
                                         <div className="rating">
-                                                <span style={{ fontSize: '20px' }}>★★★★★</span>
-                                                <span>(168)</span>
+                                                <span style={{ fontSize: '20px' }}>{renderStar(averageStar)}</span>
+                                                <span>({reviews.length})</span>
                                         </div>
 
                                         {/* 옵션 선택 */}
@@ -678,8 +680,25 @@ function ProductDetail() {
                                                                                 <p style={{ color: '#7a7a7a', margin: '0px' }}>
                                                                                         {r.writedate}
                                                                                 </p>
+
                                                                         </div>
                                                                 ))}
+                                                                {/*  리뷰 작성 버튼 */}
+                                                                <div style={{ textAlign: "center", marginTop: "30px" }}>
+                                                                        <button
+                                                                                onClick={() => setOpenReviewModal(true)}
+                                                                                style={{
+                                                                                        padding: "10px 20px",
+                                                                                        background: "#000",
+                                                                                        color: "#fff",
+                                                                                        border: "none",
+                                                                                        borderRadius: "6px",
+                                                                                        cursor: "pointer"
+                                                                                }}
+                                                                        >
+                                                                                리뷰 작성하기
+                                                                        </button>
+                                                                </div>
 
                                                                 {/* 리뷰작성 모달 */}
                                                                 {openReviewModal && (

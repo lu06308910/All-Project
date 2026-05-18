@@ -48,4 +48,14 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Integer>
     List<ProductEntity> findByNameContaining(String name);
     //기업명으로 검색
     List<ProductEntity> findByCompany_BusinessNameContaining(String businessName);
+
+    // 마이페이지 찜 쿼리문 - 대호추가
+    @Query(value = "SELECT p.* FROM product p " +
+            "JOIN likes l ON p.p_id = l.p_id " +
+            "JOIN member m ON l.m_id = m.m_id " +
+            "WHERE m.userid = :userid", nativeQuery = true)
+    List<ProductEntity> findWishListByUserId(@Param("userid") String userid);
+
+    @Query("SELECT p FROM ProductEntity p WHERE p.sCategory LIKE CONCAT('%', :sCategory, '%')")
+    List<ProductEntity> findBysCategory(String sCategory); // 카테고리별 페이지
 }

@@ -21,9 +21,14 @@ public class NoticeController {
 
     // 리스트 불러오기 (GET)
     @GetMapping("/list")
-    public List<NoticeEntity> getList() {
-        System.out.println("리스트 요청 들어옴!");
-        return noticeService.getAllNotices();
+    public List<NoticeEntity> getList(@RequestParam(value = "keyword", required = false) String keyword) {
+        System.out.println("리스트 요청 들어옴 검색어: " + keyword);
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return noticeService.searchNotices(keyword); // 검색용 서비스 메서드 호출
+        } else {
+            return noticeService.getAllNotices(); // 기존 전체 조회 메서드 호출
+        }
     }
 
     // 글 등록하기 (POST)

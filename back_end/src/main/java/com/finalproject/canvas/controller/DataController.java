@@ -5,9 +5,11 @@ import com.finalproject.canvas.entity.DataEntity;
 import com.finalproject.canvas.service.DataService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -15,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins="*")
+@CrossOrigin(origins = "*")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -25,16 +27,22 @@ public class DataController {
     //해당 repository 검색하여
     private final DataService dataService;
 
+    @Value("${kakao.client_id}")
+    private String clientId;
+
+    @Value("${kakao.redirect_uri}")
+    private String redirectUri;
+
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody Map<String, Object> signupData) {
         String usertype = (String) signupData.get("usertype");
 
-        if(usertype == null){
+        if (usertype == null) {
             return ResponseEntity.badRequest().body("usertype 값이 필요합니다.");
         }
 
         // 일반 회원 가입
-        if(usertype.equals("PERSONAL")) {
+        if (usertype.equals("PERSONAL")) {
             DataEntity entity = new DataEntity();
             entity.setUserid((String) signupData.get("userid"));
             entity.setUserpwd((String) signupData.get("userpwd"));
@@ -51,7 +59,7 @@ public class DataController {
         }
 
         // 기업 회원 가입
-        else if(usertype.equals("BUSINESS")) {
+        else if (usertype.equals("BUSINESS")) {
             CpDataEntity cpEntity = new CpDataEntity();
             cpEntity.setUserid((String) signupData.get("userid"));
             cpEntity.setUserpwd((String) signupData.get("userpwd"));
@@ -97,7 +105,7 @@ public class DataController {
         }
         // 기업 회원 로그인
         else if (userType.equals("BUSINESS")) {
-            loginUser = dataService.loginBusiness(userId, userPwd);
+            loginUser = dataService.businessLogin(userId, userPwd);
         }
 
         // 로그인 실패
@@ -191,9 +199,9 @@ public class DataController {
     //회원탈퇴
     //is_out만 탈퇴 형식으로 바꾸기
     @PatchMapping("/unregister/{id}")
-    public ResponseEntity<?> unregister(@PathVariable("id") Integer id){
+    public ResponseEntity<?> unregister(@PathVariable("id") Integer id) {
         int result = dataService.unregister(id);
-        if(result != 0){
+        if (result != 0) {
             return ResponseEntity.ok("탈퇴처리 완료");
         }
         return ResponseEntity.badRequest().body("탈퇴처리 실패");
@@ -209,4 +217,160 @@ public class DataController {
     public List<CpDataEntity> getCpMembers() {
         return dataService.getAllCpMembers();
     }
+
+    @GetMapping("/kakao")
+    public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code, HttpSession session) {
+        System.out.println("=========================================");
+        System.out.println("★ 백엔드 카카오 엔드포인트 수신 성공! code: " + code);
+        System.out.println("=========================================");
+
+        log.info("=== 백엔드 수신 완료: 카카오 인가 코드 -> " + code);
+
+        DataEntity result = kakaoLoginLogic(code);
+
+        Map<String, Object> response = new HashMap<>();
+        if (result != null) {
+            session.setAttribute("logStatus", "Y");
+            session.setAttribute("logId", result.getUserid());
+            session.setAttribute("logName", result.getUsername());
+
+            response.put("status", "OK");
+            response.put("userid", result.getUserid());
+            response.put("username", result.getUsername());
+            response.put("usertype", "PERSONAL");
+            response.put("mId", result.getMId());
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("status", "FAIL");
+            response.put("message", "카카오 인증 및 회원 등록에 실패했습니다.");
+            return ResponseEntity.ok(response);
+        }
+    }
+
+    @Transactional
+    public DataEntity kakaoLoginLogic(String code) {
+        try {
+            String accessToken = getKakaoAccessToken(code);
+            log.info("▶▶▶ [체크 1] 발급된 토큰: [{}]", accessToken);
+            if (accessToken == null) return null;
+
+            Map<String, Object> kakaoUserInfo = getKakaoUserInfo(accessToken);
+            log.info("▶▶▶ [체크 2] 카카오 유저정보 객체 수신 여부: {}", (kakaoUserInfo != null));
+            if (kakaoUserInfo == null) return null;
+
+            String kakaoId = String.valueOf(kakaoUserInfo.get("id"));
+            log.info("▶▶▶ [체크 3] 카카오 고유 ID: [{}]", kakaoId);
+
+            String nickname = "카카오회원";
+            // kakao_account나 profile이 null이어도 터지지 않도록 안전하게 검증 체인 추가
+            if (kakaoUserInfo.get("kakao_account") != null) {
+                Map<String, Object> kakaoAccount = (Map<String, Object>) kakaoUserInfo.get("kakao_account");
+                if (kakaoAccount.get("profile") != null) {
+                    Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+                    if (profile.get("nickname") != null) {
+                        nickname = String.valueOf(profile.get("nickname"));
+                    }
+                }
+            }
+            String email = "kakao_" + kakaoId + "@test.com";
+            String generatedUserId = "k_" + kakaoId.substring(0, Math.min(kakaoId.length(), 13));
+
+            // DB 조회 시 에러가 나더라도 catch 블록이 잡아서 로그를 찍어줄 것입니다.
+            DataEntity existingMember = null;
+            try {
+                existingMember = dataService.dataSelect(generatedUserId);
+            } catch (Exception e) {
+                log.warn(" 기존 회원 조회 중 예외 발생 (무시하고 신규 가입 진행 가능): " + e.getMessage());
+            }
+
+            if (existingMember != null) {
+                log.info("기존 카카오 가입 이력 확인 완료: {}", generatedUserId);
+                return existingMember;
+            } else {
+                log.info("🆕 신규 카카오 회원가입 진행: {}", generatedUserId);
+                DataEntity newMember = new DataEntity();
+                newMember.setKakaoId(kakaoId);
+                newMember.setUserid(generatedUserId);
+                newMember.setUserpwd("12345678");
+                newMember.setUsername(nickname);
+                newMember.setEmail(email);
+                newMember.setTel("010-0000-0000");
+                newMember.setZipcode("00000");
+                newMember.setAddress("소셜 가입 회원");
+                newMember.setAddressDetail("카카오 로그인");
+                newMember.setUsertype("PERSONAL");
+                newMember.setIsOut(DataEntity.OutStatus.N);
+                newMember.setWritedate(java.time.LocalDateTime.now());
+
+                return dataService.dataInsert(newMember);
+            }
+        } catch (Exception e) {
+            log.error("kakaoLoginLogic 내부에서 예외 발생 원인: ", e);
+            return null;
+        }
+    }
+
+    private String getKakaoAccessToken(String code) {
+        String tokenUrl = "https://kauth.kakao.com/oauth/token";
+        org.springframework.web.client.RestTemplate rt = new org.springframework.web.client.RestTemplate();
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
+
+        // 공백으로 인한 오류를 방지하기 위해 각 변수에 .trim()을 확실히 먹여서 검증합니다.
+        String cleanClientId = (clientId != null) ? clientId.trim() : "";
+        String cleanRedirectUri = (redirectUri != null) ? redirectUri.trim() : "";
+        String cleanCode = (code != null) ? code.trim() : "";
+
+        // 💡 [디버깅 로그 추가] 카카오로 쏘기 전 실제 주입된 데이터 상태를 강제로 확인합니다.
+        log.info("============== [카카오 토큰 요청 파라미터 확인] ==============");
+        log.info("주입된 Client ID (REST API 키): [{}]", cleanClientId);
+        log.info("주입된 Redirect URI: [{}]", cleanRedirectUri);
+        log.info("프론트가 넘겨준 인가 코드 (Code): [{}]", cleanCode);
+        log.info("==========================================================");
+
+        org.springframework.util.LinkedMultiValueMap<String, String> params = new org.springframework.util.LinkedMultiValueMap<>();
+        params.add("grant_type", "authorization_code");
+        params.add("client_id", cleanClientId);
+        params.add("redirect_uri", cleanRedirectUri);
+        params.add("code", cleanCode);
+
+        org.springframework.http.HttpEntity<org.springframework.util.MultiValueMap<String, String>> kakaoTokenRequest =
+                new org.springframework.http.HttpEntity<>(params, headers);
+        try {
+            org.springframework.http.ResponseEntity<Map> response = rt.exchange(
+                    tokenUrl, org.springframework.http.HttpMethod.POST, kakaoTokenRequest, Map.class
+            );
+            log.info("🎉 카카오 토큰 발급 성공완료!");
+            return String.valueOf(response.getBody().get("access_token"));
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            // 💡 [중요] 카카오가 보낸 에러 Body 내용을 상세하게 파싱해서 콘솔에 출력합니다.
+            log.error("❌ 카카오 토큰 발급 HTTP 에러 발생! 상태코드: {}", e.getStatusCode());
+            log.error("❌ 카카오가 뱉어낸 진짜 에러 원인 응답 바디: {}", e.getResponseBodyAsString());
+            return null;
+        } catch (Exception e) {
+            log.error("❌ 알 수 없는 토큰 발급 예외 발생: ", e);
+            return null;
+        }
+    }
+
+    private Map<String, Object> getKakaoUserInfo(String accessToken) {
+        String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
+        org.springframework.web.client.RestTemplate rt = new org.springframework.web.client.RestTemplate();
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.add("Authorization", "Bearer " + accessToken);
+        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+        org.springframework.http.HttpEntity<org.springframework.util.MultiValueMap<String, String>> kakaoProfileRequest =
+                new org.springframework.http.HttpEntity<>(headers);
+        try {
+            org.springframework.http.ResponseEntity<Map> response = rt.exchange(
+                    userInfoUrl, org.springframework.http.HttpMethod.POST, kakaoProfileRequest, Map.class
+            );
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("카카오 유저 정보 조회 실패: ", e);
+            return null;
+        }
+    }
+
 }

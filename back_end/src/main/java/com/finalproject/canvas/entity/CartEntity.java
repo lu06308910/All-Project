@@ -1,0 +1,42 @@
+package com.finalproject.canvas.entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Data
+@Table(name = "cart")
+public class CartEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "cart_id")
+    private Integer cartId;
+
+    @Column(nullable = false)
+    private Integer discount;
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 1")
+    private Integer count;
+    @Column(nullable = true)
+    private String color;
+    @Column(nullable = true)
+    private String size;
+
+    @Column(name = "m_id")
+    private Integer mId;
+    @Column(name = "p_id")
+    private Integer pId;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "p_id", insertable = false, updatable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private ProductEntity product;
+
+    @CreationTimestamp
+    @Column(name = "writedate", nullable = false, updatable = false,
+            columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime writedate;
+}

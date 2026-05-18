@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Top from './assets/pages/Top';
 import Home from './assets/pages/Home';
 import Login from './assets/pages/login';
+import Kakaologin from './assets/pages/kakaologin'
 import Member from './assets/pages/member';
 import MemberEdit from './assets/pages/memberEdit';
 import FindMember from './assets/pages/findmember';
@@ -16,6 +17,7 @@ import CategoryProduct from './assets/product/CategoryProduct';
 
 import Space from './assets/product/space';
 import Sale from './assets/product/sale';
+import PopularQna from './assets/qna/PopularQna';
 import Qna from './assets/qna/Qna';
 import QnaWrite from './assets/qna/QnaWrite';
 import NoticeList from './assets/qna/NoticeList';
@@ -39,6 +41,7 @@ function App() {
 
           {/* 앞으로 추가될 페이지는 여기에 계속 Route 추가해주시면 됨 */}
           <Route path='login' element={<Login />}></Route>
+          <Route path='/kakao/login' element={<Kakaologin />}></Route>
           <Route path='member/signup' element={<Member />}></Route>
           <Route path='/member/findmember' element={<FindMember />}></Route>
           <Route path='/member/memberedit' element={<MemberEdit />}></Route>
@@ -48,7 +51,8 @@ function App() {
           <Route path='/productDetail/:id' element={<ProductDetail />}></Route>
           <Route path='/spaceproduct' element={<Space />}></Route>
           <Route path='/sale' element={<Sale />}></Route>
-          <Route path='/categoryproduct' element={<CategoryProduct />}></Route>
+          <Route path='/qna/popularqna' element={<PopularQna />}></Route>
+          <Route path='/categoryproduct/:sCategory' element={<CategoryProduct />}></Route>
           <Route path='/qna' element={<Qna />}></Route>
           <Route path='/qna/write' element={<QnaWrite />}></Route>
           <Route path='/qna/noticelist' element={<NoticeList />}></Route>

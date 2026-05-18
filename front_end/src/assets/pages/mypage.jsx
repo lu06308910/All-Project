@@ -34,6 +34,11 @@ const MyPage = () => {
                                         const inqRes = await axios.get(`http://localhost:9991/support/list?writer=${loginName}`);
                                         setInquiries(inqRes.data);
                                 }
+                                // 3. 찜 목록 (새로 추가!)
+                                if (logId && !isCorporate) { // 일반 유저일 때만 찜 목록 호출
+                                        const wishRes = await axios.get(`http://localhost:9991/wish/list?userid=${logId}`);
+                                        setWishItems(wishRes.data);
+                                }
                         } catch (error) {
                                 console.error("데이터 로딩 실패:", error);
                         } finally {
@@ -107,22 +112,25 @@ const MyPage = () => {
                 switch (activeMenu) {
                         case '주문내역': return <OrderHistory orders={orders} />;
                         case '취소/반품/교환 내역': return <CancelHistory cancelItems={cancelItems} />;
-                        case '찜': return <WishList wishItems={wishItems} onDelete={handleDeleteWish} onDeleteAll={handleDeleteAllWish} />;
+                        case '찜': return <WishList wishItems={wishItems} onDelete={handleDeleteWish} />;
                         case '문의 내역': return <InquiryList inquiries={inquiries} />;
                         default: return <div className="empty-state">준비 중인 페이지입니다.</div>;
                 }
         };
 
         // 찜 삭제 함수
-        const handleDeleteAllWish = () => {
-                if (window.confirm("찜한 상품을 모두 삭제하시겠습니까?")) {
-                        setWishItems([]);
-                }
-        };
-
-        const handleDeleteWish = (id) => {
-                if (window.confirm("찜한 상품을 삭제하시겠습니까?")) {
-                        setWishItems(wishItems.filter(item => item.id !== id));
+        const handleDeleteWish = async (pid) => {
+                if (!window.confirm("찜 목록에서 삭제하시겠습니까?")) return;
+                try {
+                        // ProductDetail에서 쓰던 toggleLike와 같은 주소
+                        await axios.post(`http://localhost:9991/wish/toggle`, {
+                                pid: pid,
+                                userid: logId
+                        });
+                        // 서버 삭제 성공 후 UI에서도 즉시 제거
+                        setWishItems(prev => prev.filter(item => item.pid !== pid));
+                } catch (err) {
+                        alert("삭제에 실패했습니다.");
                 }
         };
 
@@ -280,6 +288,47 @@ const InquiryList = ({ inquiries, isCorp }) => {
                                         ))
                                 )}
                         </table>
+                </div>
+        );
+};
+// 일반사용자 : 찜목록
+const WishList = ({ wishItems, onDelete }) => {
+        return (
+                <div className="wishlist-container">
+                        <div className="wish-count-bar">
+                                전체 <strong>{wishItems.length}</strong>개
+                        </div>
+
+                        {wishItems.length === 0 ? (
+                                <div className="empty-state">찜한 상품이 없습니다.</div>
+                        ) : (
+                                <div className="wish-grid">
+                                        {wishItems.map((item) => (
+                                                <div className="order-item" key={item.pid}>
+                                                        <div className="item-img-box">
+                                                                <img
+                                                                        src={`http://localhost:9991/static/uploads/${item.fileList[0].filename}.${item.fileList[0].extname}`}
+                                                                        alt={item.name}
+                                                                        style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                                                                />
+                                                        </div>
+                                                        <div className="item-info">
+                                                                <span className="brand-name">{item.brand || "브랜드"}</span>
+                                                                <h3 className="product-name">{item.pname}</h3>
+                                                                <p className="product-price">{Number(item.price).toLocaleString()}원</p>
+                                                        </div>
+                                                        <div className="btn-group">
+                                                                <button className="btn-dark" onClick={() => window.location.href = `/product/${item.pid}`}>
+                                                                        구매하기
+                                                                </button>
+                                                                <button className="btn-light" onClick={() => onDelete(item.pid)}>
+                                                                        삭제
+                                                                </button>
+                                                        </div>
+                                                </div>
+                                        ))}
+                                </div>
+                        )}
                 </div>
         );
 };
@@ -442,78 +491,6 @@ const CancelHistory = ({ cancelItems }) => {
                                         </div>
                                 </div>
                         )}
-                </>
-        );
-};
-
-/* 찜 목록 */
-const WishList = ({ wishItems, onDelete, onDeleteAll }) => {
-        if (!wishItems || wishItems.length === 0) {
-                return <div className="empty-state">찜한 상품 목록이 없습니다.</div>;
-        }
-        // 장바구니 클릭 핸들러
-        const handleAddToCart = (item) => {
-                // 실제 프로젝트라면 여기서 API를 호출해 DB에 저장하겠죠?
-                // 일단은 알림창으로 성공 여부를 보여줍니다.
-                const confirmMove = window.confirm(
-                        `${item.name} 상품이 장바구니에 담겼습니다.\n장바구니로 이동하시겠습니까?`
-                );
-
-                if (confirmMove) {
-                        window.location.href = '/basket/';
-                }
-
-                // 부모 컴포넌트에서 장바구니 상태를 관리한다면 함수 실행
-                if (onAddToCart) onAddToCart(item);
-        };
-        return (
-                <>
-                        <div className="wish-control-bar">
-                                <div className="left-info">
-                                        <span style={{ fontWeight: 'bold' }}>전체 {wishItems.length}개</span>
-                                        <button
-                                                onClick={onDeleteAll}
-                                                style={{ marginLeft: '15px', fontSize: '12px', color: '#999', border: 'none', background: 'none', cursor: 'pointer' }}
-                                        >
-                                                전체 삭제
-                                        </button>
-                                </div>
-
-                                <div className="right-controls" style={{ display: 'flex', gap: '8px' }}>
-                                        <div className="search-bar" style={{ position: 'relative' }}>
-                                                <input type="text" placeholder="상품명 검색" />
-                                                <button className="search-icon"></button>
-                                        </div>
-                                        <select style={{ border: 'none', fontSize: '13px', cursor: 'pointer' }}>
-                                                <option>최근 등록순</option>
-                                                <option>낮은 가격순</option>
-                                        </select>
-                                </div>
-                        </div>
-                        <hr />
-
-                        {wishItems.map((item) => (
-                                <div className="order-item" key={item.id}>
-                                        <div className="item-img"></div>
-                                        <div className="item-info">
-                                                <span className="brand-name">{item.brand}</span>
-                                                <h3 className="product-name">{item.name}</h3>
-                                                <p className="product-price">{item.price}원</p>
-                                        </div>
-
-                                        <div className="btn-group">
-                                                <button className="btn-dark" style={{ width: '110px', borderRadius: '4px' }}
-                                                        onClick={() => { handleAddToCart(item) }}>장바구니 담기</button>
-                                                <button
-                                                        className="btn-light"
-                                                        style={{ width: '110px', marginTop: '6px', fontSize: '12px', color: '#888' }}
-                                                        onClick={() => onDelete(item.id)}
-                                                >
-                                                        삭제
-                                                </button>
-                                        </div>
-                                </div>
-                        ))}
                 </>
         );
 };

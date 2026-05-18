@@ -39,12 +39,16 @@ public class ReviewService {
             file.transferTo(new File(filePath));
 
             //  DB에는 리소스 경로만 저장 (React에서 불러올 경로)
-            review.setImgUrl("review/" + fileName);
+            review.setImgUrl(fileName);
         }
 
         reviewRepository.save(review);
     }
     public List<ReviewEntity> getReviewList(Integer pId) {
         return reviewRepository.findBypId(pId);
+    }
+    // 모든상품 상품별 평균별점
+    public Double getAverageStar(Integer pId) {
+        return reviewRepository.getAverageStar(pId);
     }
 }

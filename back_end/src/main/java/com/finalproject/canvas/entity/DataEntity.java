@@ -18,7 +18,7 @@ public class DataEntity {
 
     @Column(nullable = false, length = 15)
     private String userid;
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 255)
     private String userpwd;
     @Transient // 따로 컬럼이 생성되진 않음
     private String newPassword; // 비밀번호 수정을 위한 임시 보관함
@@ -45,6 +45,10 @@ public class DataEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "is_out", nullable = false)
     private OutStatus isOut = OutStatus.N;
+
+    // 카카오 로그인 식별을 위한 고유 ID 필드 추가
+    @Column(name = "kakao_id", length = 50)
+    private String kakaoId;
 
     public enum OutStatus {
         Y, N
