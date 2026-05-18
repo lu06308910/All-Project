@@ -280,18 +280,18 @@ public class DataController {
             try {
                 existingMember = dataService.dataSelect(generatedUserId);
             } catch (Exception e) {
-                log.warn("⚠️ 기존 회원 조회 중 예외 발생 (무시하고 신규 가입 진행 가능): " + e.getMessage());
+                log.warn(" 기존 회원 조회 중 예외 발생 (무시하고 신규 가입 진행 가능): " + e.getMessage());
             }
 
             if (existingMember != null) {
-                log.info("🎉 기존 카카오 가입 이력 확인 완료: {}", generatedUserId);
+                log.info("기존 카카오 가입 이력 확인 완료: {}", generatedUserId);
                 return existingMember;
             } else {
                 log.info("🆕 신규 카카오 회원가입 진행: {}", generatedUserId);
                 DataEntity newMember = new DataEntity();
                 newMember.setKakaoId(kakaoId);
                 newMember.setUserid(generatedUserId);
-                newMember.setUserpwd("kakao_oauth_pass_dummy");
+                newMember.setUserpwd("12345678");
                 newMember.setUsername(nickname);
                 newMember.setEmail(email);
                 newMember.setTel("010-0000-0000");
@@ -305,8 +305,7 @@ public class DataController {
                 return dataService.dataInsert(newMember);
             }
         } catch (Exception e) {
-            // 💡 이제 조용히 죽지 않고, 콘솔창에 어디서 왜 터졌는지 명확하게 범인을 마킹합니다.
-            log.error("❌ kakaoLoginLogic 내부에서 치명적 예외 발생!!! 원인: ", e);
+            log.error("kakaoLoginLogic 내부에서 예외 발생 원인: ", e);
             return null;
         }
     }

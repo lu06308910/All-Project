@@ -25,7 +25,7 @@ public class ServicesupportEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String context;    // 문의 내용
 
-     @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.STRING)
     @Column(nullable = true, name = "answer_ok")
     private OutStatus answerOk = OutStatus.N;
 
