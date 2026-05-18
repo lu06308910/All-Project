@@ -83,11 +83,6 @@ function Manager() {
                 .catch(err=>console.log(err))
         }, [])
 
-        const tonggyea = [
-                {id:1, writedate:'2026-01-22', code:'L001', category:"야외 〉조경", title:'나무원목의자', comname:'기업명1', cost:'70,000', count:'15', deliver:'69,000', susuryo:'151,600'},
-                {id:1, writedate:'2026-01-22', code:'L001', category:"야외 〉조경", title:'나무원목의자', comname:'기업명1', cost:'70,000', count:'15', deliver:'69,000', susuryo:'151,600'}
-        ]
-
         const [activeMenu, setActiveMenu] = useState('대시보드');
         const [isPostOpen, setIsPostOpen] = useState(false);
         const [modalOpen, setModalOpen] = useState(false);
@@ -100,8 +95,7 @@ function Manager() {
         const [selectedProIds, setSelectedProIds] = useState([]);
 
         const postsPerPage = 10;
-        const totalPosts = 30;
-        const totalPages = Math.ceil(totalPosts / postsPerPage);
+        const totalPages = Math.ceil(asks.length / postsPerPage);
 
         const postsPerPage2 = 5;
         const totalPosts2 = 10;
@@ -367,6 +361,10 @@ function Manager() {
                         .catch(err => console.log(err));
         };
 
+        const handleToggle = (id) => {
+                setOpenId(prev => prev === id? null : id);
+        }
+
         // 정산
         const [openSettleModal, setOpenSettleModal] = useState(false);
         const [selectedItem, setSelectedItem] = useState(null);
@@ -602,15 +600,17 @@ function Manager() {
                                                 <th style={{ backgroundColor: '#eeeeee' }}>결제금액</th>
                                         </tr>
                                 </thead>
-                                <tbody>
-                                        <tr>
-                                                <td>23123124</td>
-                                                <td>나무원목의자</td>
-                                                <td>sefsd1</td>
-                                                <td>이길*</td>
-                                                <td>69,000</td>
-                                        </tr>
-                                </tbody>
+                                {products.map((buy)=>(
+                                        <tbody>
+                                                <tr>
+                                                        <td>{buy.tag}</td>
+                                                        <td>{buy.product.pid}</td>
+                                                        <td>{buy.member.mid}</td>
+                                                        <td>{buy.member.name}</td>
+                                                        <td>{buy.cart.pay}</td>
+                                                </tr>
+                                        </tbody>
+                                ))}
                         </table>
                         <nav>
                                 <ul className="pagination" style={{ marginTop: '20px' }}>
@@ -1394,15 +1394,17 @@ function Manager() {
                                                         <div className="col-1">답변 상태</div>
                                                         <div className="col-2">수정/삭제</div>
                                                 </div>
-                                                {asks.map(ask => (
-                                                        <div key={ask.sid}>
+                                                {asks
+                                                .slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage)
+                                                .map(ask => (
+                                                        <div key={ask.s_id}>
                                                                 <div className="row" style={{ textAlign: 'center', alignItems: 'center' }}>
-                                                                        <div className="col-1" style={{ fontSize: '0.8em' }}>{ask.sid}</div>
-                                                                        <div className="col-5" onClick={() => handleToggle(ask.sid)} style={{ fontSize: '0.8em' }}>
+                                                                        <div className="col-1" style={{ fontSize: '0.8em' }}>{ask.s_id}</div>
+                                                                        <div className="col-5" onClick={() => handleToggle(ask.s_id)} style={{ fontSize: '0.8em' }}>
                                                                                 <div>{ask.subject}</div>
                                                                         </div>
                                                                         <div className="col-1" style={{ fontSize: '0.8em' }}>{ask.member?.username ?? ask.writer}</div>
-                                                                        <div className="col-2" style={{ fontSize: '0.8em' }}>{ask.writedate}</div>
+                                                                        <div className="col-2" style={{ fontSize: '0.8em' }}>{ask.writedate.slice(0, 10)}</div>
                                                                         <div className="col-1" style={{
                                                                                 background: ask.answer_ok == 'N' ? '#ffebee' : '#e3f2fd',
                                                                                 color: ask.answer_ok == 'N' ? '#c62828' : '#1976d2',
@@ -1415,19 +1417,22 @@ function Manager() {
                                                                 </div>
 
                                                                 {/* 답변 창: openId가 현재 행의 ID와 일치할 때만 렌더링 */}
-                                                                {openId === ask.id && (
+                                                                {openId === ask.s_id && (
                                                                         <div className="answer-box" style={{
                                                                                 backgroundColor: '#f9f9f9',
                                                                                 padding: '20px',
                                                                                 fontSize: '0.8em',
                                                                                 borderTop: '1px solid #eee',
                                                                                 textAlign: 'left',
-                                                                                width: '70%',
                                                                                 margin: '0 auto'
                                                                         }}>
-                                                                                <span style={{ color: '#ff6b6b', fontWeight: 'bold' }}>A.</span>
-                                                                                <div style={{ whiteSpace: 'pre-wrap', fontSize: '1em', lineHeight: '1.6' }}>
-                                                                                        {ask.answer == null || ask.answer == '' ? "답변을 등록 중입니다." : ask.answer}
+                                                                                <div style={{marginLeft:'120px'}}>
+                                                                                        <span style={{ color: '#ff6b6b', fontWeight: 'bold' }}>A.</span>
+                                                                                        <br/>
+                                                                                        <span style={{color:'#afafaf'}}>{ask.context}</span>
+                                                                                        <div style={{ whiteSpace: 'pre-wrap', fontSize: '1em', lineHeight: '1.6'}}>
+                                                                                                {ask.answer == null || ask.answer == '' ? "답변을 등록 중입니다." : ask.answer}
+                                                                                        </div>
                                                                                 </div>
                                                                         </div>
                                                                 )}
@@ -1526,16 +1531,16 @@ function Manager() {
                                                                         <th style={{ backgroundColor: '#eeeeee' }}>상세보기</th>
                                                                 </tr>
                                                         </thead>
-                                                        {tonggyea.map((item) => (
+                                                        {products.map((item) => (
                                                                 <tbody>
                                                                         <tr>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.writedate}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.code}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.category}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.title}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.comname}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.cost}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.count}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.writedate.slice(0, 10)}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.pid}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.b_category}〉{item.s_category}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.name}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.company.businessName}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.price}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.gumaesuriyang}</td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.deliver}</td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.susuryo}</td>
                                                                                 <td>

@@ -1,15 +1,18 @@
 import { Link } from 'react-router-dom';
 import './../css/gayoung.css'
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from 'axios';
 
 function Basket() {
         const [count, setCount] = useState(1); // 기본 수량 1
 
         // 버튼 클릭 시 수량 조절
-        const [cartList, setCartList] = useState([
-                { id: 1, name: '제품명길게썼을때잘리는지안잘리는지테스트얼마나길게써야잘리는지확인하기어디까지길어지는거예요', price: 3089000, count: 1 , newdelivery:3000, checked: false, discount:0 },
-                { id: 2, name: '제품명길게썼을때잘리는지테스트시도는성공했는데제대로적용이되는지주기적으로확인해야함', price: 1500000, count:1, newdelivery:3000, checked: false, discount:0}
-        ]);
+        const [cartList, setCartList] = useState([]);
+        useEffect(() => {
+                axios.get('http://localhost:9989/cart/all')
+                .then(res => setCartList(res.data))
+                .catch(err => console.log(err));
+        }, []);
 
         // 직접 입력 시 숫자만 허용하고 수정된 수치 상태 반영 및 유지
         const handleInputChange = (id, e) => {
@@ -18,9 +21,9 @@ function Basket() {
                 
                 setCartList(prevList => 
                         prevList.map(item => {
-                        if (item.id === id) {
+                        if (item.cartid === id) {
                                 const currentCount = newCount === 0 ? 1 : newCount; // 최종 계산은 최소 1로
-                                const newDelivery = (item.price * currentCount >= 50000) ? 0 : 3000;
+                                const newDelivery = (item.pay * currentCount >= 50000) ? 0 : 3000;
                                 return { ...item, count: newCount, newdelivery: newDelivery };
                         }
                         return item;
@@ -32,9 +35,9 @@ function Basket() {
         const updateCount = (id, delta) => {
                 setCartList(prevList => 
                         prevList.map(item => {
-                        if (item.id === id) {
+                        if (item.cartid === id) {
                                 const newCount = Math.max(1, item.count + delta);
-                                const updatedDelivery = (item.price * newCount < 50000) ? 3000 : 0;
+                                const updatedDelivery = (item.pay * newCount < 50000) ? 3000 : 0;
                                 return { ...item, count: newCount, newdelivery: updatedDelivery };
                         }
                         return item;
@@ -54,7 +57,7 @@ function Basket() {
         const handleSingleCheck = (id, e) => {
                 const isChecked = e.target.checked;
                 setCartList(prevList =>
-                        prevList.map(item => item.id === id ? { ...item, checked: isChecked } : item)
+                        prevList.map(item => item.cartid === id ? { ...item, checked: isChecked } : item)
                 );
         };
 
@@ -85,7 +88,7 @@ function Basket() {
         // 체크된 상품들만 합산
         const checkedItems = cartList.filter(item => item.checked);
 
-        const totalProductPrice = checkedItems.reduce((sum, item) => sum + (item.price * item.count), 0);
+        const totalProductPrice = checkedItems.reduce((sum, item) => sum + (item.pay * item.count), 0);
         const totalDiscount = checkedItems.reduce((sum, item) => sum + (item.discount || 0), 0);
         const totalDelivery = checkedItems.reduce((sum, item) => sum + item.newdelivery, 0);
 
@@ -153,12 +156,12 @@ function Basket() {
                                                 </tbody>
                                                 ):(
                                                 cartList.map((item)=>(
-                                                        <tbody key={item.id}>
+                                                        <tbody key={item.cartid}>
                                                                 <tr>
                                                                         <td style={{ width: '10%', textAlign:'center' }}>
                                                                                 <input type="checkbox" aria-label="항목 선택" style={{accentColor: "gray"}}
                                                                                 checked={item.checked} // 각 아이템의 상태 연결
-                                                                                onChange={(e) => handleSingleCheck(item.id, e)}
+                                                                                onChange={(e) => handleSingleCheck(item.cartid, e)}
                                                                                 />
                                                                         </td>
                                                                         <td style={{ width: '40%'}}>
@@ -172,16 +175,16 @@ function Basket() {
                                                                                                         width: 'fit-content', maxWidth: '90%', overflow: 'hidden',
                                                                                                         textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block'
                                                                                                 }}>
-                                                                                                        {item.name}
+                                                                                                        {item.product.name}
                                                                                                 </button>
                                                                                                 <span
                                                                                                 style={{overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
                                                                                                 WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, whiteSpace: 'normal',
                                                                                                 height: '1.5em', fontWeight: '500', width:'90%'}}>
-                                                                                                        {item.name}
+                                                                                                        {item.product.name}
                                                                                                 </span>
                                                                                                 <div>
-                                                                                                        <span>제품옵션 </span>
+                                                                                                        <span>{item.product.option} </span>
                                                                                                         <span>옵션변경</span>
                                                                                                 </div>
                                                                                         </div>
@@ -191,14 +194,14 @@ function Basket() {
                                                                                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                                                                                         {/* 마이너스 버튼 */}
                                                                                         <button 
-                                                                                                onClick={() => updateCount(item.id, -1)}
+                                                                                                onClick={() => updateCount(item.cartid, -1)}
                                                                                                 style={{ padding: '1px 7px', backgroundColor: 'white', cursor: 'pointer', border:'1px solid' }}
                                                                                         >
                                                                                                 -
                                                                                         </button>
 
                                                                                         {/* 수량 입력창 */}
-                                                                                        <input type="text" value={item.count} onChange={(e)=>handleInputChange(item.id, e)}
+                                                                                        <input type="text" value={item.count} onChange={(e)=>handleInputChange(item.cartid, e)}
                                                                                         style={{ 
                                                                                                 width: '40px', padding: '1px 5px', border: '1px solid black', textAlign: 'center'
                                                                                         }} 
@@ -206,20 +209,20 @@ function Basket() {
 
                                                                                         {/* 플러스 버튼 */}
                                                                                         <button 
-                                                                                        onClick={() => updateCount(item.id, 1)}
+                                                                                        onClick={() => updateCount(item.cartid, 1)}
                                                                                         style={{ padding: '1px 5px', backgroundColor: 'white', cursor: 'pointer', border: '1px solid' }}>
                                                                                                 +
                                                                                         </button>
                                                                                 </div>
                                                                         </td>
                                                                         <td style={{ width: '10%', textAlign: 'center' }}>
-                                                                                {item.price.toLocaleString()}원
+                                                                                {item.pay.toLocaleString()}원
                                                                         </td>
                                                                         <td style={{ width: '10%', textAlign: 'center' }}>
                                                                                 {item.newdelivery.toLocaleString()}원
                                                                         </td>
                                                                         <td style={{ width: '10%', textAlign: 'center' }}>
-                                                                                {(item.price * item.count + item.newdelivery).toLocaleString()}
+                                                                                {(item.pay * item.count + item.newdelivery).toLocaleString()}
                                                                         </td>
                                                                         <td style={{ width: '10%' , textAlign:'center' }}>
                                                                                 <button className='button3' style={{backgroundColor:'black', color:'white'}}>구매하기</button>
