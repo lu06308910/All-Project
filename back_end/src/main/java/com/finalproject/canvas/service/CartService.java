@@ -16,4 +16,8 @@ public class CartService {
     public List<CartEntity> getAllList() {
         return cartRepository.findAll();
     }
+
+    public List<CartEntity> getCartByMember(Integer mId){
+        return cartRepository.findBymId(mId);
+    }
 }

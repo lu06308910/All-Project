@@ -17,25 +17,26 @@ public class CartEntity {
     private Integer cartId;
 
     @Column(nullable = false)
-    private Integer pay;
-    @Column(nullable = false)
     private Integer discount;
     @Column(nullable = false, columnDefinition = "INT DEFAULT 1")
     private Integer count;
-    @Column(nullable = false, columnDefinition = "INT DEFAULT 3000")
-    private Integer newdelivery;
+    @Column(nullable = true)
+    private String color;
+    @Column(nullable = true)
+    private String size;
 
-    @CreationTimestamp
-    @Column(name = "writedate", nullable = false, updatable = false)
-    private LocalDateTime writedate;
+    @Column(name = "m_id")
+    private Integer mId;
+    @Column(name = "p_id")
+    private Integer pId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "m_id", insertable = false, updatable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private DataEntity member;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "p_id", insertable = false, updatable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private ProductEntity product;
+
+    @CreationTimestamp
+    @Column(name = "writedate", nullable = false, updatable = false,
+            columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime writedate;
 }
