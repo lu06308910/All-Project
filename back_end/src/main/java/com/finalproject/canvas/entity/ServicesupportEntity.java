@@ -37,8 +37,8 @@ public class ServicesupportEntity {
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime writedate; // 작성일 자동 생성
-
-    @ManyToOne
-    @JoinColumn(name = "m_id", nullable = false)
-    private DataEntity member;
+//
+//    @ManyToOne
+//    @JoinColumn(name = "m_id", nullable = false)
+//    private DataEntity member;
 }
