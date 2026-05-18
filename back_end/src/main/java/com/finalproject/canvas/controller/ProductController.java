@@ -173,21 +173,21 @@ public class ProductController {
      * 모든 상품 리스트
      */
     @GetMapping("/allproduct")
-    public Map<String, Object> productlist(
+    public List<ProductEntity> productlist(
             @PageableDefault(sort = "pId", direction = Sort.Direction.DESC) Pageable pageable
     ) {
+        return productService.getAllProducts();
 
-        Page<ProductEntity> result = productService.productList(pageable);
+    }
+    /**
+     * 홈 메인화면에서 상품리스트 불러오기 -이슬 추가
+     */
+    @GetMapping("/home")
+    public List<ProductEntity> Homelist(
+            @PageableDefault(sort = "pId", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return productService.getAllProducts();
 
-        Map<String, Object> map = new HashMap<>();
-
-        map.put("dataList", result.getContent());
-        map.put("totalPages", result.getTotalPages());
-        map.put("totalElements", result.getTotalElements());
-        map.put("currentPage", result.getNumber());
-        map.put("size", result.getSize());
-
-        return map;
     }
 
     /**
@@ -319,7 +319,7 @@ public class ProductController {
     public ResponseEntity<?> getByCategory(@PathVariable String sCategory) {
 
         System.out.println("🔥 들어온 값: " + sCategory);
-
+        System.out.println("SEARCH CATEGORY = [" + sCategory + "]");
         List<ProductEntity> list = productService.getBysCategory(sCategory);
 
         return ResponseEntity.ok(
