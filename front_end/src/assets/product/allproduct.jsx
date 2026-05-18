@@ -132,6 +132,7 @@ function AllProduct() {
 
         if (!mId || !productId) {
             console.log("값 없음", mId, productId);
+            navigate("/login");
             return;
         }
 

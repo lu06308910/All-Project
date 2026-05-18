@@ -49,5 +49,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Integer>
     //기업명으로 검색
     List<ProductEntity> findByCompany_BusinessNameContaining(String businessName);
 
+    @Query("SELECT p FROM ProductEntity p WHERE p.sCategory LIKE CONCAT('%', :sCategory, '%')")
     List<ProductEntity> findBysCategory(String sCategory); // 카테고리별 페이지
 }
