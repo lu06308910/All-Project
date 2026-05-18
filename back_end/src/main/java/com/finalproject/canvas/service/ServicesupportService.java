@@ -23,4 +23,8 @@ public class ServicesupportService {
         // 리포지토리에 이 이름의 메서드를 만들러 가야 합니다.
         return repository.findByWriterOrderByWritedateDesc(writer);
     }
+    public List<ServicesupportEntity> getAllSupport() {
+        return repository.findAll();
+    }
+
 }

@@ -66,19 +66,21 @@ function QnaWrite() {
             alert("별표(*) 항목은 필수 입력 사항입니다.");
             return;
         }
+
         // FormData 생성 (파일 전송 필수 단계)
         const sendData = new FormData();
         sendData.append("category", formData.category);
         sendData.append("writer", formData.writer);
         sendData.append("subject", formData.subject);
         sendData.append("context", formData.context);
+
         if (selectedFile) {
             sendData.append("file", selectedFile); // 컨트롤러의 @RequestParam 이름과 일치
         }
 
         try {
             // 환경 변수 주소 사용
-            const BASE_URL = import.meta.env.REACT_APP_API_URL || "http://localhost:9990";
+            const BASE_URL = import.meta.env.REACT_APP_API_URL || "http://localhost:9991";
             const response = await axios.post(`${BASE_URL}/support/write`, sendData, {
                 headers: {
                     "Content-Type": "multipart/form-data"

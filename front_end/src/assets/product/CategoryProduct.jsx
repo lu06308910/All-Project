@@ -28,7 +28,7 @@ function CategoryProduct() {
 
                 if (!loginUserId) return;
 
-                axios.get(`http://localhost:9990/like/list/${mId}`)
+                axios.get(`http://localhost:9991/like/list/${mId}`)
                         .then(res => setLikedItems(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -46,7 +46,7 @@ function CategoryProduct() {
         useEffect(() => {
                 if (!sCategory) return;
 
-                axios.get(`http://localhost:9990/categoryproduct/${sCategory}`)
+                axios.get(`http://localhost:9991/categoryproduct/${sCategory}`)
                         .then((res) => {
                                 console.log("카테고리 데이터 확인", res);
                                 setData(res.data.dataList);
@@ -64,7 +64,7 @@ function CategoryProduct() {
                         return;
                 }
 
-                axios.post("http://localhost:9990/like/toggle", {
+                axios.post("http://localhost:9991/like/toggle", {
                         memberId: mId,
                         productId: productId
                 })
@@ -188,7 +188,7 @@ function CategoryProduct() {
                                                                         <img
                                                                                 className="main-product-img"
                                                                                 src={item.fileList?.[0]
-                                                                                        ? `http://localhost:9990/upload/${item.fileList[0].filename}.${item.fileList[0].extname}`
+                                                                                        ? `http://localhost:9991/upload/${item.fileList[0].filename}.${item.fileList[0].extname}`
                                                                                         : "/no-image.png"}
                                                                                 alt=""
                                                                         />

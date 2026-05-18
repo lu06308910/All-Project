@@ -25,9 +25,20 @@ public class ServicesupportEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String context;    // 문의 내용
 
+     @Enumerated(EnumType.STRING)
+    @Column(nullable = true, name = "answer_ok")
+    private OutStatus answerOk = OutStatus.N;
+
+    @Column(nullable = true, columnDefinition = "TEXT")
+    private String answer;
+
     private String filename;
 
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime writedate; // 작성일 자동 생성
+
+    //@ManyToOne(optional = true) 이코드가 문제임
+    //@JoinColumn(name = "m_id", nullable = false)
+    //private DataEntity member;
 }

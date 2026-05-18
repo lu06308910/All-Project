@@ -37,7 +37,7 @@ function AllProduct() {
 
         if (!loginUserId) return;
 
-        axios.get(`http://localhost:9990/like/list/${mId}`)
+        axios.get(`http://localhost:9991/like/list/${mId}`)
             .then(res => setLikedItems(res.data))
             .catch(err => console.log(err));
     }, []);
@@ -70,7 +70,7 @@ function AllProduct() {
                 "&searchWord=" + searchData.searchWord;
         }
 
-        axios.get(`http://localhost:9990/allproduct${url}`)
+        axios.get(`http://localhost:9991/allproduct${url}`)
             .then((response) => {
 
                 console.log(response.data);
@@ -82,7 +82,7 @@ function AllProduct() {
                         title: record.name,
                         price: record.price,
                         img: record.fileList?.[0]
-                            ? `http://localhost:9990/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
+                            ? `http://localhost:9991/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
                             : "/no-image.png"
                     };
                 });
@@ -102,7 +102,7 @@ function AllProduct() {
         if (!list || list.length === 0) return;
 
         list.forEach(product => {
-            axios.get(`http://localhost:9990/review/avg/${product.id}`)
+            axios.get(`http://localhost:9991/review/avg/${product.id}`)
                 .then(res => {
 
                     console.log("⭐ avg result for", product.id, ":", res.data);
@@ -139,7 +139,7 @@ function AllProduct() {
             return;
         }
 
-        axios.post("http://localhost:9990/like/toggle", {
+        axios.post("http://localhost:9991/like/toggle", {
             memberId: mId,
             productId: productId
         })

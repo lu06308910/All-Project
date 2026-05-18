@@ -7,8 +7,8 @@ function Login() {
         const navigate = useNavigate();
 
         const KAKAO_REST_API_KEY = "27f1748ee75c1f2b921f46b129f0b82f";
-        const KAKAO_REDIRECT_URI = "http://localhost:3000/oauth/callback/kakao";
-        const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${KAKAO_REDIRECT_URI}&response_type=code`;
+        const KAKAO_REDIRECT_URI = "http://localhost:5173/kakao/login";
+        const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${KAKAO_REDIRECT_URI}&response_type=code&prompt=select_account`;
 
         // 상태 관리 통합
         const [formData, setFormData] = useState({
@@ -57,7 +57,7 @@ function Login() {
 
                 try {
                         // formData에 userType이 포함되어 서버로 전송됩니다.
-                        const response = await axios.post('http://localhost:9990/member/login', formData);
+                        const response = await axios.post('http://localhost:9991/member/login', formData);
 
                         if (response.data.status === "OK") {
                                 // 로그인 성공: 객체가 존재하면 성공
