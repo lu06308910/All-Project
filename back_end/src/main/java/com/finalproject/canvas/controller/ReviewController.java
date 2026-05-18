@@ -34,6 +34,17 @@ public class ReviewController {
 
         return ResponseEntity.ok(
                 reviewService.getReviewList(pId)
+
         );
+
+    }
+
+    // 상품 평균 별점 조회 (모든상품 페이지에서 사용)
+    @GetMapping("/avg/{pId}")
+    public ResponseEntity<?> getAverageStar(@PathVariable Integer pId) {
+
+        Double avgStar = reviewService.getAverageStar(pId);
+
+        return ResponseEntity.ok(avgStar);
     }
 }

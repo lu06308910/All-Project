@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import './../css/seul.css';
@@ -13,6 +13,36 @@ function QnaWrite() {
         agree: false
     });
 
+    // 파일 상태 관리
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [fileName, setFileName] = useState(""); // 화면 표시용 이름
+
+    // 파일 선택 핸들러
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 10 * 1024 * 1024) {
+                alert("파일 크기는 10MB 이하만 가능합니다.");
+                return;
+            }
+            setSelectedFile(file);
+            setFileName(file.name);
+        }
+    };
+
+    // 페이지 로드 시 로그인 정보 불러오기
+    useEffect(() => {
+
+        const savedName = sessionStorage.getItem("logName");
+
+        if (savedName) {
+            setFormData(prev => ({
+                ...prev,
+                writer: savedName // 작성자 칸에 로그인한 이름 세팅
+            }));
+        }
+    }, []);
+
     // 2. 입력 핸들러
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -23,7 +53,7 @@ function QnaWrite() {
     };
 
     // 3. 전송 핸들러
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!formData.agree) {
@@ -36,18 +66,35 @@ function QnaWrite() {
             alert("별표(*) 항목은 필수 입력 사항입니다.");
             return;
         }
+        // FormData 생성 (파일 전송 필수 단계)
+        const sendData = new FormData();
+        sendData.append("category", formData.category);
+        sendData.append("writer", formData.writer);
+        sendData.append("subject", formData.subject);
+        sendData.append("context", formData.context);
+        if (selectedFile) {
+            sendData.append("file", selectedFile); // 컨트롤러의 @RequestParam 이름과 일치
+        }
 
-        // axios 전송
-        axios.post("http://localhost:9990/qna/write", formData)
-            .then(response => {
-                alert("문의가 성공적으로 접수되었습니다!");
-                // useNavigate 대신 고전적인 방식으로 이동
-                window.location.href = "/qna";
-            })
-            .catch(error => {
-                console.error("오류 발생:", error);
-                alert("접수 중 오류가 발생했습니다.");
+        try {
+            // 환경 변수 주소 사용
+            const BASE_URL = import.meta.env.REACT_APP_API_URL || "http://localhost:9990";
+            const response = await axios.post(`${BASE_URL}/support/write`, sendData, {
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
             });
+
+            if (response.status === 200) {
+                alert("문의가 성공적으로 접수되었습니다!");
+                window.location.href = "/qna";
+            }
+        } catch (error) {
+            console.error("오류 발생:", error);
+            alert("접수 중 오류가 발생했습니다.");
+        }
+
+
     };
 
     return (
@@ -122,7 +169,7 @@ function QnaWrite() {
                     </p>
 
                     <p style={{ marginTop: '20px', fontWeight: 'bold', color: '#444' }}>
-                        ※ 동의를 거부하실 수 있으나, 동의하지 않을 경우 문의 응대가 어려울 수 있습니다.
+                        ※ 동의하지 않을 경우 문의 응대가 어려울 수 있습니다.
                     </p>
                 </div>
 
@@ -136,8 +183,9 @@ function QnaWrite() {
                     <input
                         type="checkbox"
                         id="agree"
-                        checked={agree}
-                        onChange={(e) => setAgree(e.target.checked)}
+                        name="agree"
+                        checked={formData.agree}
+                        onChange={handleChange}
                         style={{ width: '18px', height: '18px' }}
                     />
                     <label htmlFor="agree" style={{ fontSize: '15px', cursor: 'pointer' }}>
@@ -145,7 +193,7 @@ function QnaWrite() {
                     </label>
                 </div>
 
-                {/* ▽ 문의 작성 폼 */}
+                {/* 문의 작성 폼 */}
                 <form onSubmit={handleSubmit} style={{ marginTop: '40px' }}>
 
                     {/* 문의유형 */}
@@ -170,7 +218,8 @@ function QnaWrite() {
                     <div style={{ marginBottom: '25px' }}>
                         <label style={{ display: 'block', marginBottom: '8px' }}>상품명</label>
                         <div style={{ display: 'flex', gap: '10px' }}>
-                            <input type="text" style={{ flex: 1, padding: '12px', border: '1px solid #ccc' }} />
+                            <input type="text"
+                                style={{ flex: 1, padding: '12px', border: '1px solid #ccc' }} />
                             <button type="button" style={{
                                 width: '180px', padding: '14px 0', backgroundColor: '#000', color: '#fff', fontSize: '16px', cursor: 'pointer'
                             }}>
@@ -182,43 +231,82 @@ function QnaWrite() {
                     {/* 이름 */}
                     <div style={{ marginBottom: '25px' }}>
                         <label style={{ display: 'block', marginBottom: '8px' }}>* 이름</label>
-                        <input type="text" style={{ width: '60%', padding: '12px', border: '1px solid #ccc' }} />
-                    </div>
-
-                    {/* 알림선택 */}
-                    <div style={{ marginBottom: '25px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px' }}>* 알림선택</label>
-                        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                            <label><input type="checkbox" /> SMS수신</label>
-                            <label><input type="checkbox" /> 이메일수신</label>
-                        </div>
+                        <input type="text"
+                            name="writer"
+                            value={formData.writer}
+                            onChange={handleChange}
+                            readOnly
+                            style={{ width: '60%', padding: '12px', border: '1px solid #ccc', backgroundColor: '#f5f5f5' }} />
                     </div>
 
                     {/* 제목 */}
                     <div style={{ marginBottom: '25px' }}>
                         <label style={{ display: 'block', marginBottom: '8px' }}>* 제목</label>
-                        <input type="text" style={{ width: '100%', padding: '12px', border: '1px solid #ccc' }} />
+                        <input type="text"
+                            name="subject"
+                            value={formData.subject}
+                            onChange={handleChange}
+                            style={{ width: '100%', padding: '12px', border: '1px solid #ccc' }} />
                     </div>
 
                     {/* 내용 */}
                     <div style={{ marginBottom: '25px' }}>
                         <label style={{ display: 'block', marginBottom: '8px' }}>* 내용</label>
                         <textarea
+                            name="context"
+                            value={formData.context}
+                            onChange={handleChange}
                             style={{ width: '100%', padding: '12px', border: '1px solid #ccc', height: '150px' }}
                         ></textarea>
                     </div>
 
                     {/* 첨부파일 */}
                     <div style={{ marginBottom: '25px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px' }}>첨부파일</label>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>첨부파일</label>
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                            <input type="text" style={{ flex: 1, padding: '12px', border: '1px solid #ccc' }} readOnly />
-                            <button type="button" style={{
-                                width: '180px', padding: '14px 10px', backgroundColor: '#000', color: '#fff', fontSize: '16px', cursor: 'pointer'
-                            }}>파일찾기</button>
+
+                            {/* 실제 파일 선택창(숨김 처리) */}
+                            <input
+                                type="file"
+                                id="file-upload"
+                                onChange={handleFileChange}
+                                style={{ display: 'none' }} // 화면에서 아예 안 보이게 함
+                                accept="image/*"
+                            />
+
+                            {/* 파일 이름이 표시될 가짜 input (읽기 전용) */}
+                            <input
+                                type="text"
+                                value={fileName || "선택된 파일 없음"} // 파일이 선택되면 이름이 뜨고, 없으면 안내 문구
+                                readOnly
+                                style={{
+                                    flex: 1,
+                                    padding: '12px',
+                                    border: '1px solid #ccc',
+                                    backgroundColor: '#f9f9f9',
+                                    color: fileName ? '#333' : '#888'
+                                }}
+                            />
+
+                            {/* 파일찾기 버튼 */}
+                            <button
+                                type="button"
+                                onClick={() => document.getElementById('file-upload').click()} // 클릭 시 숨겨진 input 호출
+                                style={{
+                                    width: '120px',
+                                    padding: '12px 0',
+                                    backgroundColor: '#333',
+                                    color: '#fff',
+                                    fontSize: '14px',
+                                    cursor: 'pointer',
+                                    border: 'none'
+                                }}
+                            >
+                                파일 선택
+                            </button>
                         </div>
                         <div style={{ fontSize: '12px', color: '#888', marginTop: '5px' }}>
-                            jpg, gif, png파일, 10MB 이하, 4개까지 첨부가 가능합니다.
+                            jpg, gif, png파일, 10MB 이하 첨부가 가능합니다.
                         </div>
                     </div>
 

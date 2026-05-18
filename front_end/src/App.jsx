@@ -48,7 +48,7 @@ function App() {
           <Route path='/productDetail/:id' element={<ProductDetail />}></Route>
           <Route path='/spaceproduct' element={<Space />}></Route>
           <Route path='/sale' element={<Sale />}></Route>
-          <Route path='/categoryproduct' element={<CategoryProduct />}></Route>
+          <Route path='/categoryproduct/:sCategory' element={<CategoryProduct />}></Route>
           <Route path='/qna' element={<Qna />}></Route>
           <Route path='/qna/write' element={<QnaWrite />}></Route>
           <Route path='/qna/noticelist' element={<NoticeList />}></Route>

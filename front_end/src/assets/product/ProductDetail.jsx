@@ -33,10 +33,12 @@ function ProductDetail() {
         // 리뷰 
         const [reviewFilter, setReviewFilter] = useState("all"); // 리뷰글보기 , 사진만 보기 버튼
         const [zoomImage, setZoomImage] = useState(null); // 리뷰 확대 사진
-        const [star, setStar] = useState(0);
+        
         const [content, setContent] = useState("");
         const [file, setFile] = useState(null);
+        
         const [reviews, setReviews] = useState([]); // 백엔드 받아오기
+        const [star, setStar] = useState(0);
 
         // 문의
         const [qnaTitle, setQnaTitle] = useState("");

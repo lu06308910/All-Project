@@ -94,6 +94,7 @@ function AddProduct() {
                 setAddPrice("");
         };
 
+
         // 사이즈 삭제
         const handleDeleteSize = (index) => {
                 setSizes(sizes.filter((_, i) => i !== index));
@@ -104,6 +105,7 @@ function AddProduct() {
         function handleFileChange(event) {
                 setFiles(Array.from(event.target.files));
         }
+        
 
         // 등록
         const handleRegisterButton = () => {

@@ -48,4 +48,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Integer>
     List<ProductEntity> findByNameContaining(String name);
     //기업명으로 검색
     List<ProductEntity> findByCompany_BusinessNameContaining(String businessName);
+
+    List<ProductEntity> findBysCategory(String sCategory); // 카테고리별 페이지
 }

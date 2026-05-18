@@ -33,7 +33,10 @@ public class ProductEntity {
 
     private String name;
     private String b_category;
-    private String s_category;
+
+    @Column(name = "s_category")
+    private String sCategory;
+
     private String price;
     private String color;
     private Integer count = 0;

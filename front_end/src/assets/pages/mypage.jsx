@@ -4,42 +4,48 @@ import './../css/kdh.css';
 
 const MyPage = () => {
 
-        // 1. 상태 관리: 사용자 데이터 및 타입
+        // 상태 관리: 사용자 데이터 및 타입
         const [userInfo, setUserInfo] = useState(null);
         const [loading, setLoading] = useState(true);
+        const [inquiries, setInquiries] = useState([]); // DB에서 가져올 문의 목록
+        const [activeMenu, setActiveMenu] = useState('');
 
         // 세션에서 정보 가져오기 (로그인 시 저장했던 값)
         const logId = sessionStorage.getItem("logId");
         const usertype = sessionStorage.getItem("usertype");
+        const loginName = sessionStorage.getItem("logName"); // 문의내역 조회용
         const isCorporate = usertype === 'BUSINESS';
+
+        // 이름/기업명 동적 할당 (DataEntity: username / CpDataEntity: businessName)
+        const userName = isCorporate ? userInfo?.businessName : userInfo?.username;
 
         // 2. 서버에서 데이터 불러오기
         useEffect(() => {
-                const fetchUserInfo = async () => {
+                const fetchData = async () => {
                         try {
-                                const response = await axios.get(`http://localhost:9990/member/edit?userid=${logId}&usertype=${usertype}`);
-                                setUserInfo(response.data);
+                                // 유저 정보 가져오기
+                                if (logId) {
+                                        const userRes = await axios.get(`http://localhost:9990/member/edit?userid=${logId}&usertype=${usertype}`);
+                                        setUserInfo(userRes.data);
+                                }
+
+                                // 문의 내역 가져오기 (DB 연동)
+                                if (loginName) {
+                                        const inqRes = await axios.get(`http://localhost:9990/support/list?writer=${loginName}`);
+                                        setInquiries(inqRes.data);
+                                }
                         } catch (error) {
-                                console.error("데이터 호출 실패:", error);
+                                console.error("데이터 로딩 실패:", error);
                         } finally {
                                 setLoading(false);
                         }
                 };
 
-                if (logId) fetchUserInfo();
-        }, [logId, usertype]);
+                fetchData();
+                setActiveMenu(isCorporate ? '판매 현황' : '주문내역');
+        }, [logId, usertype, loginName, isCorporate]);
 
-        // 3. 이름/기업명 동적 할당 (DataEntity: username / CpDataEntity: businessName)
-        const userName = isCorporate
-                ? userInfo?.businessName  // 기업일 때 
-                : userInfo?.username;     // 일반일 때
-
-        const [activeMenu, setActiveMenu] = useState(isCorporate ? '판매 현황' : '주문내역');
-
-        const userMenus = ['주문내역', '취소/반품/교환 내역', '찜', '이벤트', '문의 내역'];
-        const corpMenus = ['판매 현황', '상품 등록/관리', '정산내역', '고객 문의 관리'];
-
-        const sideMenus = isCorporate ? corpMenus : userMenus;
+        // -----------------------------------------------------------------------------------------------------------------------
 
         const [orders] = useState([
                 { id: 1, brand: "CANVAS", name: "크로켓 2000 거실장", price: "230,000", rating: "★★★☆☆", status: "배송 중", deliveryDate: "26.04.27", deliveryStatus: "도착(예정)" }
@@ -50,27 +56,19 @@ const MyPage = () => {
                 { id: 102, brand: "CANVAS", name: "크로켓 2000 거실장[1200 / 1500 / 2000]", option: "월넛 / 1200cm / 1개", price: "230,000", status: "반품 신청", date: "26.04.11(토)" },
                 { id: 103, brand: "CANVAS", name: "크로켓 2000 거실장[1200 / 1500 / 2000]", option: "월넛 / 1200cm / 1개", price: "230,000", status: "교환 신청", date: "26.04.11(토)" }
         ]);
-        const [inquiries] = useState([
-                {
-                        id: 301,
-                        category: "배송문의",
-                        title: "거실장 배송 언제쯤 오나요?",
-                        date: "2026.04.15",
-                        answered: true
-                },
-                {
-                        id: 302,
-                        category: "상품문의",
-                        title: "소파 가죽 샘플을 볼 수 있을까요?",
-                        date: "2026.04.20",
-                        answered: false
-                }
-        ]);
 
         const [wishItems, setWishItems] = useState([
                 { id: 201, brand: "CANVAS", name: "크로켓 2000 거실장", price: "230,000", imgUrl: "" },
                 { id: 202, brand: "CANVAS", name: "심플 라인 소파", price: "450,000", imgUrl: "" }
         ]);
+
+        const sideMenus = isCorporate
+                ? ['판매 현황', '상품 등록/관리', '정산내역', '고객 문의 관리']
+                : ['주문내역', '취소/반품/교환 내역', '찜', '문의 내역'];
+
+
+        // 통계 (문의내역은 실제 DB 데이터 기준)
+        const unansweredCount = inquiries.filter(inq => !inq.answer).length;
 
         const totalAmount = orders.reduce((sum, order) => {
                 const price = typeof order.price === 'string'
@@ -85,7 +83,8 @@ const MyPage = () => {
         const reviewCount = 5;
 
         const cancelCount = cancelItems ? cancelItems.length : 0;
-        const unansweredCount = inquiries ? inquiries.filter(inq => !inq.answered).length : 0;
+
+
         /* 마이페이지 컴포넌트 */
         const renderContent = () => {
                 // 기업용 메뉴
@@ -218,6 +217,69 @@ const MyPage = () => {
                                         {renderContent()}
                                 </main>
                         </div>
+                </div>
+        );
+};
+// 일반 사용자 : 문의하기
+const InquiryList = ({ inquiries, isCorp }) => {
+        const [expandedId, setExpandedId] = useState(null);
+        const toggleInquiry = (id) => setExpandedId(expandedId === id ? null : id);
+
+        return (
+                <div className="inquiry-list-wrapper">
+                        <table className="management-table">
+                                <thead>
+                                        <tr>
+                                                <th style={{ width: '8%' }}>번호</th>
+                                                <th style={{ width: '12%' }}>카테고리</th>
+                                                <th>제목</th>
+                                                <th style={{ width: '12%' }}>작성자</th>
+                                                <th style={{ width: '15%' }}>작성일</th>
+                                                <th style={{ width: '12%', textAlign: 'center' }}>상태</th>
+                                        </tr>
+                                </thead>
+                                {inquiries.length === 0 ? (
+                                        <tbody><tr><td colSpan="6" className="empty-row">문의 내역이 없습니다.</td></tr></tbody>
+                                ) : (
+                                        inquiries.map((inquiry, index) => (
+                                                <tbody key={inquiry.sid || index}>
+                                                        <tr onClick={() => toggleInquiry(inquiry.sid)} style={{ cursor: 'pointer' }}>
+                                                                <td>{inquiry.s_id}</td>
+                                                                <td><span className="category-tag">{inquiry.category}</span></td>
+                                                                <td className="inquiry-title-cell">{inquiry.subject}</td>
+                                                                <td>{inquiry.writer}</td>
+                                                                <td>{inquiry.writedate ? inquiry.writedate.split('T')[0] : "-"}</td>
+                                                                <td className="text-center">
+                                                                        <span className={`status-badge ${inquiry.answer ? 'complete' : 'waiting'}`}>
+                                                                                {inquiry.answer ? "답변완료" : "답변대기"}
+                                                                        </span>
+                                                                </td>
+                                                        </tr>
+                                                        {expandedId === inquiry.sid && (
+                                                                <tr className="inquiry-detail-row">
+                                                                        <td colSpan="6">
+                                                                                <div className="my-detail-content">
+                                                                                        <div className="question-box">
+                                                                                                <strong>Q. 문의 내용</strong>
+                                                                                                <p style={{ whiteSpace: 'pre-wrap' }}>{inquiry.context}</p>
+                                                                                        </div>
+                                                                                        {inquiry.answer ? (
+                                                                                                <div className="answer-box">
+                                                                                                        <strong>A. 답변 내용</strong>
+                                                                                                        <p style={{ whiteSpace: 'pre-wrap' }}>{inquiry.answer}</p>
+                                                                                                        {inquiry.answerdate && <small>답변일: {inquiry.answerdate.split('T')[0]}</small>}
+                                                                                                </div>
+                                                                                        ) : (
+                                                                                                <div className="waiting-box"><small>답변 준비 중입니다.</small></div>
+                                                                                        )}
+                                                                                </div>
+                                                                        </td>
+                                                                </tr>
+                                                        )}
+                                                </tbody>
+                                        ))
+                                )}
+                        </table>
                 </div>
         );
 };
@@ -453,84 +515,6 @@ const WishList = ({ wishItems, onDelete, onDeleteAll }) => {
                                 </div>
                         ))}
                 </>
-        );
-};
-
-/** 문의 내역 컴포넌트 **/
-const InquiryList = ({ inquiries, isCorp }) => {
-        // 현재 어떤 문의가 열려 있는지 저장하는 상태 (열린게 없으면 null)
-        const [expandedId, setExpandedId] = useState(null);
-
-        // 제목 클릭 시 실행될 함수
-        const toggleInquiry = (id) => {
-                // 이미 열려있는걸 다시 누르면 닫고(null), 아니면 해당 id를 저장
-                setExpandedId(expandedId === id ? null : id);
-        };
-
-        return (
-                <div className="content-area">
-                        <table className="management-table">
-                                <thead>
-                                        <tr>
-                                                <th style={{ width: '8%' }}>번호</th>
-                                                <th style={{ width: '12%' }}>카테고리</th>
-                                                <th>제목</th>
-                                                <th style={{ width: '12%' }}>작성자</th>
-                                                <th style={{ width: '15%' }}>작성일</th>
-                                                <th style={{ width: '12%', textAlign: 'center' }}>상태</th>
-                                        </tr>
-                                </thead>
-                                {inquiries.map((inquiry) => (
-                                        <tbody key={inquiry.id}>
-                                                {/* 사용자 질문내용 */}
-                                                <tr
-                                                        onClick={() => toggleInquiry(inquiry.id)}
-                                                        style={{ cursor: 'pointer' }}
-                                                >
-                                                        <td>{inquiry.id}</td>
-                                                        <td><span className="category-tag">{inquiry.category}</span></td>
-                                                        <td className="inquiry-title-cell">
-                                                                {inquiry.title}
-                                                        </td>
-                                                        <td className="writer-name">{inquiry.writer || "김대호"}</td>
-                                                        <td>{inquiry.date}</td>
-                                                        <td className="text-center">
-                                                                <span className={`status-badge ${inquiry.answered ? 'complete' : 'waiting'}`}>
-                                                                        {inquiry.answered ? "답변완료" : "답변대기"}
-                                                                </span>
-                                                        </td>
-                                                </tr>
-
-                                                {/* 클릭 시 나타나는 하부 답변내용 */}
-                                                {expandedId === inquiry.id && (
-                                                        <tr className="inquiry-detail-row">
-                                                                <td colSpan="6">
-                                                                        <div className="my-detail-content">
-                                                                                <div className="question-box">
-                                                                                        <strong>Q. 문의 내용</strong>
-                                                                                        <p>{inquiry.content || "문의 상세 내용 데이터가 여기에 표시됩니다."}</p>
-                                                                                </div>
-                                                                                {inquiry.answered && (
-                                                                                        <div className="answer-box">
-                                                                                                <strong>A. 답변 내용</strong>
-                                                                                                <p>{inquiry.answer || "안녕하세요 고객님, 문의하신 내용에 대한 답변입니다..."}</p>
-                                                                                                <small>답변일: 2026-05-08</small>
-                                                                                        </div>
-                                                                                )}
-                                                                                {isCorp && !inquiry.answered && (
-                                                                                        <div className="admin-reply-box">
-                                                                                                <textarea placeholder="답변을 입력해주세요."></textarea>
-                                                                                                <button className="btn-dark">답변 등록</button>
-                                                                                        </div>
-                                                                                )}
-                                                                        </div>
-                                                                </td>
-                                                        </tr>
-                                                )}
-                                        </tbody>
-                                ))}
-                        </table>
-                </div>
         );
 };
 

@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import './../css/seul.css';
 
@@ -8,25 +10,75 @@ function CategoryProduct() {
         const [openMenu, setOpenMenu] = useState(null);
         const [showMore, setShowMore] = useState(false);
 
+        const { id } = useParams(); // URL에서 카테고리 정보 추출
+
         const toggleMenu = (menuName) => {
                 setOpenMenu(openMenu === menuName ? null : menuName);
         };
 
         const [activeSub, setActiveSub] = useState(null);
-        
-        // 제품 데이터 배열
-        const products = [
-                { id: 1, img: "public/p1.png", title: "BILLY 빌리", price: "89,900" },
-                { id: 2, img: "public/p2.png", title: "BILLY 빌리", price: "89,900" },
-                { id: 3, img: "public/p3.png", title: "BILLY 빌리", price: "89,900" },
-                { id: 4, img: "public/p4.png", title: "BILLY 빌리", price: "89,900" },
-                { id: 5, img: "public/p1.png", title: "BILLY 빌리", price: "89,900" },
-                { id: 6, img: "public/p2.png", title: "BILLY 빌리", price: "89,900" },
-                { id: 7, img: "public/p3.png", title: "BILLY 빌리", price: "89,900" },
-        ];
 
-        // 처음 4개 + showMore true면 전체
-        const visibleProducts = showMore ? products : products.slice(0, 4);
+        // 좋아요 상태 저장
+        const [likedItems, setLikedItems] = useState([]);
+
+        // 좋아요
+        useEffect(() => {
+                const loginUserId = sessionStorage.getItem("loginUserId");
+                const mId = sessionStorage.getItem("mId");
+
+                if (!loginUserId) return;
+
+                axios.get(`http://localhost:9990/like/list/${mId}`)
+                        .then(res => setLikedItems(res.data))
+                        .catch(err => console.log(err));
+        }, []);
+
+        const { sCategory } = useParams(); // 카테고리 매핑주소
+        const [data, setData] = useState([]); // 카테고리 해당 제품 데이터
+
+
+        // 처음 4개 + showMore true면 전체 + 내림차순 정렬(새상품부터 보여짐)
+        const visibleProducts = showMore
+                ? [...data].sort((a, b) => b.pid - a.pid)
+                : [...data].sort((a, b) => b.pid - a.pid).slice(0, 4);
+
+        // 카테고리별 제품 데이터 
+        useEffect(() => {
+                if (!sCategory) return;
+
+                axios.get(`http://localhost:9990/categoryproduct/${sCategory}`)
+                        .then((res) => {
+                                console.log("카테고리 데이터 확인", res);
+                                setData(res.data.dataList);
+                        });
+        }, [sCategory]);
+
+        // 좋아요 백엔드
+        function handleLike(productId) {
+                const mId = sessionStorage.getItem("mId");
+                console.log("mId:", mId);
+                console.log("productId:", productId);
+
+                if (!mId || !productId) {
+                        console.log("값 없음", mId, productId);
+                        return;
+                }
+
+                axios.post("http://localhost:9990/like/toggle", {
+                        memberId: mId,
+                        productId: productId
+                })
+                        .then(res => {
+                                const { liked } = res.data;
+
+                                setLikedItems(prev =>
+                                        liked
+                                                ? [...prev, productId]
+                                                : prev.filter(id => id !== productId)
+                                );
+                        })
+                        .catch(err => console.log(err));
+        }
 
         return (
                 <div className="all-product-wrap">
@@ -40,9 +92,9 @@ function CategoryProduct() {
                                 <div className="p-menu" onClick={() => toggleMenu("storage")}>수납가구</div>
                                 {openMenu === "storage" && (
                                         <div className="submenu">
-                                                <Link to="" onClick={() => setActiveSub("책장")} className={activeSub === "책장" ? "active" : ""}>책장</Link>
-                                                <Link to="" onClick={() => setActiveSub("수납장")} className={activeSub === "수납장" ? "active" : ""}>수납장</Link>
-                                                <Link to="" onClick={() => setActiveSub("옷장")} className={activeSub === "옷장" ? "active" : ""}>옷장</Link>
+                                                <Link to="/categoryproduct/책장" onClick={() => setActiveSub("책장")} className={activeSub === "책장" ? "active" : ""}>책장</Link>
+                                                <Link to="/categoryproduct/수납장" onClick={() => setActiveSub("수납장")} className={activeSub === "수납장" ? "active" : ""}>수납장</Link>
+                                                <Link to="/categoryproduct/옷장" onClick={() => setActiveSub("옷장")} className={activeSub === "옷장" ? "active" : ""}>옷장</Link>
                                         </div>
                                 )}
 
@@ -50,9 +102,9 @@ function CategoryProduct() {
                                 <div className="p-menu" onClick={() => toggleMenu("bed")}>침대 / 매트리스</div>
                                 {openMenu === "bed" && (
                                         <div className="submenu">
-                                                <Link to="" onClick={() => setActiveSub("싱글 침대")} className={activeSub === "싱글 침대" ? "active" : ""}>싱글 침대</Link>
-                                                <Link to="" onClick={() => setActiveSub("퀸 침대")} className={activeSub === "퀸 침대" ? "active" : ""}>퀸 침대</Link>
-                                                <Link to="" onClick={() => setActiveSub("매트리스")} className={activeSub === "매트리스" ? "active" : ""}>매트리스</Link>
+                                                <Link to="/categoryproduct/싱글 침대" onClick={() => setActiveSub("싱글 침대")} className={activeSub === "싱글 침대" ? "active" : ""}>싱글 침대</Link>
+                                                <Link to="/categoryproduct/퀸 침대" onClick={() => setActiveSub("퀸 침대")} className={activeSub === "퀸 침대" ? "active" : ""}>퀸 침대</Link>
+                                                <Link to="/categoryproduct/매트리스" onClick={() => setActiveSub("매트리스")} className={activeSub === "매트리스" ? "active" : ""}>매트리스</Link>
                                         </div>
                                 )}
 
@@ -60,9 +112,9 @@ function CategoryProduct() {
                                 <div className="p-menu" onClick={() => toggleMenu("sofa")}>소파 / 암체어</div>
                                 {openMenu === "sofa" && (
                                         <div className="submenu">
-                                                <Link to="" onClick={() => setActiveSub("2인용 소파")} className={activeSub === "2인용 소파" ? "active" : ""}>2인용 소파</Link>
-                                                <Link to="" onClick={() => setActiveSub("3인용 소파")} className={activeSub === "3인용 소파" ? "active" : ""}>3인용 소파</Link>
-                                                <Link to="" onClick={() => setActiveSub("암체어")} className={activeSub === "암체어" ? "active" : ""}>암체어</Link>
+                                                <Link to="/categoryproduct/2인용 소파" onClick={() => setActiveSub("2인용 소파")} className={activeSub === "2인용 소파" ? "active" : ""}>2인용 소파</Link>
+                                                <Link to="/categoryproduct/3인용 소파" onClick={() => setActiveSub("3인용 소파")} className={activeSub === "3인용 소파" ? "active" : ""}>3인용 소파</Link>
+                                                <Link to="/categoryproduct/암체어" onClick={() => setActiveSub("암체어")} className={activeSub === "암체어" ? "active" : ""}>암체어</Link>
                                         </div>
                                 )}
 
@@ -70,9 +122,9 @@ function CategoryProduct() {
                                 <div className="p-menu" onClick={() => toggleMenu("table")}>식탁 / 테이블 / 의자</div>
                                 {openMenu === "table" && (
                                         <div className="submenu">
-                                                <Link to="" onClick={() => setActiveSub("식탁")} className={activeSub === "식탁" ? "active" : ""}>식탁</Link>
-                                                <Link to="" onClick={() => setActiveSub("거실용 테이블")} className={activeSub === "거실용 테이블" ? "active" : ""}>거실용 테이블</Link>
-                                                <Link to="" onClick={() => setActiveSub("의자")} className={activeSub === "의자" ? "active" : ""}>의자</Link>
+                                                <Link to="/categoryproduct/식탁" onClick={() => setActiveSub("식탁")} className={activeSub === "식탁" ? "active" : ""}>식탁</Link>
+                                                <Link to="/categoryproduct/거실용 테이블" onClick={() => setActiveSub("거실용 테이블")} className={activeSub === "거실용 테이블" ? "active" : ""}>거실용 테이블</Link>
+                                                <Link to="/categoryproduct/의자" onClick={() => setActiveSub("의자")} className={activeSub === "의자" ? "active" : ""}>의자</Link>
                                         </div>
                                 )}
 
@@ -80,9 +132,9 @@ function CategoryProduct() {
                                 <div className="p-menu" onClick={() => toggleMenu("chair")}>책상 / 사무용 의자</div>
                                 {openMenu === "chair" && (
                                         <div className="submenu">
-                                                <Link to="" onClick={() => setActiveSub("컴퓨터 책상")} className={activeSub === "컴퓨터 책상" ? "active" : ""}>책상/컴퓨터 책상</Link>
-                                                <Link to="" onClick={() => setActiveSub("사무실 의자")} className={activeSub === "사무실 의자" ? "active" : ""}>의자/사무실의자</Link>
-                                                <Link to="" onClick={() => setActiveSub("책상/의자 세트")} className={activeSub === "책상/의자 세트" ? "active" : ""}>책상/의자 세트</Link>
+                                                <Link to="/categoryproduct/책상/컴퓨터 책상" onClick={() => setActiveSub("컴퓨터 책상")} className={activeSub === "컴퓨터 책상" ? "active" : ""}>책상/컴퓨터 책상</Link>
+                                                <Link to="/categoryproduct/의자/사무실의자" onClick={() => setActiveSub("사무실 의자")} className={activeSub === "사무실 의자" ? "active" : ""}>의자/사무실의자</Link>
+                                                <Link to="/categoryproduct/책상/의자 세트" onClick={() => setActiveSub("책상/의자 세트")} className={activeSub === "책상/의자 세트" ? "active" : ""}>책상/의자 세트</Link>
                                         </div>
                                 )}
 
@@ -90,9 +142,9 @@ function CategoryProduct() {
                                 <div className="p-menu" onClick={() => toggleMenu("light")}>조명</div>
                                 {openMenu === "light" && (
                                         <div className="submenu">
-                                                <Link to="" onClick={() => setActiveSub("일반 조명")} className={activeSub === "일반 조명" ? "active" : ""}>일반 조명</Link>
-                                                <Link to="" onClick={() => setActiveSub("시스템 조명")} className={activeSub === "시스템 조명" ? "active" : ""}>시스템 조명</Link>
-                                                <Link to="" onClick={() => setActiveSub("장식 조명")} className={activeSub === "장식 조명" ? "active" : ""}>장식조명</Link>
+                                                <Link to="/categoryproduct/일반 조명" onClick={() => setActiveSub("일반 조명")} className={activeSub === "일반 조명" ? "active" : ""}>일반 조명</Link>
+                                                <Link to="/categoryproduct/시스템 조명" onClick={() => setActiveSub("시스템 조명")} className={activeSub === "시스템 조명" ? "active" : ""}>시스템 조명</Link>
+                                                <Link to="/categoryproduct/장식 조명" onClick={() => setActiveSub("장식 조명")} className={activeSub === "장식 조명" ? "active" : ""}>장식조명</Link>
                                         </div>
                                 )}
 
@@ -100,9 +152,9 @@ function CategoryProduct() {
                                 <div className="p-menu" onClick={() => toggleMenu("bathroom")}>욕실</div>
                                 {openMenu === "bathroom" && (
                                         <div className="submenu">
-                                                <Link to="" onClick={() => setActiveSub("욕실 벽수납장")} className={activeSub === "욕실 벽수납장" ? "active" : ""}>욕실 벽수납장</Link>
-                                                <Link to="" onClick={() => setActiveSub("욕실 세면대 하부장")} className={activeSub === "욕실 세면대 하부장" ? "active" : ""}>욕실 세면대하부장</Link>
-                                                <Link to="" onClick={() => setActiveSub("욕실 거울")} className={activeSub === "욕실 거울" ? "active" : ""}>욕실 거울</Link>
+                                                <Link to="/categoryproduct/욕실 벽수납장" onClick={() => setActiveSub("욕실 벽수납장")} className={activeSub === "욕실 벽수납장" ? "active" : ""}>욕실 벽수납장</Link>
+                                                <Link to="/categoryproduct/욕실 세면대 하부장" onClick={() => setActiveSub("욕실 세면대 하부장")} className={activeSub === "욕실 세면대 하부장" ? "active" : ""}>욕실 세면대하부장</Link>
+                                                <Link to="/categoryproduct/욕실 거울" onClick={() => setActiveSub("욕실 거울")} className={activeSub === "욕실 거울" ? "active" : ""}>욕실 거울</Link>
                                         </div>
                                 )}
                         </div>
@@ -111,42 +163,83 @@ function CategoryProduct() {
                         {/* 오른쪽 컨텐츠 ---------------------------------------------------- */}
                         <div className="product-content">
                                 <div style={{ borderBottom: '2px solid black', marginBottom: '30px', padding: '10px' }}>
-                                        <h2>책장</h2>
-                                </div>
-                                {/* 정렬 버튼 */}
-                                <div className="sort-btns">
-                                        <button>신제품</button>
-                                        <button>베스트 매치</button>
-                                        <button>낮은 가격순</button>
-                                        <button>높은 가격순</button>
-                                        <button>평점순</button>
+                                        <h2>{data?.[0]?.scategory}</h2>
                                 </div>
 
                                 {/* 제품 리스트 (한 줄 4개 고정 + 더보기 기능) */}
                                 <div className="product-grid">
+
                                         {visibleProducts.map((item) => (
-                                                <Link to="/productDetail" className="product-link" key={item.id}>
+
+                                                <Link
+                                                        to={`/productDetail/${item.pid}`}
+                                                        className="product-link"
+                                                        key={item.pid}
+                                                >
+
                                                         <div className="product-card">
-                                                                <div className="product-img"><img src={item.img} alt="" /></div>
+
+                                                                <div className="product-img" style={{
+                                                                        position: "relative",
+                                                                        overflow: "hidden"
+
+                                                                }}>
+
+                                                                        <img
+                                                                                className="main-product-img"
+                                                                                src={item.fileList?.[0]
+                                                                                        ? `http://localhost:9990/upload/${item.fileList[0].filename}.${item.fileList[0].extname}`
+                                                                                        : "/no-image.png"}
+                                                                                alt=""
+                                                                        />
+
+                                                                        <img
+                                                                                className="like-btn"
+                                                                                src={
+                                                                                        likedItems.includes(item.pid)
+                                                                                                ? "/like2.png"
+                                                                                                : "/like.png"
+                                                                                }
+                                                                                alt="like"
+                                                                                onClick={(e) => {
+                                                                                        e.preventDefault();
+                                                                                        handleLike(item.pid);
+                                                                                }}
+                                                                        />
+
+                                                                </div>
+
                                                                 <div className="product-info">
-                                                                        <div style={{ fontWeight: 'bold' }}>canvas</div>
-                                                                        <div className="title">{item.title}</div>
-                                                                        <div className="price">
-                                                                                <span className="symbol">₩</span>
-                                                                                <span className="amount">{item.price}</span>
+
+                                                                        <div style={{ fontWeight: "bold" }}>
+                                                                                {item.company?.name || "canvas"}
                                                                         </div>
+
+                                                                        <div className="title">
+                                                                                {item.name}
+                                                                        </div>
+
+                                                                        <div className="price">
+                                                                                ₩{item.price}
+                                                                        </div>
+
                                                                         <div className="rating">
-                                                                                <img src="public/bal.png" />
-                                                                                <img src="public/bal.png" />
-                                                                                <img src="public/bal.png" />
-                                                                                <img src="public/bal.png" />
-                                                                                <img src="public/bal.png" />
+                                                                                <img src="/bal.png" alt="" />
+                                                                                <img src="/bal.png" alt="" />
+                                                                                <img src="/bal.png" alt="" />
+                                                                                <img src="/bal.png" alt="" />
+                                                                                <img src="/bal.png" alt="" />
                                                                                 <span>(168)</span>
                                                                         </div>
+
                                                                 </div>
+
                                                         </div>
+
                                                 </Link>
+
                                         ))}
+
                                 </div>
 
                                 {/* 더보기 버튼 */}
