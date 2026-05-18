@@ -1,16 +1,20 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function Kakaologin() {
         const navigate = useNavigate();
+        const hasRequested = useRef(false);
 
         useEffect(() => {
                 // URL 주소창에서 카카오가 넘겨준 code 파라미터 추출
                 const params = new URLSearchParams(window.location.search);
                 const code = params.get("code");
 
-                if (code) {
+                // code가 존재하고, 아직 백엔드에 요청을 보낸 적이 없을 때만 실행
+                if (code && !hasRequested.current) {
+                        hasRequested.current = true; // 요청 시작하자마자 True로 잠금장치 가동!
+
                         console.log("카카오 인가 코드 획득:", code);
 
                         // 스프링 부트 백엔드로 인가 코드 전송

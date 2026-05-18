@@ -6,7 +6,7 @@ import './../css/kdh.css';
 function Login() {
         const navigate = useNavigate();
 
-        const KAKAO_REST_API_KEY = "27f1748ee75c1f2b921f46b129f0b82f";
+        const KAKAO_REST_API_KEY = "12ae2c878acb7b1131ce2f5713e9867b";
         const KAKAO_REDIRECT_URI = "http://localhost:5173/kakao/login";
         const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${KAKAO_REDIRECT_URI}&response_type=code&prompt=select_account`;
 

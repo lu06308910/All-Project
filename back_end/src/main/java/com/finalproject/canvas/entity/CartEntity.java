@@ -17,8 +17,6 @@ public class CartEntity {
     private Integer cartId;
 
     @Column(nullable = false)
-    private Integer pay;
-    @Column(nullable = false)
     private Integer discount;
     @Column(nullable = false, columnDefinition = "INT DEFAULT 1")
     private Integer count;

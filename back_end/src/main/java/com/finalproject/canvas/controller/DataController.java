@@ -220,6 +220,10 @@ public class DataController {
 
     @GetMapping("/kakao")
     public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code, HttpSession session) {
+        System.out.println("=========================================");
+        System.out.println("★ 백엔드 카카오 엔드포인트 수신 성공! code: " + code);
+        System.out.println("=========================================");
+
         log.info("=== 백엔드 수신 완료: 카카오 인가 코드 -> " + code);
 
         DataEntity result = kakaoLoginLogic(code);
@@ -245,42 +249,65 @@ public class DataController {
 
     @Transactional
     public DataEntity kakaoLoginLogic(String code) {
-        String accessToken = getKakaoAccessToken(code);
-        if (accessToken == null) return null;
+        try {
+            String accessToken = getKakaoAccessToken(code);
+            log.info("▶▶▶ [체크 1] 발급된 토큰: [{}]", accessToken);
+            if (accessToken == null) return null;
 
-        Map<String, Object> kakaoUserInfo = getKakaoUserInfo(accessToken);
-        if (kakaoUserInfo == null) return null;
+            Map<String, Object> kakaoUserInfo = getKakaoUserInfo(accessToken);
+            log.info("▶▶▶ [체크 2] 카카오 유저정보 객체 수신 여부: {}", (kakaoUserInfo != null));
+            if (kakaoUserInfo == null) return null;
 
-        String kakaoId = String.valueOf(kakaoUserInfo.get("id"));
+            String kakaoId = String.valueOf(kakaoUserInfo.get("id"));
+            log.info("▶▶▶ [체크 3] 카카오 고유 ID: [{}]", kakaoId);
 
-        @SuppressWarnings("unchecked")
-        Map<String, Object> kakaoAccount = (Map<String, Object>) kakaoUserInfo.get("kakao_account");
-        @SuppressWarnings("unchecked")
-        Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+            String nickname = "카카오회원";
+            // kakao_account나 profile이 null이어도 터지지 않도록 안전하게 검증 체인 추가
+            if (kakaoUserInfo.get("kakao_account") != null) {
+                Map<String, Object> kakaoAccount = (Map<String, Object>) kakaoUserInfo.get("kakao_account");
+                if (kakaoAccount.get("profile") != null) {
+                    Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+                    if (profile.get("nickname") != null) {
+                        nickname = String.valueOf(profile.get("nickname"));
+                    }
+                }
+            }
+            String email = "kakao_" + kakaoId + "@test.com";
+            String generatedUserId = "k_" + kakaoId.substring(0, Math.min(kakaoId.length(), 13));
 
-        String nickname = (profile != null) ? String.valueOf(profile.get("nickname")) : "카카오회원";
-        String email = "kakao_" + kakaoId + "@test.com";
+            // DB 조회 시 에러가 나더라도 catch 블록이 잡아서 로그를 찍어줄 것입니다.
+            DataEntity existingMember = null;
+            try {
+                existingMember = dataService.dataSelect(generatedUserId);
+            } catch (Exception e) {
+                log.warn("⚠️ 기존 회원 조회 중 예외 발생 (무시하고 신규 가입 진행 가능): " + e.getMessage());
+            }
 
-        // 기존에 등록된 카카오 회원이 있는지 dataService(또는 직접 엮인 매커니즘)를 활용하여 조회 및 가입 진행
-        DataEntity existingMember = dataService.dataSelect("k_" + kakaoId.substring(0, Math.min(kakaoId.length(), 13)));
+            if (existingMember != null) {
+                log.info("🎉 기존 카카오 가입 이력 확인 완료: {}", generatedUserId);
+                return existingMember;
+            } else {
+                log.info("🆕 신규 카카오 회원가입 진행: {}", generatedUserId);
+                DataEntity newMember = new DataEntity();
+                newMember.setKakaoId(kakaoId);
+                newMember.setUserid(generatedUserId);
+                newMember.setUserpwd("kakao_oauth_pass_dummy");
+                newMember.setUsername(nickname);
+                newMember.setEmail(email);
+                newMember.setTel("010-0000-0000");
+                newMember.setZipcode("00000");
+                newMember.setAddress("소셜 가입 회원");
+                newMember.setAddressDetail("카카오 로그인");
+                newMember.setUsertype("PERSONAL");
+                newMember.setIsOut(DataEntity.OutStatus.N);
+                newMember.setWritedate(java.time.LocalDateTime.now());
 
-        if (existingMember != null) {
-            return existingMember;
-        } else {
-            DataEntity newMember = new DataEntity();
-            newMember.setKakaoId(kakaoId);
-            newMember.setUserid("k_" + kakaoId.substring(0, Math.min(kakaoId.length(), 13)));
-            newMember.setUserpwd("kakao_oauth_pass_dummy");
-            newMember.setUsername(nickname);
-            newMember.setEmail(email);
-            newMember.setTel("010-0000-0000");
-            newMember.setZipcode("00000");
-            newMember.setAddress("소셜 가입 회원");
-            newMember.setAddressDetail("카카오 로그인");
-            newMember.setUsertype("PERSONAL");
-            newMember.setIsOut(DataEntity.OutStatus.N);
-
-            return dataService.dataInsert(newMember);
+                return dataService.dataInsert(newMember);
+            }
+        } catch (Exception e) {
+            // 💡 이제 조용히 죽지 않고, 콘솔창에 어디서 왜 터졌는지 명확하게 범인을 마킹합니다.
+            log.error("❌ kakaoLoginLogic 내부에서 치명적 예외 발생!!! 원인: ", e);
+            return null;
         }
     }
 
@@ -290,11 +317,23 @@ public class DataController {
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
         headers.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
 
+        // 공백으로 인한 오류를 방지하기 위해 각 변수에 .trim()을 확실히 먹여서 검증합니다.
+        String cleanClientId = (clientId != null) ? clientId.trim() : "";
+        String cleanRedirectUri = (redirectUri != null) ? redirectUri.trim() : "";
+        String cleanCode = (code != null) ? code.trim() : "";
+
+        // 💡 [디버깅 로그 추가] 카카오로 쏘기 전 실제 주입된 데이터 상태를 강제로 확인합니다.
+        log.info("============== [카카오 토큰 요청 파라미터 확인] ==============");
+        log.info("주입된 Client ID (REST API 키): [{}]", cleanClientId);
+        log.info("주입된 Redirect URI: [{}]", cleanRedirectUri);
+        log.info("프론트가 넘겨준 인가 코드 (Code): [{}]", cleanCode);
+        log.info("==========================================================");
+
         org.springframework.util.LinkedMultiValueMap<String, String> params = new org.springframework.util.LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
-        params.add("client_id", clientId.trim());
-        params.add("redirect_uri", redirectUri.trim());
-        params.add("code", code.trim());
+        params.add("client_id", cleanClientId);
+        params.add("redirect_uri", cleanRedirectUri);
+        params.add("code", cleanCode);
 
         org.springframework.http.HttpEntity<org.springframework.util.MultiValueMap<String, String>> kakaoTokenRequest =
                 new org.springframework.http.HttpEntity<>(params, headers);
@@ -302,9 +341,15 @@ public class DataController {
             org.springframework.http.ResponseEntity<Map> response = rt.exchange(
                     tokenUrl, org.springframework.http.HttpMethod.POST, kakaoTokenRequest, Map.class
             );
+            log.info("🎉 카카오 토큰 발급 성공완료!");
             return String.valueOf(response.getBody().get("access_token"));
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            // 💡 [중요] 카카오가 보낸 에러 Body 내용을 상세하게 파싱해서 콘솔에 출력합니다.
+            log.error("❌ 카카오 토큰 발급 HTTP 에러 발생! 상태코드: {}", e.getStatusCode());
+            log.error("❌ 카카오가 뱉어낸 진짜 에러 원인 응답 바디: {}", e.getResponseBodyAsString());
+            return null;
         } catch (Exception e) {
-            log.error("카카오 토큰 발급 실패: ", e);
+            log.error("❌ 알 수 없는 토큰 발급 예외 발생: ", e);
             return null;
         }
     }
