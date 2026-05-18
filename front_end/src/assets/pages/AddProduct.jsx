@@ -28,7 +28,7 @@ function AddProduct() {
                 "침대/매트리스": ["싱글 침대", "퀸 침대", "매트리스"],
                 "소파/암체어": ["2인용 소파", "3인용 소파", "암체어"],
                 "식탁/테이블/의자": ["식탁", "거실용 테이블", "의자"],
-                "책상/사무용 의자": ["책상/컴퓨터 책상", "의자/사무실 의자", "책상/의자 세트"],
+                "책상/사무용 의자": ["책상 컴퓨터 책상", "의자 사무실 의자", "책상 의자 세트"],
                 "조명": ["일반 조명", "시스템 조명", "장식 조명"],
                 "욕실": ["욕실 벽수납장", "욕실 세면대하부장", "욕실 거울"]
         };
@@ -155,7 +155,7 @@ function AddProduct() {
                 const formData = new FormData();
 
                 formData.append("b_category", category);
-                formData.append("s_category", subCategory);
+                formData.append("sCategory", subCategory);
                 formData.append("name", subject);
                 formData.append("context", html);
                 formData.append("count", count);

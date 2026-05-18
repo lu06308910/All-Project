@@ -48,7 +48,6 @@ function CategoryProduct() {
 
                 axios.get(`http://localhost:9991/categoryproduct/${sCategory}`)
                         .then((res) => {
-                                console.log("카테고리 데이터 확인", res);
                                 setData(res.data.dataList);
                         });
         }, [sCategory]);
@@ -60,7 +59,6 @@ function CategoryProduct() {
                 console.log("productId:", productId);
 
                 if (!mId || !productId) {
-                        console.log("값 없음", mId, productId);
                         return;
                 }
 
@@ -132,9 +130,9 @@ function CategoryProduct() {
                                 <div className="p-menu" onClick={() => toggleMenu("chair")}>책상 / 사무용 의자</div>
                                 {openMenu === "chair" && (
                                         <div className="submenu">
-                                                <Link to="/categoryproduct/책상/컴퓨터 책상" onClick={() => setActiveSub("컴퓨터 책상")} className={activeSub === "컴퓨터 책상" ? "active" : ""}>책상/컴퓨터 책상</Link>
-                                                <Link to="/categoryproduct/의자/사무실의자" onClick={() => setActiveSub("사무실 의자")} className={activeSub === "사무실 의자" ? "active" : ""}>의자/사무실의자</Link>
-                                                <Link to="/categoryproduct/책상/의자 세트" onClick={() => setActiveSub("책상/의자 세트")} className={activeSub === "책상/의자 세트" ? "active" : ""}>책상/의자 세트</Link>
+                                                <Link to="/categoryproduct/책상 컴퓨터 책상" onClick={() => setActiveSub("컴퓨터 책상")} className={activeSub === "컴퓨터 책상" ? "active" : ""}>책상/컴퓨터 책상</Link>
+                                                <Link to="/categoryproduct/의자 사무실 의자" onClick={() => setActiveSub("사무실 의자")} className={activeSub === "사무실 의자" ? "active" : ""}>의자/사무실의자</Link>
+                                                <Link to="/categoryproduct/책상 의자 세트" onClick={() => setActiveSub("책상 의자 세트")} className={activeSub === "책상 의자 세트" ? "active" : ""}>책상/의자 세트</Link>
                                         </div>
                                 )}
 

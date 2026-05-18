@@ -76,7 +76,7 @@ function AllProduct() {
                 console.log(response.data);
 
 
-                const newList = response.data.dataList.map((record) => {
+                const newList = response.data.map((record) => {
                     return {
                         id: record.pid,
                         title: record.name,
@@ -97,15 +97,11 @@ function AllProduct() {
     // 별 리뷰 수 가져오기
     useEffect(() => {
 
-        console.log("➡ list 상태 체크:", list);
-
         if (!list || list.length === 0) return;
 
         list.forEach(product => {
             axios.get(`http://localhost:9991/review/avg/${product.id}`)
                 .then(res => {
-
-                    console.log("⭐ avg result for", product.id, ":", res.data);
 
                     setStarMap(prev => ({
                         ...prev,
@@ -200,9 +196,9 @@ function AllProduct() {
                 <div className="p-menu" onClick={() => toggleMenu("chair")}>책상 / 사무용 의자</div>
                 {openMenu === "chair" && (
                     <div className="submenu">
-                        <Link to="/categoryproduct/책상/컴퓨터 책상">책상/컴퓨터 책상</Link>
-                        <Link to="/categoryproduct/의자/사무실의자">의자/사무실의자</Link>
-                        <Link to="/categoryproduct/책상/의자 세트">책상/의자 세트</Link>
+                        <Link to="/categoryproduct/책상 컴퓨터 책상">책상/컴퓨터 책상</Link>
+                        <Link to="/categoryproduct/의자 사무실의자">의자/사무실의자</Link>
+                        <Link to="/categoryproduct/책상 의자 세트">책상/의자 세트</Link>
                     </div>
                 )}
                 <div className="p-menu" onClick={() => toggleMenu("light")}>조명</div>
