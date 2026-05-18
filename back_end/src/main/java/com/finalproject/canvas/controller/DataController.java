@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins="*")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -29,12 +29,12 @@ public class DataController {
     public ResponseEntity<?> signup(@RequestBody Map<String, Object> signupData) {
         String usertype = (String) signupData.get("usertype");
 
-        if(usertype == null){
+        if (usertype == null) {
             return ResponseEntity.badRequest().body("usertype 값이 필요합니다.");
         }
 
         // 일반 회원 가입
-        if(usertype.equals("PERSONAL")) {
+        if (usertype.equals("PERSONAL")) {
             DataEntity entity = new DataEntity();
             entity.setUserid((String) signupData.get("userid"));
             entity.setUserpwd((String) signupData.get("userpwd"));
@@ -51,7 +51,7 @@ public class DataController {
         }
 
         // 기업 회원 가입
-        else if(usertype.equals("BUSINESS")) {
+        else if (usertype.equals("BUSINESS")) {
             CpDataEntity cpEntity = new CpDataEntity();
             cpEntity.setUserid((String) signupData.get("userid"));
             cpEntity.setUserpwd((String) signupData.get("userpwd"));
@@ -191,9 +191,9 @@ public class DataController {
     //회원탈퇴
     //is_out만 탈퇴 형식으로 바꾸기
     @PatchMapping("/unregister/{id}")
-    public ResponseEntity<?> unregister(@PathVariable("id") Integer id){
+    public ResponseEntity<?> unregister(@PathVariable("id") Integer id) {
         int result = dataService.unregister(id);
-        if(result != 0){
+        if (result != 0) {
             return ResponseEntity.ok("탈퇴처리 완료");
         }
         return ResponseEntity.badRequest().body("탈퇴처리 실패");
@@ -208,5 +208,56 @@ public class DataController {
     @GetMapping("/all/business")
     public List<CpDataEntity> getCpMembers() {
         return dataService.getAllCpMembers();
+    }
+
+    /**
+     * 카카오 소셜 로그인 요청 처리 (GET)
+     * 리액트 Callback 컴포넌트로부터 인가 코드(code)를 받아 처리합니다.
+     */
+    @GetMapping("/kakao")
+    public Map<String, Object> kakaoLogin(@RequestParam("code") String code, HttpSession session) {
+        log.info("카카오 로그인 요청 들어옴! 인가 코드: " + code);
+
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            // DataService에 추가했던 카카오 로그인 비즈니스 로직 수행
+            DataEntity user = dataService.kakaoLogin(code);
+
+            if (user == null) {
+                session.setAttribute("logStatus", "N");
+                result.put("status", "FAIL");
+                result.put("message", "카카오 인증 및 회원 등록에 실패했습니다.");
+                return result;
+            }
+
+            // 탈퇴한 회원인지 검증 (안전장치)
+            if (user.getIsOut() == DataEntity.OutStatus.Y) {
+                session.setAttribute("logStatus", "N");
+                result.put("status", "FAIL");
+                result.put("message", "탈퇴 처리된 계정입니다.");
+                return result;
+            }
+
+            //기존 일반 로그인 성공 로직과 완전히 동일한 규격으로 세션 및 데이터 세팅
+            session.setAttribute("logStatus", "Y");
+            session.setAttribute("logId", user.getUserid());
+            session.setAttribute("logName", user.getUsername());
+
+            result.put("status", "OK");
+            result.put("userid", user.getUserid());
+            result.put("username", user.getUsername());
+            result.put("usertype", "PERSONAL"); // 소셜은 일반 회원 규격 활용
+            result.put("mId", user.getMId());
+
+            log.info("카카오 로그인 성공! 로그인 유저 ID: " + user.getUserid());
+            return result;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("status", "ERROR");
+            result.put("message", "카카오 로그인 서버 통신 중 오류 발생");
+            return result;
+        }
     }
 }

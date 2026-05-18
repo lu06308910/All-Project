@@ -6,6 +6,10 @@ import './../css/kdh.css';
 function Login() {
         const navigate = useNavigate();
 
+        const KAKAO_REST_API_KEY = "27f1748ee75c1f2b921f46b129f0b82f";
+        const KAKAO_REDIRECT_URI = "http://localhost:3000/oauth/callback/kakao";
+        const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${KAKAO_REDIRECT_URI}&response_type=code`;
+
         // 상태 관리 통합
         const [formData, setFormData] = useState({
                 usertype: 'PERSONAL', // 기본값: 일반 회원
@@ -149,7 +153,9 @@ function Login() {
 
                                         <div className="social-login">
                                                 <p>OR CONNECT WITH</p>
-                                                <button type="button" className="kakao-login-btn" onClick={() => alert('카카오 로그인 구현 예정')}>
+                                                <button type="button"
+                                                className="kakao-login-btn"
+                                                onClick={() => window.location.href = KAKAO_AUTH_URL}>
                                                         <span className="kakao-icon"></span>
                                                         카카오톡으로 시작하기
                                                 </button>

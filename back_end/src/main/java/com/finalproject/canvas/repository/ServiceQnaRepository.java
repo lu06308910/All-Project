@@ -1,32 +1,27 @@
 package com.finalproject.canvas.repository;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.finalproject.canvas.entity.ServiceQnaEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-@RestController
-@RequestMapping("/service")
-@CrossOrigin(origins= "*")
-public interface ServiceQnaRepository {
-    @Autowired
-    private ServiceRepository serviceRepository; // 자주 묻는 질문
+import java.util.List;
 
-    @Autowired
-    private NoticeRepository noticeRepository;   // 공지사항
+@Repository
+public interface ServiceQnaRepository extends JpaRepository<ServiceQnaEntity, Integer> {
+    /**
+     * 전체 목록을 최신순으로 조회
+     * writedate 기준 내림차순(Desc) 정렬 */
+    List<ServiceQnaEntity> findAllByOrderByWritedateDesc();
 
-    @Autowired
-    private InquiryRepository inquiryRepository; // 1:1 문의
+    /**
+     * 제목(subject)에 검색어가 포함된 데이터 조회
+     * Containing 키워드를 사용하면 SQL의 LIKE %keyword% 효과가 납니다.
+     */
+    List<ServiceQnaEntity> findBySubjectContainingOrderByWritedateDesc(String keyword);
 
-    // 자주 묻는 질문 목록 가져오기
-    @GetMapping("/qna")
-    public List<ServiceQnaRepository> getQnaList() {
-        return serviceRepository.findAllByOrderByWritedateDesc();
-    }
-
-    // 공지사항 목록 가져오기 (기존에 만들어두신 것)
-    @GetMapping("/notice")
-    public List<NoticeEntity> getNoticeList() {
-        return noticeRepository.findAllByOrderByWritedateDesc();
-    }
+    /**
+     * 카테고리별 필터링 (필요 시)
+     * 특정 카테고리(예: 회원/정보관리) 데이터만 모아볼 때 사용합니다.
+     */
+    List<ServiceQnaEntity> findByCategoryOrderByWritedateDesc(String category);
 }

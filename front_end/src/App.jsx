@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Top from './assets/pages/Top';
 import Home from './assets/pages/Home';
 import Login from './assets/pages/login';
+import Kakaologin from './assets/pages/kakaologin'
 import Member from './assets/pages/member';
 import MemberEdit from './assets/pages/memberEdit';
 import FindMember from './assets/pages/findmember';
@@ -40,6 +41,7 @@ function App() {
 
           {/* 앞으로 추가될 페이지는 여기에 계속 Route 추가해주시면 됨 */}
           <Route path='login' element={<Login />}></Route>
+          <Route path='/kakao/login' element={<Kakaologin />}></Route>
           <Route path='member/signup' element={<Member />}></Route>
           <Route path='/member/findmember' element={<FindMember />}></Route>
           <Route path='/member/memberedit' element={<MemberEdit />}></Route>

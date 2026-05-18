@@ -28,7 +28,7 @@ import java.util.*;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins="*")
+@CrossOrigin(origins = "*")
 public class ProductController {
 
     private final ProductService productService;
@@ -43,7 +43,7 @@ public class ProductController {
             @RequestParam("colors") String colorsJson,
             @RequestParam("size") String size,
             HttpSession session
-    ){
+    ) {
 
         CpDataEntity cp = new CpDataEntity();
         cp.setCId(1);
@@ -62,7 +62,8 @@ public class ProductController {
             ObjectMapper mapper = new ObjectMapper();
 
             List<Map<String, Object>> colors =
-                    mapper.readValue(colorsJson, new TypeReference<List<Map<String, Object>>>() {});
+                    mapper.readValue(colorsJson, new TypeReference<List<Map<String, Object>>>() {
+                    });
 
             // 3. color DB 저장용 문자열
             productEntity.setColor(
@@ -107,6 +108,7 @@ public class ProductController {
 
         return "OK";
     }
+
     /**
      * 파일 업로드 처리
      */
@@ -168,6 +170,7 @@ public class ProductController {
 
         return uploadFiles;
     }
+
     /**
      * 모든 상품 리스트
      */
@@ -188,11 +191,12 @@ public class ProductController {
 
         return map;
     }
+
     /**
      * 상품 상세 조회
      */
     @GetMapping("/productDetail/{id}")
-    public Map<String, Object> productDetail(@PathVariable("id") int id){
+    public Map<String, Object> productDetail(@PathVariable("id") int id) {
 
         Map<String, Object> result = new HashMap<>();
 
@@ -214,7 +218,7 @@ public class ProductController {
             @RequestParam("files") List<MultipartFile> files,
             @RequestParam("colors") String colorsJson,
             HttpSession session
-    ){
+    ) {
 
         String uploadPath = "C:/upload/";
         List<FileEntity> newUploadedFiles = null;
@@ -229,7 +233,8 @@ public class ProductController {
             ObjectMapper mapper = new ObjectMapper();
 
             List<Map<String, Object>> colors =
-                    mapper.readValue(colorsJson, new TypeReference<List<Map<String, Object>>>() {});
+                    mapper.readValue(colorsJson, new TypeReference<List<Map<String, Object>>>() {
+                    });
 
             // 3. 상품 수정 (중요: insert 아님)
             productService.productUpdate(productEntity);
@@ -268,7 +273,7 @@ public class ProductController {
      * 상품 삭제
      */
     @DeleteMapping("/product/{id}")
-    public String deleteProduct(@PathVariable("id") Integer id, HttpSession session){
+    public String deleteProduct(@PathVariable("id") Integer id, HttpSession session) {
 
         String uploadPath = "C:/upload/";
 
@@ -277,30 +282,40 @@ public class ProductController {
             List<FileEntity> fileList = productService.fileListDelete(id);
 
             // 파일 삭제
-            for(FileEntity f : fileList){
-                File delFile = new File(uploadPath, f.getFilename()+"."+f.getExtname());
-                if(delFile.exists()) delFile.delete();
+            for (FileEntity f : fileList) {
+                File delFile = new File(uploadPath, f.getFilename() + "." + f.getExtname());
+                if (delFile.exists()) delFile.delete();
             }
 
             // 상품 삭제
             productService.productDelete(id);
 
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return "FAIL";
         }
 
         return "OK";
     }
+
     //모든 제품 정보 가져오기 (관리자 페이지)
     @GetMapping("/all/product")
-    public List<ProductEntity> getProducts(){
+    public List<ProductEntity> getProducts() {
         return productService.getAllProducts();
     }
+
     //제품 검색
     @PostMapping("/search/product")
-    public List<ProductEntity> searchProducts(@RequestBody SearchVO searchVO){
-        log.info("상품검색=>"+searchVO.toString());
+    public List<ProductEntity> searchProducts(@RequestBody SearchVO searchVO) {
+        log.info("상품검색=>" + searchVO.toString());
         return productService.searchProducts(searchVO);
     }
+
+    // 마이페이지 찜 - 대호추가
+    @GetMapping("/wish/list")
+    public List<ProductEntity> getWishList(@RequestParam("userid") String userid) {
+        return productService.getWishList(userid);
+    }
 }
+
+

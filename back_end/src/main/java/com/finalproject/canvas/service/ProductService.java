@@ -9,8 +9,8 @@ import com.finalproject.canvas.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 import java.util.Optional;
@@ -101,5 +101,11 @@ public class ProductService {
         if ("name".equals(key)) return productRepository.findByNameContaining(word);
         if ("businessName".equals(key)) return productRepository.findByCompany_BusinessNameContaining(word);
         else return productRepository.findByCompany_BusinessNameContaining(word);
+    }
+
+    // 사찜한 상품 목록 마이페이지 가져오기 - 대호추가
+    @GetMapping("/wish/list")
+    public List<ProductEntity> getWishList(String userid) {
+        return productRepository.findWishListByUserId(userid);
     }
 }
