@@ -108,7 +108,6 @@ public class ProductController {
 
         return "OK";
     }
-
     /**
      * 파일 업로드 처리
      */
@@ -170,7 +169,6 @@ public class ProductController {
 
         return uploadFiles;
     }
-
     /**
      * 모든 상품 리스트
      */
@@ -316,6 +314,36 @@ public class ProductController {
     public List<ProductEntity> getWishList(@RequestParam("userid") String userid) {
         return productService.getWishList(userid);
     }
+    // 카테고리별 페이지(관련상품만 보여줌)
+    @GetMapping("/categoryproduct/{sCategory}")
+    public ResponseEntity<?> getByCategory(@PathVariable String sCategory) {
+
+        System.out.println("🔥 들어온 값: " + sCategory);
+
+        List<ProductEntity> list = productService.getBysCategory(sCategory);
+
+        return ResponseEntity.ok(
+                Map.of("dataList", list)
+        );
+    }
+    /**
+     * 공간별 페이지 처음상품 불러오기
+     */
+    @GetMapping("/spaceproduct")
+    public Map<String, Object> spaceallList(
+            @PageableDefault(sort = "pId", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+
+        Page<ProductEntity> result = productService.productList(pageable);
+
+        Map<String, Object> map = new HashMap<>();
+
+        map.put("dataList", result.getContent());
+        map.put("totalPages", result.getTotalPages());
+        map.put("totalElements", result.getTotalElements());
+        map.put("currentPage", result.getNumber());
+        map.put("size", result.getSize());
+
+        return map;
+    }
 }
-
-

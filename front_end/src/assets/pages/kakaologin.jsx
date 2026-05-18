@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-function kakaologin() {
+function Kakaologin() {
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -48,4 +48,4 @@ function kakaologin() {
     );
 }
 
-export default kakaologin;
+export default Kakaologin;

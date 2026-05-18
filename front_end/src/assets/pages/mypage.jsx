@@ -25,13 +25,13 @@ const MyPage = () => {
                         try {
                                 // 유저 정보 가져오기
                                 if (logId) {
-                                        const userRes = await axios.get(`http://localhost:9991/member/edit?userid=${logId}&usertype=${usertype}`);
+                                        const userRes = await axios.get(`http://localhost:9990/member/edit?userid=${logId}&usertype=${usertype}`);
                                         setUserInfo(userRes.data);
                                 }
 
                                 // 문의 내역 가져오기 (DB 연동)
                                 if (loginName) {
-                                        const inqRes = await axios.get(`http://localhost:9991/support/list?writer=${loginName}`);
+                                        const inqRes = await axios.get(`http://localhost:9990/support/list?writer=${loginName}`);
                                         setInquiries(inqRes.data);
                                 }
                                 // 3. 찜 목록 (새로 추가!)

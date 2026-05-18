@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 import './../css/seul.css';
 
 
@@ -7,21 +9,76 @@ function Space() {
 
         const [showMore, setShowMore] = useState(false);
 
+        // 좋아요 상태 저장
+        const [likedItems, setLikedItems] = useState([]);
 
-        // 제품 데이터 배열
-        const products = [
-                { id: 1, img: "public/p1.png", title: "BILLY 빌리", price: "89,900" },
-                { id: 2, img: "public/p2.png", title: "BILLY 빌리", price: "89,900" },
-                { id: 3, img: "public/p3.png", title: "BILLY 빌리", price: "89,900" },
-                { id: 4, img: "public/p4.png", title: "BILLY 빌리", price: "89,900" },
-                { id: 5, img: "public/p1.png", title: "BILLY 빌리", price: "89,900" },
-                { id: 6, img: "public/p2.png", title: "BILLY 빌리", price: "89,900" },
-                { id: 7, img: "public/p3.png", title: "BILLY 빌리", price: "89,900" },
-        ];
+        const { sCategory } = useParams(); // 카테고리 매핑주소
+        const [data, setData] = useState([]); // 카테고리 해당 제품 데이터
+
+        const [list, setList] = useState([]);// 모든 상품 데이터
 
         // 처음 4개 + showMore true면 전체
-        const visibleProducts = showMore ? products : products.slice(0, 4);
+        const visibleProducts = showMore ? list : list.slice(0, 4);
 
+        useEffect(() => {
+                getDataList();
+        }, []);
+
+        // 처음 모든 제품데이터 가져오기
+        function getDataList() {
+                let url = "?";
+
+
+                axios.get(`http://localhost:9990/spaceproduct${url}`)
+                        .then((response) => {
+
+                                console.log(response.data);
+
+
+                                const newList = response.data.dataList.map((record) => {
+                                        return {
+                                                id: record.pid,
+                                                title: record.name,
+                                                price: record.price,
+                                                img: record.fileList?.[0]
+                                                        ? `http://localhost:9990/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
+                                                        : "/no-image.png"
+                                        };
+                                });
+
+                                setList(newList);
+
+                        })
+                        .catch((error) => {
+                                console.log("목록조회 에러발생==>", error);
+                        });
+        }
+        // 좋아요 백엔드
+        function handleLike(productId) {
+                const mId = sessionStorage.getItem("mId");
+                console.log("mId:", mId);
+                console.log("productId:", productId);
+
+                if (!mId || !productId) {
+                        console.log("값 없음", mId, productId);
+                        return;
+                }
+
+                axios.post("http://localhost:9990/like/toggle", {
+                        memberId: mId,
+                        productId: productId
+                })
+                        .then(res => {
+                                const { liked } = res.data;
+
+                                setLikedItems(prev =>
+                                        liked
+                                                ? [...prev, productId]
+                                                : prev.filter(id => id !== productId)
+                                );
+                        })
+                        .catch(err => console.log(err));
+        }
 
 
 
@@ -94,7 +151,7 @@ function Space() {
                                         {/* 1번 큰 이미지 */}
                                         <div className="big-img img-box">
                                                 <img src="public/imgcatagory4.jpg" />
-                                                <a href="">
+                                                <a href="/categoryproduct/2인용 소파">
                                                         <img src="public/imgBtn.png" className="btn-img" />
                                                 </a>
 
@@ -107,7 +164,7 @@ function Space() {
                                         {/* 2번 위쪽 작은 이미지 */}
                                         <div className="small-top img-box">
                                                 <img src="public/imgcatagory3.png" />
-                                                <a href="">
+                                                <a href="/categoryproduct/식탁">
                                                         <img src="public/imgBtn.png" className="btn-img" />
                                                 </a>
 
@@ -119,7 +176,7 @@ function Space() {
                                         {/* 3번 식물 이미지 */}
                                         <div className="small-right img-box">
                                                 <img src="public/imgcatagory2.png" />
-                                                <a href="">
+                                                <a href="/categoryproduct/욕실">
                                                         <img src="public/imgBtn.png" className="btn-img" />
                                                 </a>
 
@@ -131,7 +188,7 @@ function Space() {
                                         {/* 4번 긴 테이블 이미지 */}
                                         <div className="wide-bottom img-box">
                                                 <img src="public/imgcatagory.png" />
-                                                <a href="">
+                                                <a href="/categoryproduct/퀸 침대">
                                                         <img src="public/imgBtn.png" className="btn-img" />
                                                 </a>
 
@@ -145,38 +202,98 @@ function Space() {
 
 
                         <div style={{ margin: '150px 20px 50px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <h2 style={{ margin: 0 }}>관련상품</h2>
+                                <h2 style={{ margin: 0 }}>모든 상품</h2>
 
-                                <a href="" style={{textDecoration: 'none',color: 'black',fontSize: '15px'}}>
+                                <a href="/allproduct" style={{ textDecoration: 'none', color: 'black', fontSize: '15px' }}>
                                         더보기 &gt;
                                 </a>
                         </div>
+                        {/* 오른쪽 컨텐츠 ---------------------------------------------------- */}
+                        <div className="product-content">
 
-                        <div className="product-grid">
-                                {visibleProducts.map((item) => (
-                                        <Link to="" className="product-link" key={item.id}>
-                                                <div className="product-card">
-                                                        <div className="product-img"><img src={item.img} alt="" /></div>
-                                                        <div className="product-info">
-                                                                <div style={{ fontWeight: 'bold' }}>canvas</div>
-                                                                <div className="title">{item.title}</div>
-                                                                <div className="price">
-                                                                        <span className="symbol">₩</span>
-                                                                        <span className="amount">{item.price}</span>
+                                {/* 제품 리스트 (한 줄 4개 고정 + 더보기 기능) */}
+                                <div className="product-grid">
+
+                                        {visibleProducts.map((item) => (
+
+                                                <Link
+                                                        to={`/productDetail/${item.id}`}
+                                                        className="product-link"
+                                                        key={item.pid}
+                                                >
+
+                                                        <div className="product-card">
+
+                                                                <div className="product-img" style={{
+                                                                        position: "relative",
+                                                                        overflow: "hidden"
+
+                                                                }}>
+
+                                                                        <img
+                                                                                className="main-product-img"
+                                                                                src={item.img}
+                                                                                alt=""
+                                                                        />
+
+                                                                        <img
+                                                                                className="like-btn"
+                                                                                src={
+                                                                                        likedItems.includes(item.id)
+                                                                                                ? "/like2.png"
+                                                                                                : "/like.png"
+                                                                                }
+                                                                                alt="like"
+                                                                                onClick={(e) => {
+                                                                                        e.preventDefault();
+                                                                                        handleLike(item.id);
+                                                                                }}
+                                                                        />
+
                                                                 </div>
-                                                                <div className="rating">
-                                                                        <img src="public/bal.png" />
-                                                                        <img src="public/bal.png" />
-                                                                        <img src="public/bal.png" />
-                                                                        <img src="public/bal.png" />
-                                                                        <img src="public/bal.png" />
-                                                                        <span>(168)</span>
+
+                                                                <div className="product-info">
+
+                                                                        <div style={{ fontWeight: "bold" }}>
+                                                                                {item.company?.name || "canvas"}
+                                                                        </div>
+
+                                                                        <div className="title">
+                                                                                {item.title}
+                                                                        </div>
+
+                                                                        <div className="price">
+                                                                                ₩{item.price}
+                                                                        </div>
+
+                                                                        <div className="rating">
+                                                                                <img src="/bal.png" alt="" />
+                                                                                <img src="/bal.png" alt="" />
+                                                                                <img src="/bal.png" alt="" />
+                                                                                <img src="/bal.png" alt="" />
+                                                                                <img src="/bal.png" alt="" />
+                                                                                <span>(168)</span>
+                                                                        </div>
+
                                                                 </div>
+
                                                         </div>
-                                                </div>
-                                        </Link>
-                                ))}
+
+                                                </Link>
+
+                                        ))}
+
+                                </div>
+
+                                {/* 더보기 버튼 */}
+                                <div className="more-box">
+                                        <button className="more-btn" onClick={() => setShowMore(!showMore)}>
+                                                {showMore ? "접기" : "더보기"}
+                                        </button>
+                                </div>
+
                         </div>
+
 
 
 

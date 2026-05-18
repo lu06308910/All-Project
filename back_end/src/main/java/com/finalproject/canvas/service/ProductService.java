@@ -9,6 +9,7 @@ import com.finalproject.canvas.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -107,5 +108,9 @@ public class ProductService {
     @GetMapping("/wish/list")
     public List<ProductEntity> getWishList(String userid) {
         return productRepository.findWishListByUserId(userid);
+    }
+
+    public List<ProductEntity> getBysCategory(String sCategory) {
+        return productRepository.findBysCategory(sCategory.trim());
     }
 }

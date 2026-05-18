@@ -57,4 +57,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Integer>
             "JOIN member m ON l.m_id = m.m_id " +
             "WHERE m.userid = :userid", nativeQuery = true)
     List<ProductEntity> findWishListByUserId(@Param("userid") String userid);
+
+    List<ProductEntity> findBysCategory(String sCategory); // 카테고리별 페이지
 }
