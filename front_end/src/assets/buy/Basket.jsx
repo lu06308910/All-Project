@@ -19,7 +19,6 @@ function Basket() {
 
         // 버튼 클릭 시 수량 조절
         const [cartList, setCartList] = useState([]);
-        const [count, setCount] = useState(1); // 기본 수량 1
 
         // 직접 입력 시 숫자만 허용하고 수정된 수치 상태 반영 및 유지
         const handleInputChange = (id, e) => {
@@ -121,24 +120,6 @@ function Basket() {
         sessionStorage.setItem('buyItems', JSON.stringify(cartList));
         navigate('/parchase');
         }
-
-        //결제 성공 후 장바구니 비우는 용어
-        const clearPaidCartItems = async () => {
-        const buyItems = JSON.parse(sessionStorage.getItem('buyItems') || '[]');
-        
-        // cartId 배열
-        const paidCartIds = buyItems.map(item => item.cartId);
-        if (paidCartIds.length === 0) return;
-
-        try {
-                await axios.delete('http://localhost:9989/cart/delete', { data: paidCartIds });
-                        sessionStorage.removeItem('buyItems');
-                        console.log('결제 완료 상품 장바구니 삭제 완료');
-                } catch (error) {
-                        console.error('장바구니 자동 삭제 중 오류 발생:', error);
-                }
-        };
-
 
         // 체크된 상품들만 합산
         const checkedItems = cartList.filter(item => item.checked);
