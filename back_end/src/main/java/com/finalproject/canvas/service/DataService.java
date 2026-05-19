@@ -116,6 +116,9 @@ public class DataService {
     public List<CpDataEntity> getAllCpMembers() {
         return cpDataRepository.findAll();
     }
-
-
+    
+    //장바구니 데이터 연결
+    public DataEntity dataSelectById(Integer mId) {
+        return dataRepository.findById(mId).orElse(null);
+    }
 }

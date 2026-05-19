@@ -26,4 +26,14 @@ public class CartController {
     public List<CartEntity> getCartByMember(@PathVariable Integer mId){
         return cartService.getCartByMember(mId);
     }
+    //장바구니에서 구매 완료 후 자동 삭제
+    @DeleteMapping("/delete")
+    public void deleteCarts(@RequestBody List<Integer> cartIds) {
+        cartService.deleteCarts(cartIds);
+    }
+    // 결제 완료 후 장바구니에서 단건 혹은 선택 삭제할 때 사용할 매핑
+    @DeleteMapping("/delete/{cartId}")
+    public void deleteCartItem(@PathVariable Long cartId) {
+        cartService.deleteById(cartId);
+    }
 }

@@ -79,16 +79,23 @@ function Basket() {
         };
 
         //선택 후 삭제
-        const deleteSelected = () => {
-                const remainingItems = cartList.filter(item=>!item.checked);
+        const deleteSelected = async () => {
+                const selectedIds = cartList.filter(item => item.checked).map(item => item.cartId);
+                const remainingItems = cartList.filter(item => !item.checked);
 
-                if(remainingItems.length== cartList.length){
-                        alert("삭제할 상품을 선택해 주세요.")
+                if (selectedIds.length === 0) {
+                        alert("삭제할 상품을 선택해 주세요.");
                         return;
                 }
 
-                if(window.confirm("선택한 상품을 장바구니에서 삭제하시겠습니까?")){
-                        setCartList(remainingItems);
+                if (window.confirm("선택한 상품을 장바구니에서 삭제하시겠습니까?")) {
+                        try {
+                                await axios.delete('http://localhost:9989/cart/delete', { data: selectedIds });
+                                setCartList(remainingItems);
+                        } catch (err) {
+                                console.error("삭제 실패:", err);
+                                alert("삭제 중 오류가 발생했습니다.");
+                        }
                 }
         }
 
@@ -97,28 +104,41 @@ function Basket() {
                 const selected = cartList.filter(item => item.checked);
                 if (selected.length === 0) return alert('상품을 선택해주세요.');
 
-                const cartIds = selected.map(item => item.cartId);
-
-                axios.post('http://localhost:9989/buy/add', cartIds)
-                        .then(() => {
-                                sessionStorage.setItem('buyItems', JSON.stringify(selected));
-                                navigate('/parchase');
-                        })
-                        .catch(err => console.log(err));
+                sessionStorage.setItem('buyItems', JSON.stringify(selected));
+                navigate('/parchase');
         }
 
-        //전체상품 주문
+        // 단건 주문하기
+        const handleBuySingle = (item) => {
+                sessionStorage.setItem('buyItems', JSON.stringify([item]));
+                navigate('/parchase');
+        }
+
+        // 전체상품 주문
         const handleBuyAll = () => {
-                if (cartList.length === 0) return alert('장바구니가 비어있습니다.');
-                const cartIds = cartList.map(item => item.cartId);
+        if (cartList.length === 0) return alert('장바구니가 비어있습니다.');
 
-                axios.post('http://localhost:9989/buy/add', cartIds)
-                .then(() => {
-                        sessionStorage.setItem('buyItems', JSON.stringify(cartList));
-                        navigate('/parchase');
-                })
-                .catch(err => console.log(err));
+        sessionStorage.setItem('buyItems', JSON.stringify(cartList));
+        navigate('/parchase');
         }
+
+        //결제 성공 후 장바구니 비우는 용어
+        const clearPaidCartItems = async () => {
+        const buyItems = JSON.parse(sessionStorage.getItem('buyItems') || '[]');
+        
+        // cartId 배열
+        const paidCartIds = buyItems.map(item => item.cartId);
+        if (paidCartIds.length === 0) return;
+
+        try {
+                await axios.delete('http://localhost:9989/cart/delete', { data: paidCartIds });
+                        sessionStorage.removeItem('buyItems');
+                        console.log('결제 완료 상품 장바구니 삭제 완료');
+                } catch (error) {
+                        console.error('장바구니 자동 삭제 중 오류 발생:', error);
+                }
+        };
+
 
         // 체크된 상품들만 합산
         const checkedItems = cartList.filter(item => item.checked);
@@ -200,7 +220,7 @@ function Basket() {
                                                                                 />
                                                                         </td>
                                                                         <td style={{ width: '40%'}}>
-                                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop:'20px' }}>
                                                                                         <img src='image/bed.jpeg' className='img-basket' alt="제품" />
                                                                                         <div style={{ 
                                                                                                 display: 'flex', flexDirection: 'column', gap: '4px', 
@@ -260,7 +280,11 @@ function Basket() {
                                                                                 {(item.product.price * item.count + item.newdelivery).toLocaleString()}
                                                                         </td>
                                                                         <td style={{ width: '10%' , textAlign:'center' }}>
-                                                                                <button className='button3' style={{backgroundColor:'black', color:'white'}}>구매하기</button>
+                                                                                <button className='button3' style={{backgroundColor:'black', color:'white'}}
+                                                                                        onClick={() => handleBuySingle(item)}
+                                                                                >
+                                                                                        구매하기
+                                                                                </button>
                                                                         </td>
                                                                 </tr>
                                                                 <hr style={{width:'100%'}}/>

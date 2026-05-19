@@ -20,4 +20,17 @@ public class CartService {
     public List<CartEntity> getCartByMember(Integer mId){
         return cartRepository.findBymId(mId);
     }
+
+    public void deleteCarts(List<Integer> cartIds) {
+        cartRepository.deleteAllById(cartIds);
+    }
+
+    // 단건 삭제 메서드 구현 추가 (컨트롤러의 Long cartId 대응)
+    public void deleteById(Long cartId) {
+        if (cartId != null) {
+            cartRepository.deleteById(cartId.intValue());
+        }
+    }
+
+
 }
