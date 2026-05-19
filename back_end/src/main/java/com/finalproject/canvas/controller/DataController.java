@@ -420,6 +420,7 @@ public class DataController {
             result = dataService.findUserPwd(userid, email);
         }
 
+
         if (result) {
             response.put("status", "OK");
             response.put("message", "등록하신 이메일로 임시 비밀번호가 전송되었습니다.");
@@ -430,4 +431,13 @@ public class DataController {
             return ResponseEntity.ok(response);
         }
     }
+
+    //장바구니 데이터 정보 조회
+    @GetMapping("/info/{mId}")
+    public ResponseEntity<?> getMemberById(@PathVariable Integer mId) {
+        DataEntity user = dataService.dataSelectById(mId);
+        if (user != null) return ResponseEntity.ok(user);
+        return ResponseEntity.status(404).body("사용자를 찾을 수 없습니다.");
+    }
+
 }

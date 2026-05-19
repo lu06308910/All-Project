@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @CrossOrigin(origins="*")
 @RestController
@@ -17,7 +17,7 @@ public class BuyController {
     private final BuyService buyService;  // final 추가!
 
     @PostMapping("/add")
-    public void addBuy(@RequestBody List<Integer> cartIds) {
-        buyService.addFromCart(cartIds);
+    public void addBuy(@RequestBody Map<String, Object> payload) {
+        buyService.addFromCart(payload);
     }
 }

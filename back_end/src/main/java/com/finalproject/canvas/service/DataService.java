@@ -311,4 +311,9 @@ public class DataService {
         return false;
     }
 
+
+    //장바구니 데이터 연결
+    public DataEntity dataSelectById(Integer mId) {
+        return dataRepository.findById(mId).orElse(null);
+    }
 }

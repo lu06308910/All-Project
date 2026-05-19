@@ -16,4 +16,7 @@ public interface CartRepository extends JpaRepository<CartEntity, Integer> {
 
     @Query("SELECT c.pId FROM CartEntity c WHERE c.cartId = :cartId")
     Integer findPIdByCartId(@Param("cartId") Integer cartId);
+
+    // 여러 개의 ID를 한 번에 삭제하는 쿼리 메서드
+    void deleteByCartIdIn(List<Integer> cartIds);
 }

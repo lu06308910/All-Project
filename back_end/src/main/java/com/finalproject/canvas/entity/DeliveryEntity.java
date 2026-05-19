@@ -24,8 +24,15 @@ public class DeliveryEntity {
     private String n_address;
     @Column(name = "n_address_detail")
     private String n_addressDetail;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String n_tel;
+    @Column(nullable = true)
+    private String n_name;
+
+    @Column(name = "m_id")
+    private Integer mId;
+    @Column(name = "p_id")
+    private Integer pId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "m_id", insertable = false, updatable = false)
