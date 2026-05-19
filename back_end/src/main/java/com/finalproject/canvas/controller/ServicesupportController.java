@@ -56,4 +56,8 @@ public class ServicesupportController {
         List<ServicesupportEntity> list = servicesupportService.mypage(writer);
         return ResponseEntity.ok(list);
     }
+    @GetMapping("/list/all")
+    public ResponseEntity<List<ServicesupportEntity>> getAllInquiries() {
+        return ResponseEntity.ok(servicesupportService.getAllSupport());
+    }
 }

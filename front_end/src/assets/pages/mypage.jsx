@@ -25,18 +25,18 @@ const MyPage = () => {
                         try {
                                 // 유저 정보 가져오기
                                 if (logId) {
-                                        const userRes = await axios.get(`http://localhost:9991/member/edit?userid=${logId}&usertype=${usertype}`);
+                                        const userRes = await axios.get(`http://localhost:9989/member/edit?userid=${logId}&usertype=${usertype}`);
                                         setUserInfo(userRes.data);
                                 }
 
                                 // 문의 내역 가져오기 (DB 연동)
                                 if (loginName) {
-                                        const inqRes = await axios.get(`http://localhost:9991/support/list?writer=${loginName}`);
+                                        const inqRes = await axios.get(`http://localhost:9989/support/list?writer=${loginName}`);
                                         setInquiries(inqRes.data);
                                 }
                                 // 3. 찜 목록 (새로 추가!)
                                 if (logId && !isCorporate) { // 일반 유저일 때만 찜 목록 호출
-                                        const wishRes = await axios.get(`http://localhost:9991/wish/list?userid=${logId}`);
+                                        const wishRes = await axios.get(`http://localhost:9989/wish/list?userid=${logId}`);
                                         setWishItems(wishRes.data);
                                 }
                         } catch (error) {
@@ -123,7 +123,7 @@ const MyPage = () => {
                 if (!window.confirm("찜 목록에서 삭제하시겠습니까?")) return;
                 try {
                         // ProductDetail에서 쓰던 toggleLike와 같은 주소
-                        await axios.post(`http://localhost:9991/wish/toggle`, {
+                        await axios.post(`http://localhost:9989/wish/toggle`, {
                                 pid: pid,
                                 userid: logId
                         });
@@ -307,7 +307,7 @@ const WishList = ({ wishItems, onDelete }) => {
                                                 <div className="order-item" key={item.pid}>
                                                         <div className="item-img-box">
                                                                 <img
-                                                                        src={`http://localhost:9991/static/uploads/${item.fileList[0].filename}.${item.fileList[0].extname}`}
+                                                                        src={`http://localhost:9989/static/uploads/${item.fileList[0].filename}.${item.fileList[0].extname}`}
                                                                         alt={item.name}
                                                                         style={{ width: '100px', height: '100px', objectFit: 'cover' }}
                                                                 />

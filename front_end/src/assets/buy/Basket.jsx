@@ -8,7 +8,7 @@ function Basket() {
         //로그인 시 정보 저장
         const mId = sessionStorage.getItem("mId");
         useEffect(() => {
-                axios.get(`http://localhost:9991/cart/list/${mId}`)
+                axios.get(`http://localhost:9989/cart/list/${mId}`)
                 .then(res => setCartList(res.data.map(item => ({
                         ...item,
                         newdelivery: item.product.price >= 50000 ? 0 : 3000,
@@ -89,7 +89,7 @@ function Basket() {
 
                 if (window.confirm("선택한 상품을 장바구니에서 삭제하시겠습니까?")) {
                         try {
-                                await axios.delete('http://localhost:9991/cart/delete', { data: selectedIds });
+                                await axios.delete('http://localhost:9989/cart/delete', { data: selectedIds });
                                 setCartList(remainingItems);
                         } catch (err) {
                                 console.error("삭제 실패:", err);
@@ -125,7 +125,7 @@ function Basket() {
         const checkedItems = cartList.filter(item => item.checked);
 
         const totalProductPrice = checkedItems.reduce((sum, item) => sum + (item.product.price * item.count), 0);
-        const totalDiscount = checkedItems.reduce((sum, item) => sum + (item.discount || 0), 0);
+        const totalDiscount = cartList.reduce((sum, item) => sum + (item.discount * item.count || 0), 0);
         const totalDelivery = checkedItems.reduce((sum, item) => sum + item.newdelivery, 0);
 
         // 최종 결제 예정 금액
