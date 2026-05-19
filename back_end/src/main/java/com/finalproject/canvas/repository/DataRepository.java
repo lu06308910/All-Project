@@ -24,4 +24,10 @@ public interface DataRepository extends JpaRepository<DataEntity, Integer> {
     List<DataEntity> findByEmailContaining(String email);
     //전화번호로 검색
     List<DataEntity> findByTelContaining(String tel);
+
+    // 아이디 찾기: 이름과 이메일이 일치하는 회원 정보 조회
+    java.util.Optional<DataEntity> findByUsernameAndEmail(String username, String email);
+
+    // 비밀번호 찾기: 아이디와 이메일이 일치하는 회원 정보 조회
+    java.util.Optional<DataEntity> findByUseridAndEmail(String userid, String email);
 }

@@ -5,19 +5,29 @@ import com.finalproject.canvas.entity.DataEntity;
 import com.finalproject.canvas.entity.OutStatus;
 import com.finalproject.canvas.repository.CpDataRepository;
 import com.finalproject.canvas.repository.DataRepository;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value; // 💡 어노테이션 임포트 체크
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DataService {
 
     private final DataRepository dataRepository;      // 일반회원
     private final CpDataRepository cpDataRepository;  // 기업회원
+
+    @Autowired
+    private JavaMailSender mailSender;
 
     // 💡 [@Value 변수 위치 조정] properties에서 세팅값을 정상적으로 주입받도록 최상단으로 이동합니다.
     @Value("${kakao.client_id}")
@@ -179,7 +189,7 @@ public class DataService {
         org.springframework.util.LinkedMultiValueMap<String, String> params = new org.springframework.util.LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
 
-        // ⚠️ [수정] 하드코딩을 전부 지우고 위에서 정의한 런타임 변수(clientId, redirectUri)를 주입받아 사용합니다.
+        // 하드코딩을 전부 지우고 위에서 정의한 런타임 변수(clientId, redirectUri)를 주입받아 사용합니다.
         params.add("client_id", clientId);
         params.add("redirect_uri", redirectUri);
         params.add("code", code);
@@ -227,4 +237,78 @@ public class DataService {
             return null;
         }
     }
+
+    // 아이디 찾기 : 일반
+    public String findUserId(String username, String email) {
+        return dataRepository.findByUsernameAndEmail(username, email)
+                .map(DataEntity::getUserid)
+                .orElse(null); // 못 찾으면 null 반환
+    }
+
+    // 아이디 찾기 로직 : 기업
+    public String findBusinessId(String businessName, String email) {
+        return cpDataRepository.findByBusinessNameAndEmail(businessName, email)
+                .map(CpDataEntity::getUserid)
+                .orElse(null);
+    }
+    // 비밀번호 찾기 메일 설정
+    private void sendEmail(String email, String username, String tempPwd) throws Exception {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
+
+        helper.setFrom("eogh8995@naver.com");
+        helper.setTo(email);
+        helper.setSubject("[Canvas] 요청하신 임시 비밀번호 발급 안내입니다.");
+        helper.setText("안녕하세요. Canvas 서비스입니다.\n\n" +
+                username + "님의 임시 비밀번호는 [" + tempPwd + "] 입니다.\n" +
+                "로그인 후 회원정보 수정에서 반드시 비밀번호를 변경해 주세요.", false);
+
+        mailSender.send(message);
+    }
+    // 일반 회원 비밀번호 찾기
+    @Transactional
+    public boolean findUserPwd(String userid, String email) {
+        Optional<DataEntity> memberOpt = dataRepository.findByUseridAndEmail(userid, email);
+
+        if (memberOpt.isPresent()) {
+            DataEntity member = memberOpt.get();
+            String tempPwd = java.util.UUID.randomUUID().toString().substring(0, 4); // 4자리 발급
+
+            member.setUserpwd(tempPwd);
+            dataRepository.save(member); // DB 저장
+
+            try {
+                sendEmail(email, member.getUsername(), tempPwd);
+                return true;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return false;
+    }
+
+    // 기업 회원 비밀번호 찾기
+    @Transactional
+    public boolean findBusinessPwd(String userid, String email) {
+        Optional<CpDataEntity> optBiz = cpDataRepository.findByUseridAndEmail(userid, email);
+
+        if (optBiz.isPresent()) {
+            CpDataEntity biz = optBiz.get();
+            String tempPwd = java.util.UUID.randomUUID().toString().substring(0, 4); // 통일감 있게 4자리 발급
+
+            biz.setUserpwd(tempPwd);
+            cpDataRepository.save(biz); // DB 저장
+
+            try {
+                sendEmail(email, biz.getBusinessName(), tempPwd);
+                return true;
+            } catch (Exception e) {
+                log.error("기업 회원 메일 발송 중 예외 발생: ", e);
+                return false;
+            }
+        }
+        return false;
+    }
+
 }
