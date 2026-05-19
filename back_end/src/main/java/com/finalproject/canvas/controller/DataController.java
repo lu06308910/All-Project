@@ -251,15 +251,15 @@ public class DataController {
     public DataEntity kakaoLoginLogic(String code) {
         try {
             String accessToken = getKakaoAccessToken(code);
-            log.info("▶▶▶ [체크 1] 발급된 토큰: [{}]", accessToken);
+            log.info("발급된 토큰: [{}]", accessToken);
             if (accessToken == null) return null;
 
             Map<String, Object> kakaoUserInfo = getKakaoUserInfo(accessToken);
-            log.info("▶▶▶ [체크 2] 카카오 유저정보 객체 수신 여부: {}", (kakaoUserInfo != null));
+            log.info("카카오 유저정보 객체 수신 여부: {}", (kakaoUserInfo != null));
             if (kakaoUserInfo == null) return null;
 
             String kakaoId = String.valueOf(kakaoUserInfo.get("id"));
-            log.info("▶▶▶ [체크 3] 카카오 고유 ID: [{}]", kakaoId);
+            log.info("카카오 고유 ID: [{}]", kakaoId);
 
             String nickname = "카카오회원";
             // kakao_account나 profile이 null이어도 터지지 않도록 안전하게 검증 체인 추가
@@ -287,7 +287,7 @@ public class DataController {
                 log.info("기존 카카오 가입 이력 확인 완료: {}", generatedUserId);
                 return existingMember;
             } else {
-                log.info("🆕 신규 카카오 회원가입 진행: {}", generatedUserId);
+                log.info("신규 카카오 회원가입 진행: {}", generatedUserId);
                 DataEntity newMember = new DataEntity();
                 newMember.setKakaoId(kakaoId);
                 newMember.setUserid(generatedUserId);
@@ -321,13 +321,6 @@ public class DataController {
         String cleanRedirectUri = (redirectUri != null) ? redirectUri.trim() : "";
         String cleanCode = (code != null) ? code.trim() : "";
 
-        // 💡 [디버깅 로그 추가] 카카오로 쏘기 전 실제 주입된 데이터 상태를 강제로 확인합니다.
-        log.info("============== [카카오 토큰 요청 파라미터 확인] ==============");
-        log.info("주입된 Client ID (REST API 키): [{}]", cleanClientId);
-        log.info("주입된 Redirect URI: [{}]", cleanRedirectUri);
-        log.info("프론트가 넘겨준 인가 코드 (Code): [{}]", cleanCode);
-        log.info("==========================================================");
-
         org.springframework.util.LinkedMultiValueMap<String, String> params = new org.springframework.util.LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", cleanClientId);
@@ -340,15 +333,15 @@ public class DataController {
             org.springframework.http.ResponseEntity<Map> response = rt.exchange(
                     tokenUrl, org.springframework.http.HttpMethod.POST, kakaoTokenRequest, Map.class
             );
-            log.info("🎉 카카오 토큰 발급 성공완료!");
+            log.info("카카오 토큰 발급 성공완료!");
             return String.valueOf(response.getBody().get("access_token"));
         } catch (org.springframework.web.client.HttpClientErrorException e) {
             // 💡 [중요] 카카오가 보낸 에러 Body 내용을 상세하게 파싱해서 콘솔에 출력합니다.
-            log.error("❌ 카카오 토큰 발급 HTTP 에러 발생! 상태코드: {}", e.getStatusCode());
-            log.error("❌ 카카오가 뱉어낸 진짜 에러 원인 응답 바디: {}", e.getResponseBodyAsString());
+            log.error(" 카카오 토큰 발급 HTTP 에러 발생! 상태코드: {}", e.getStatusCode());
+            log.error(" 카카오가 뱉어낸 진짜 에러 원인 응답 바디: {}", e.getResponseBodyAsString());
             return null;
         } catch (Exception e) {
-            log.error("❌ 알 수 없는 토큰 발급 예외 발생: ", e);
+            log.error(" 알 수 없는 토큰 발급 예외 발생: ", e);
             return null;
         }
     }
@@ -371,6 +364,80 @@ public class DataController {
             log.error("카카오 유저 정보 조회 실패: ", e);
             return null;
         }
+    }
+
+    //  아이디 찾기 엔드포인트
+    @PostMapping("/find-id")
+    public org.springframework.http.ResponseEntity<?> findId(@RequestBody Map<String, String> request) {
+        Map<String, Object> response = new HashMap<>();
+
+        String userType = request.get("userType");
+        String username = request.get("username");
+        String email = request.get("email");
+
+        String userId = null;
+
+        // 기업 회원 아이디 찾기
+        if ("BUSINESS".equals(userType)) {
+            // ※ 서비스단에 구현된 기업 전용 아이디 찾기 메서드를 매칭합니다.
+            // ※ 이름(username) 자리에 프론트에서 보낸 상호명(businessName)이 전달됩니다.
+            userId = dataService.findBusinessId(username, email);
+        }
+        // 일반 회원 아이디 찾기
+        else {
+            userId = dataService.findUserId(username, email);
+        }
+
+        if (userId != null) {
+            response.put("status", "OK");
+            response.put("userid", userId);
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("status", "FAIL");
+            response.put("message", "일치하는 회원 정보가 없습니다.");
+            return ResponseEntity.ok(response);
+        }
+    }
+
+    // 비밀번호 찾기 엔드포인트
+    @PostMapping("/find-pwd")
+    public ResponseEntity<?> findPwd(@RequestBody Map<String, String> request) {
+        Map<String, Object> response = new HashMap<>();
+
+        String userType = request.get("userType"); // 유저 타입 추가 수신
+        String userid = request.get("userid");
+        String email = request.get("email");
+
+        boolean result = false;
+
+        // 기업 회원 임시 비밀번호 발급
+        if ("BUSINESS".equals(userType)) {
+            // ※ 서비스단에 구현된 기업 전용 비밀번호 찾기(및 메일 발송) 메서드 매칭
+            result = dataService.findBusinessPwd(userid, email);
+        }
+        // 일반 회원 임시 비밀번호 발급 (기존 로직)
+        else {
+            result = dataService.findUserPwd(userid, email);
+        }
+
+
+        if (result) {
+            response.put("status", "OK");
+            response.put("message", "등록하신 이메일로 임시 비밀번호가 전송되었습니다.");
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("status", "FAIL");
+            response.put("message", "아이디 또는 이메일 정보가 일치하지 않거나 메일 발송에 실패했습니다.");
+            return ResponseEntity.ok(response);
+        }
+    }
+
+    //장바구니 데이터 정보 조회
+    @GetMapping("/info/{mId}")
+    public ResponseEntity<?> getMemberById(@PathVariable Integer mId) {
+        DataEntity user = dataService.dataSelectById(mId);
+        if (user != null) return ResponseEntity.ok(user);
+        return ResponseEntity.status(404).body("사용자를 찾을 수 없습니다.");
     }
 
 }
