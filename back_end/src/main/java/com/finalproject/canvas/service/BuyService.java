@@ -16,11 +16,14 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+
+@Transactional(readOnly = true)
 public class BuyService {
     private final BuyRepository buyRepository;
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
 
+    @Transactional
     public void addFromCart(Map<String, Object> payload) {
         List<Object> cartIdObjs = (List<Object>) payload.get("cartIds");
         List<Object> dIdObjs = (List<Object>) payload.get("dIds");
@@ -79,8 +82,15 @@ public class BuyService {
         buyRepository.save(buy);
     }
 
-    // 특정 회원 취소/반품/교환 내역 조회
+    // 특정 회원 취소/반품/교환 내역 조회 - 대호추가
     public List<BuyEntity> getCancelList(Integer mId) {
         return buyRepository.findCancelListByMember(mId);
     }
+
+    // 기업 사용자의 판매 현황 조회 - 대호추가
+    public List<BuyEntity> getSalesList(String sellerId) {
+        log.info("BuyService -> findSalesBySeller 호출: {}", sellerId);
+        return buyRepository.findSalesBySeller(sellerId);
+    }
+
 }

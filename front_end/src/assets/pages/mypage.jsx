@@ -12,6 +12,8 @@ const MyPage = () => {
         const [wishItems, setWishItems] = useState([]); // DB-> 찜목록
         const [inquiries, setInquiries] = useState([]); // DB-> 문의 목록
 
+        const [salesList, setSalesList] = useState([]); // DB -> 판매목록(기업)
+        const [products, setProducts] = useState([]); // DB -> 상품 목록 조회 및 수정(기업)
         const [activeMenu, setActiveMenu] = useState('');
 
         // 세션에서 정보 가져오기 (로그인 시 저장했던 값)
@@ -33,7 +35,7 @@ const MyPage = () => {
                                 if (logId) {
                                         const userRes = await axios.get(`http://localhost:9991/member/edit?userid=${logId}&usertype=${usertype}`);
                                         setUserInfo(userRes.data);
-                                        // 주문목록 가져올때 필요한 기업 id
+                                        // 주문목록 가져올때 필요한 id
                                         ordersMemberId = userRes.data?.mid;
                                 }
 
@@ -51,9 +53,23 @@ const MyPage = () => {
                                         setOrders(orderRes.data); // 주문목록
 
                                         const cancelRes = await axios.get(`http://localhost:9991/buy/cancel/list/${ordersMemberId}`);
-                                        setCancelItems(cancelRes.data); // 취소목록
+                                        setCancelItems(cancelRes.data); // 취소목록              
 
                                 }
+                                // 기업사용자 목록
+                                if (logId && isCorporate) {
+                                        const salesRes = await axios.get(`http://localhost:9991/buy/seller/saleslist?sellerId=${logId}`);
+                                        setSalesList(salesRes.data); // 판매목록
+
+                                        const prodRes = await axios.get(`http://localhost:9991/product/seller/list?sellerId=${logId}`);
+                                        console.log("백엔드에서 받아온 데이터:", prodRes.data);
+                                        console.log("현재 로그인된 기업 ID (logId):", logId);
+                                        setProducts(prodRes.data); // 상품 목록, 수정
+
+                                        const corpInqRes = await axios.get(`http://localhost:9991/question/seller/list?sellerId=${logId}`);
+                                        setInquiries(corpInqRes.data); // 문의내역
+                                }
+
                         } catch (error) {
                                 console.error("데이터 로딩 실패:", error);
                         } finally {
@@ -66,15 +82,24 @@ const MyPage = () => {
         }, [logId, usertype, loginName, isCorporate]);
 
         const sideMenus = isCorporate
-                ? ['판매 현황', '상품 등록/관리', '정산내역', '고객 문의 관리']
-                : ['주문내역', '취소/반품/교환 내역', '찜', '문의 내역'];
+                ? ['판매 현황', '상품 등록/관리', '정산내역', '고객문의 관리']
+                : ['주문내역', '취소/반품/교환 내역', '찜', '상품문의 내역'];
 
 
-        // 통계 (문의내역은 실제 DB 데이터 기준)
-        const unansweredCount = inquiries.filter(inq => !inq.answer).length;
+        // 대시보드
+        // 미답변 상품문의 카운트 (기업용 공통)
+        const unansweredCount = inquiries ? inquiries.filter(inq => !inq.reply).length : 0;
 
+        // 기업 사용자용: 오늘 들어온 주문 건수 계산
+        const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        const todaySalesCount = salesList ? salesList.filter(item => item.writedate && item.writedate.startsWith(todayStr)).length : 0;
+
+        //기업 사용자용: 현재 정상 판매 중인 상품 수 (재고 > 0)
+        const safeProducts = Array.isArray(products) ? products : [];
+        const activeProductsCount = safeProducts.filter(p => (p.count || 0) > 0).length;
+
+        // 일반 사용자용: 총 구매 금액 합산
         const totalAmount = orders ? orders.reduce((sum, order) => {
-                // BuyEntity의 price 필드를 직접 참조하되 없으면 0 처리
                 const priceValue = order.price || 0;
                 const price = typeof priceValue === 'string'
                         ? parseInt(priceValue.replace(/[^0-9]/g, ""), 10)
@@ -82,13 +107,11 @@ const MyPage = () => {
                 return sum + (price || 0);
         }, 0) : 0;
 
-        // 배송 중 건수
-        const deliveryCount = orders.filter(order => order.status === "배송 중").length;
+        // 일반 사용자용: 배송 중 및 결제 완료 상태를 묶은 배송/거래 프로세스 카운트
+        const activeDeliveryCount = orders ? orders.filter(order => order.status === "배송 중" || order.status === "결제완료").length : 0;
 
-        // 작성할 리뷰)
-        const reviewCount = 5;
-
-        const cancelCount = cancelItems ? cancelItems.length : 0;
+        // 일반 사용자용: 내가 찜한 상품 카운트
+        const totalWishCount = wishItems ? wishItems.length : 0;
 
 
         /* 마이페이지 컴포넌트 */
@@ -96,14 +119,10 @@ const MyPage = () => {
                 // 기업용 메뉴
                 if (isCorporate) {
                         switch (activeMenu) {
-                                case '판매 현황':
-                                        return <SalesStatus />;
-                                case '상품 등록/관리':
-                                        return <ProductManagement />;
-                                case '정산내역':
-                                        return <SettlementHistory products={products} />
-                                case '고객 문의 관리':
-                                        return <InquiryList inquiries={inquiries} isCorp={true} />;
+                                case '판매 현황': return <SalesStatus sales={salesList} />;
+                                case '상품 등록/관리': return <ProductManagement products={products} setProducts={setProducts} />;
+                                case '정산내역': return <SettlementHistory sales={salesList} />
+                                case '고객문의 관리': return <CorpInquiryList inquiries={inquiries} />;
                                 default:
                                         return <div className="empty-state">준비 중인 기업 기능입니다.</div>;
                         }
@@ -114,7 +133,7 @@ const MyPage = () => {
                         case '주문내역': return <OrderHistory orders={orders} setOrders={setOrders} setCancelItems={setCancelItems} />;
                         case '취소/반품/교환 내역': return <CancelHistory cancelItems={cancelItems} />;
                         case '찜': return <WishList wishItems={wishItems} onDelete={handleDeleteWish} />;
-                        case '문의 내역': return <InquiryList inquiries={inquiries} />;
+                        case '상품문의 내역': return <InquiryList inquiries={inquiries} />;
                         default: return <div className="empty-state">준비 중인 페이지입니다.</div>;
                 }
         };
@@ -124,7 +143,7 @@ const MyPage = () => {
                 if (!window.confirm("찜 목록에서 삭제하시겠습니까?")) return;
                 try {
                         // ProductDetail에서 쓰던 toggleLike와 같은 주소
-                        await axios.post(`http://localhost:9991/wish/toggle`, {
+                        await axios.post(`http://localhost:9991/like/toggle`, {
                                 pid: pid,
                                 userid: logId
                         });
@@ -135,67 +154,62 @@ const MyPage = () => {
                 }
         };
 
-        const [products, setProducts] = useState([
-                { id: 1, name: "크로켓 2000 거실장", price: "230,000", status: "판매완료" },
-                { id: 2, name: "심플 라인 소파", price: "450,000", status: "판매완료" },
-                { id: 3, name: "캔버스 체어", price: "120,000", status: "판매중" }
-        ]);
-
         // --------------------------------------------------마이스토어 공통 ---------------------------------------
         return (
                 <div className="mypage-container">
                         <h1 className="mypage-title">마이스토어 {`(${userName}) 님`}</h1>
 
+                        {/* 🌟 수정된 대시보드 스탯 섹션 */}
                         <section className="info-box">
                                 <div className="profile-header">
                                         <div className="nickname-link">
                                                 <a href={`/member/memberEdit?userid=${logId}&usertype=${usertype}`}>
-                                                        {userName}님 〉
-                                                </a></div>
+                                                        {userName}님 개인정보 관리 〉
+                                                </a>
+                                        </div>
                                 </div>
                                 <div className="info-stats">
                                         {isCorporate ? (
-                                                // 기업용 스탯
+                                                // 💰 기업 사용자용 전용 대시보드 레이아웃
                                                 <>
-                                                        <div className="stat-item">
-                                                                <div className="stat-label">오늘의 주문 〉</div>
-                                                                <div className="stat-value">5건</div>
+                                                        <div className="stat-item" onClick={() => setActiveMenu('판매 현황')} style={{ cursor: 'pointer' }}>
+                                                                <div className="stat-label">오늘의 신규 주문 〉</div>
+                                                                <div className="stat-value" style={{ color: todaySalesCount > 0 ? '#1976d2' : 'inherit' }}>
+                                                                        {todaySalesCount}건
+                                                                </div>
                                                         </div>
-                                                        <div className="stat-item">
-                                                                <div className="stat-label">취소/반품 〉</div>
-                                                                <div className="stat-value" style={{ color: cancelCount > 0 ? 'red' : 'inherit' }}>{cancelCount}건</div>
+                                                        <div className="stat-item" onClick={() => setActiveMenu('상품 등록/관리')} style={{ cursor: 'pointer' }}>
+                                                                <div className="stat-label">정상 판매중 상품 〉</div>
+                                                                <div className="stat-value">{activeProductsCount}종</div>
                                                         </div>
-                                                        <div className="stat-item">
-                                                                <div className="stat-label">미답변 문의 〉</div>
-                                                                <div className="stat-value" style={{ color: unansweredCount > 0 ? 'red' : 'inherit' }}>
+                                                        <div className="stat-item" onClick={() => setActiveMenu('고객문의 관리')} style={{ cursor: 'pointer' }}>
+                                                                <div className="stat-label">미답변 상품 문의 〉</div>
+                                                                <div className="stat-value" style={{ color: unansweredCount > 0 ? '#d32f2f' : 'inherit', fontWeight: unansweredCount > 0 ? 'bold' : 'normal' }}>
                                                                         {unansweredCount}건
                                                                 </div>
                                                         </div>
                                                 </>
                                         ) : (
+                                                // 🧑‍💻 일반 사용자용 전용 대시보드 레이아웃
                                                 <>
-                                                        <div className="stat-item" onClick={() => setActiveMenu('주문내역')}>
-                                                                <div className="stat-label">총구매 금액 〉</div>
-                                                                <div className="stat-value">
+                                                        <div className="stat-item" onClick={() => setActiveMenu('주문내역')} style={{ cursor: 'pointer' }}>
+                                                                <div className="stat-label">총 누적 구매 금액 〉</div>
+                                                                <div className="stat-value" style={{ fontSize: '18px' }}>
                                                                         {totalAmount.toLocaleString()}원
                                                                 </div>
                                                         </div>
-
-                                                        {/* 2. 배송 중: 현재 가장 궁금한 정보 (실시간성) */}
-                                                        <div className="stat-item" >
-                                                                <div className="stat-label">배송 중 〉</div>
+                                                        <div className="stat-item" onClick={() => setActiveMenu('주문내역')} style={{ cursor: 'pointer' }}>
+                                                                <div className="stat-label">진행중인 주문/배송 〉</div>
                                                                 <div className="stat-value">
-                                                                        <span style={{ color: deliveryCount > 0 ? '#2c2c2e' : '#ccc' }}>
-                                                                                {deliveryCount}건
+                                                                        <span style={{ color: activeDeliveryCount > 0 ? '#2c2c2e' : '#ccc', fontWeight: activeDeliveryCount > 0 ? 'bold' : 'normal' }}>
+                                                                                {activeDeliveryCount}건
                                                                         </span>
                                                                 </div>
                                                         </div>
-
-                                                        {/* 3. 작성할 리뷰: 재방문 및 참여 유도 */}
-                                                        <div className="stat-item">
-                                                                <div className="stat-label">작성할 리뷰 〉</div>
-                                                                <div className="stat-value" style={{ color: reviewCount > 0 ? '#ffc107' : '#ccc' }}>
-                                                                        {reviewCount}건
+                                                        <div className="stat-item" onClick={() => setActiveMenu('찜')} style={{ cursor: 'pointer' }}>
+                                                                <div className="stat-label">나의 찜 목록 〉</div>
+                                                                <div className="stat-value" style={{ color: totalWishCount > 0 ? '#ffc107' : '#ccc' }}>
+                                                                        {totalWishCount}개
                                                                 </div>
                                                         </div>
                                                 </>
@@ -499,7 +513,6 @@ const CancelHistory = ({ cancelItems }) => {
                                                         <section>
                                                                 <h4>요청 정보</h4>
                                                                 <p>접수일시: {selectedCancel.writedate ? selectedCancel.writedate.replace("T", " ") : "정보 없음"}</p>
-                                                                {/* 백엔드에 사유 컬럼이 별도로 없다면 기본 문구 노출 */}
                                                                 <p>접수사유: {selectedCancel.cancelReason || '단순 변심 / 서비스 기준 접수'}</p>
                                                                 <p>처리상태: <span style={{ color: '#d9534f', fontWeight: 'bold' }}>{selectedCancel.status}</span></p>
                                                         </section>
@@ -627,326 +640,523 @@ const InquiryList = ({ inquiries, isCorp }) => {
         );
 };
 
-// ----------------------------------------- 기업 -------------------------------------------
-/* 판매 현황  */
-const SalesStatus = () => {
-        const [salesSummary] = useState({
-                todaySales: "1,150,000",
-                monthlySales: "28,400,000",
-                pendingDelivery: 3,
-                returnRequests: 1
-        });
-
-        return (
-                <div className="sales-status-container">
-                        <div className="corp-status-cards" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-                                <div className="corp-status-card" >
-                                        <p>오늘의 매출</p>
-                                        <h3 style={{ fontSize: '20px', margin: '10px 0' }}>{salesSummary.todaySales}원</h3>
-                                </div>
-                                <div className="corp-status-card">
-                                        <p >이달의 누적 매출</p>
-                                        <h3 style={{ fontSize: '20px', margin: '10px 0' }}>{salesSummary.monthlySales}원</h3>
-                                </div>
-                                <div className="corp-status-card" >
-                                        <p>배송 준비 중</p>
-                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#2196F3' }}>{salesSummary.pendingDelivery}건</h3>
-                                </div>
-                                <div className="corp-status-card" >
-                                        <p>반품/교환 요청</p>
-                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#f44336' }}>{salesSummary.returnRequests}건</h3>
-                                </div>
-                        </div>
-
-                        <div>
-                                <h4 style={{ marginBottom: '15px' }}>최근 주문 내역</h4>
-                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-                                        <thead>
-                                                <tr style={{ borderBottom: '2px solid #333', textAlign: 'left' }}>
-                                                        <th style={{ padding: '12px' }}>주문번호</th>
-                                                        <th>상품명</th>
-                                                        <th>주문자</th>
-                                                        <th>결제금액</th>
-                                                        <th>상태</th>
-                                                </tr>
-                                        </thead>
+// 기업 사용자 : 판매현황
+const SalesStatus = ({ sales }) => {
+        if (!sales || sales.length === 0) {
+                return (
+                        <div className="recent-orders">
+                                <table className="management-table">
                                         <tbody>
-                                                <tr style={{ borderBottom: '1px solid #eee' }}>
-                                                        <td style={{ padding: '12px' }}>20260506-001</td>
-                                                        <td>크로켓 2000 거실장</td>
-                                                        <td>김*호</td>
-                                                        <td>230,000원</td>
-                                                        <td><span className="corp-status-badge">결제완료</span></td>
+                                                <tr>
+                                                        <td className="empty-row" style={{ textAlign: 'center', padding: '50px', color: '#888' }}>
+                                                                현재 접수된 판매/주문 현황이 없습니다.
+                                                        </td>
                                                 </tr>
                                         </tbody>
                                 </table>
                         </div>
-                </div>
-        );
-};
-
-/* 상품 등록/관리 */
-const ProductManagement = () => {
-        const [products, setProducts] = useState([
-                { id: 1, name: "canvas 의자", price: "250,000", stock: 5, status: "판매중", date: "2026-05-01" },
-                { id: 2, name: "canvan 책상", price: "480,000", stock: 2, status: "판매중", date: "2026-04-28" },
-                { id: 3, name: "canvas 침대", price: "180,000", stock: 0, status: "품절", date: "2026-04-25" },
-        ]);
-
-        const [editingId, setEditingId] = useState(null);
-        const [editFormData, setEditFormData] = useState({});
-
-        // 수정 버튼 클릭 시
-        const handleEditClick = (product) => {
-                setEditingId(product.id);
-                setEditFormData({ ...product });
-        };
-
-        // 입력 값 변경 시
-        const handleInputChange = (e) => {
-                const { name, value } = e.target;
-                setEditFormData({ ...editFormData, [name]: value });
-        };
-
-        // 저장 버튼 클릭 시
-        const handleSaveClick = () => {
-                setProducts(products.map(p => p.id === editingId ? editFormData : p));
-                setEditingId(null);
-        };
+                );
+        }
 
         return (
-                <div className="sales-status-container">
-                        <div className="corp-status-cards" >
-                                <div className="corp-status-card" >
-                                        <p style={{ fontSize: '13px', color: '#666' }}>전체 상품</p>
-                                        <h3 style={{ fontSize: '20px', margin: '10px 0' }}>{products.length}건</h3>
-                                </div>
-                                <div className="corp-status-card" >
-                                        <p style={{ fontSize: '13px', color: '#666' }}>판매 중</p>
-                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#2196F3' }}>2건</h3>
-                                </div>
-                                <div className="corp-status-card">
-                                        <p style={{ fontSize: '13px', color: '#666' }}>품절/중지</p>
-                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#f44336' }}>1건</h3>
-                                </div>
-                        </div>
-
-                        {/* 검색 및 등록 버튼 */}
-                        <div className="recent-orders">
-                                <div className="filter-group" style={{ display: 'flex', gap: '8px' }}>
-                                        {['전체', '판매중', '품절'].map((label) => (
-                                                <button
-                                                        key={label}
-                                                        style={{
-                                                                padding: '6px 12px',
-                                                                fontSize: '13px',
-                                                                borderRadius: '4px',
-                                                                border: '1px solid #ddd',
-                                                                background: label === '전체' ? '#333' : '#fff',
-                                                                color: label === '전체' ? '#fff' : '#333',
-                                                                cursor: 'pointer'
-                                                        }}
-                                                >
-                                                        {label}
-                                                </button>
-                                        ))}
-                                </div>
-                                <button className="btn-dark" style={{ padding: '8px 20px', borderRadius: '4px' }}
-                                        onClick={() => { location.href = "/mypage/addproduct" }}>+ 새 상품 등록
-                                </button>
-                        </div>
-
-                        <div className="recent-orders">
-                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-                                        <thead>
-                                                <tr style={{ borderBottom: '2px solid #333', textAlign: 'left' }}>
-                                                        <th style={{ padding: '12px' }}>상품 정보</th>
-                                                        <th>판매가</th>
-                                                        <th>재고</th>
-                                                        <th>상태</th>
-                                                        <th style={{ textAlign: 'center' }}>관리</th>
-                                                </tr>
-                                        </thead>
-                                        <tbody>
-                                                {products.map(product => (
-                                                        <tr key={product.id} style={{ borderBottom: '1px solid #eee' }}>
-                                                                <td style={{ padding: '12px' }}>
-                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                                                <div style={{ width: '40px', height: '40px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}></div>
-                                                                                {editingId === product.id ? (
-                                                                                        <input className="product-edit"
-                                                                                                name="name"
-                                                                                                value={editFormData.name}
-                                                                                                onChange={handleInputChange}
-                                                                                        />
-                                                                                ) : (
-                                                                                        <span style={{ fontWeight: '500' }}>{product.name}</span>
-                                                                                )}
-                                                                        </div>
-                                                                </td>
-
-                                                                {/* 판매가 */}
-                                                                <td>
-                                                                        {editingId === product.id ? (
-                                                                                <input className="product-edit"
-                                                                                        name="price"
-                                                                                        value={editFormData.price}
-                                                                                        onChange={handleInputChange}
-                                                                                />
-                                                                        ) : (
-                                                                                `${product.price}원`
-                                                                        )}
-                                                                </td>
-
-                                                                {/* 재고 */}
-                                                                <td>
-                                                                        {editingId === product.id ? (
-                                                                                <input className="product-edit"
-                                                                                        type="number"
-                                                                                        name="stock"
-                                                                                        value={editFormData.stock}
-                                                                                        onChange={handleInputChange}
-                                                                                />
-                                                                        ) : (
-                                                                                `${product.stock}개`
-                                                                        )}
-                                                                </td>
-
-                                                                {/* 상태 */}
-                                                                <td>
-                                                                        {editingId === product.id ? (
-                                                                                <select className="product-edit"
-                                                                                        name="status"
-                                                                                        value={editFormData.status}
-                                                                                        onChange={handleInputChange}
-                                                                                >
-                                                                                        <option value="판매중">판매중</option>
-                                                                                        <option value="품절">품절</option>
-                                                                                </select>
-                                                                        ) : (
-                                                                                <span style={{
-                                                                                        background: product.status === '품절' ? '#ffebee' : '#e3f2fd',
-                                                                                        color: product.status === '품절' ? '#c62828' : '#1976d2',
-                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                }}>{product.status}</span>
-                                                                        )}
-                                                                </td>
-
-                                                                {/* 관리 버튼 영역 */}
-                                                                <td style={{ textAlign: 'center' }}>
-                                                                        {editingId === product.id ? (
-                                                                                <>
-                                                                                        <button onClick={handleSaveClick} style={{ color: '#2196F3', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold', marginRight: '8px' }}>저장</button>
-                                                                                        <button onClick={() => setEditingId(null)} style={{ color: '#666', background: 'none', border: 'none', cursor: 'pointer' }}>취소</button>
-                                                                                </>
-                                                                        ) : (
-                                                                                <>
-                                                                                        <button onClick={() => handleEditClick(product)} style={{ background: 'none', border: 'none', color: '#666', fontSize: '12px', cursor: 'pointer', marginRight: '8px' }}>수정</button>
-                                                                                        <button style={{ background: 'none', border: 'none', color: '#f44336', fontSize: '12px', cursor: 'pointer' }}>삭제</button>
-                                                                                </>
-                                                                        )}
-                                                                </td>
-                                                        </tr>
-                                                ))}
-                                        </tbody>
-                                </table>
-                        </div>
-                </div>
-        );
-};
-
-const SettlementHistory = ({ products }) => {
-        // 실제 서비스 시에는 백엔드에서 정산 데이터를 따로 가져오겠지만, 
-        // 현재는 '판매완료' 상태인 상품을 기준으로 로직을 구성했습니다.
-        const settledItems = products.filter(p => p.status === '판매완료' || p.status === '정산완료');
-
-        // 통계 계산 로직 (숫자 포맷팅 포함)
-        const totalSales = settledItems.reduce((sum, item) => {
-                const price = typeof item.price === 'string'
-                        ? Number(item.price.replace(/[^0-9]/g, ''))
-                        : item.price;
-                return sum + price;
-        }, 0);
-
-        const feeRate = 0.1; // 플랫폼 수수료 10%
-        const totalFee = Math.floor(totalSales * feeRate);
-        const expectedAmount = totalSales - totalFee;
-
-        return (
-                <div className="content-area">
-
-                        {/* 상단 통계 카드 섹션 */}
-                        <div className="corp-status-cards">
-                                <div className="corp-status-card highlight">
-                                        <p>정산 예정 금액</p>
-                                        <div className="stat-value">{expectedAmount.toLocaleString()}원</div>
-                                </div>
-                                <div className="corp-status-card">
-                                        <p>이번 달 판매 총액</p>
-                                        <div className="stat-value">{totalSales.toLocaleString()}원</div>
-                                </div>
-                                <div className="corp-status-card">
-                                        <p>판매 수수료 (10%)</p>
-                                        <div className="stat-value fee">-{totalFee.toLocaleString()}원</div>
-                                </div>
-                        </div>
-
-                        {/* 정산 필터 탭 */}
-                        <div className="filter-tab-group">
-                                <button className="filter-btn active">전체 내역</button>
-                                <button className="filter-btn">정산 예정</button>
-                                <button className="filter-btn">정산 완료</button>
-                        </div>
-
-                        {/* 정산 상세 테이블 */}
+                <div className="recent-orders">
                         <table className="management-table">
                                 <thead>
                                         <tr>
-                                                <th>거래 일시/번호</th>
-                                                <th>상품 정보</th>
-                                                <th>판매가</th>
-                                                <th>수수료</th>
-                                                <th>정산액</th>
-                                                <th className="text-center">상태</th>
+                                                <th style={{ width: '15%' }}>주문일시</th>
+                                                <th>상품정보</th>
+                                                <th style={{ width: '10%' }}>수량</th>
+                                                <th style={{ width: '18%' }}>결제금액</th>
+                                                <th style={{ width: '15%' }}>주문자 ID</th>
+                                                <th style={{ width: '12%', textAlign: 'center' }}>상태</th>
                                         </tr>
                                 </thead>
                                 <tbody>
-                                        {settledItems.length > 0 ? (
-                                                settledItems.map((item) => {
-                                                        const price = typeof item.price === 'string'
-                                                                ? Number(item.price.replace(/[^0-9]/g, ''))
-                                                                : item.price;
-                                                        const fee = Math.floor(price * feeRate);
-
-                                                        return (
-                                                                <tr key={item.id}>
-                                                                        <td className="order-date">
-                                                                                <span className="id-text">NO.{item.id}2026</span><br />
-                                                                                <small>2026-05-07</small>
-                                                                        </td>
-                                                                        <td>
-                                                                                <strong>{item.name}</strong>
-                                                                        </td>
-                                                                        <td>{price.toLocaleString()}원</td>
-                                                                        <td className="fee-text">-{fee.toLocaleString()}원</td>
-                                                                        <td className="settle-price">{(price - fee).toLocaleString()}원</td>
-                                                                        <td className="text-center">
-                                                                                <span className="corp-status-badge">정산예정</span>
-                                                                        </td>
-                                                                </tr>
-                                                        );
-                                                })
-                                        ) : (
-                                                <tr>
-                                                        <td colSpan="6" className="empty-row">데이터가 존재하지 않습니다.</td>
-                                                </tr>
-                                        )}
+                                        {sales.map((item, index) => {
+                                                const price = item.price ? Number(item.price.toString().replace(/[^0-9]/g, "")) : 0;
+                                                return (
+                                                        <tr key={item.bId || index}>
+                                                                {/* 주문일시 */}
+                                                                <td className="order-date">
+                                                                        {item.writedate ? item.writedate.split("T")[0] : "날짜 없음"}
+                                                                </td>
+                                                                {/* 상품명 */}
+                                                                <td>
+                                                                        <strong>{item.product?.name || "상품명 없음"}</strong>
+                                                                </td>
+                                                                {/* 수량 */}
+                                                                <td>{item.count || 1}개</td>
+                                                                {/* 결제금액 */}
+                                                                <td className="settle-price">{price.toLocaleString()}원</td>
+                                                                {/* 주문자 ID */}
+                                                                <td>{item.member?.userid || `회원(${item.mId || '정보없음'})`}</td>
+                                                                {/* 주문상태 뱃지 */}
+                                                                <td className="text-center">
+                                                                        <span className={`status-badge ${item.status === '결제완료' ? 'complete' : 'waiting'}`}>
+                                                                                {item.status || "결제완료"}
+                                                                        </span>
+                                                                </td>
+                                                        </tr>
+                                                );
+                                        })}
                                 </tbody>
                         </table>
                 </div>
         );
 };
 
+// 기업 사용자 : 상품 등록/수정
+const ProductManagement = ({ products, setProducts }) => {
+        const [editingId, setEditingId] = useState(null);
+        const [editFormData, setEditFormData] = useState({});
+
+        const [prodFilter, setProdFilter] = React.useState('전체');
+
+        // 안전한 배열 변환 가드
+        const safeProducts = Array.isArray(products) ? products : [];
+
+        // 수정 모드 진입
+        const handleEditClick = (product) => {
+                setEditingId(product.pId || product.pid);
+                setEditFormData({ ...product });
+        };
+
+        // 입력 데이터 체인지 핸들러
+        const handleInputChange = (e) => {
+                const { name, value } = e.target;
+                setEditFormData({ ...editFormData, [name]: value });
+        };
+
+        // DB 수정 요청
+        const handleSaveClick = async () => {
+                const targetId = editingId;
+                try {
+                        // 백엔드로 수정 데이터 전송
+                        await axios.put(`http://localhost:9991/product/seller/update/${targetId}`, editFormData);
+
+                        // 프론트 UI 실시간 업데이트 반영
+                        setProducts(products.map(p => (p.pId === targetId || p.pid === targetId) ? editFormData : p));
+                        setEditingId(null);
+                        alert("상품 정보가 성공적으로 수정되었습니다.");
+                } catch (error) {
+                        console.error("상품 수정 실패:", error);
+                        alert("수정 중 오류가 발생했습니다.");
+                }
+        };
+
+        // DB 삭제 요청
+        const handleDeleteClick = async (pId) => {
+                if (!window.confirm("정말 이 상품을 완전히 삭제하시겠습니까?\n삭제된 상품은 복구할 수 없습니다.")) return;
+                try {
+                        // 백엔드로 삭제 요청 보내기
+                        await axios.delete(`http://localhost:9991/product/seller/delete/${pId}`);
+
+                        // 프론트 UI에서 제외하기
+                        setProducts(prev => prev.filter(p => (p.pId !== pId && p.pid !== pId)));
+                        alert("상품이 삭제되었습니다.");
+                } catch (error) {
+                        console.error("상품 삭제 실패:", error);
+                        alert("삭제 중 오류가 발생했습니다.");
+                }
+        };
+
+        // 대시보드 통계 계산 0이면 품절 됨
+        const totalCount = safeProducts.length;
+        const activeCount = safeProducts.filter(p => (p.count || 0) > 0).length;
+        const soldOutCount = totalCount - activeCount;
+
+        // 선택된 문자열 필터에 따라 실제 데이터 필터링
+        const filteredProducts = safeProducts.filter(product => {
+                const stock = product.count || 0;
+                if (prodFilter === '판매중') return stock > 0;
+                if (prodFilter === '품절') return stock <= 0;
+                return true; // '전체'
+        });
+
+        // 각 버튼 옆에 보여줄 동적 카운트
+        const getButtonCount = (label) => {
+                if (label === '판매중') return activeCount;
+                if (label === '품절') return soldOutCount;
+                return totalCount;
+        };
+
+        return (
+                <div className="sales-status-container">
+                        <div className="corp-status-cards">
+                                <div className="corp-status-card" onClick={() => setProdFilter('전체')} style={{ cursor: 'pointer' }}>
+                                        <p style={{ fontSize: '13px', color: '#666' }}>전체 상품</p>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0' }}>{totalCount}건</h3>
+                                </div>
+                                <div className="corp-status-card" onClick={() => setProdFilter('전체')} style={{ cursor: 'pointer' }}>
+                                        <p style={{ fontSize: '13px', color: '#666' }}>판매 중</p>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#2196F3' }}>{activeCount}건</h3>
+                                </div>
+                                <div className="corp-status-card" onClick={() => setProdFilter('전체')} style={{ cursor: 'pointer' }}>
+                                        <p style={{ fontSize: '13px', color: '#666' }}>품절/중지</p>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#f44336' }}>{soldOutCount}건</h3>
+                                </div>
+                        </div>
+
+                        <div className="recent-orders">
+                                <div className="filter-group" style={{ display: 'flex', gap: '8px' }}>
+                                        {['전체', '판매중', '품절'].map((label) => (
+                                                <button
+                                                        key={label}
+                                                        className={`filter-btn ${prodFilter === label ? 'active' : ''}`}
+                                                        onClick={() => setProdFilter(label)}
+                                                        style={{ padding: '6px 12px', fontSize: '13px', borderRadius: '4px', cursor: 'pointer' }}
+                                                >
+                                                        {label} ({getButtonCount(label)})
+                                                </button>
+                                        ))}
+                                </div>
+                                <button className="btn-dark" style={{ padding: '8px 20px', borderRadius: '4px' }}
+                                        onClick={() => { window.location.href = "/mypage/addproduct" }}>+ 새 상품 등록
+                                </button>
+                        </div>
+
+                        <div className="recent-orders">
+                                <table className="management-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                                        <thead>
+                                                <tr style={{ borderBottom: '2px solid #333', textAlign: 'left' }}>
+                                                        <th style={{ padding: '12px' }}>상품 정보</th>
+                                                        <th>판매가</th>
+                                                        <th>재고</th>
+                                                        <th style={{ textAlign: 'center' }}>상태</th>
+                                                        <th style={{ textAlign: 'center' }}>관리</th>
+                                                </tr>
+                                        </thead>
+                                        <tbody>
+                                                {filteredProducts.length === 0 ? (
+                                                        <tr><td colSpan="5" className="empty-row" style={{ textAlign: 'center', padding: '30px', color: '#888' }}>조회 내역이 존재하지 않습니다.</td></tr>
+                                                ) : (
+                                                        filteredProducts.map((product, index) => {
+                                                                const currentId = product.pid || product.pId || index;
+                                                                const price = product.price ? Number(product.price.toString().replace(/[^0-9]/g, "")) : 0;
+
+                                                                return (
+                                                                        <tr key={currentId} style={{ borderBottom: '1px solid #eee' }}>
+                                                                                {/* 상품명 및 이미지 */}
+                                                                                <td style={{ padding: '12px' }}>
+                                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                                                                <div style={{ width: '40px', height: '40px', backgroundColor: '#f5f5f5', borderRadius: '4px', overflow: 'hidden' }}>
+                                                                                                        {product.fileList && product.fileList[0] && (
+                                                                                                                <img src={`http://localhost:9991/static/uploads/${product.fileList[0].filename}.${product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                                                        )}
+                                                                                                </div>
+
+                                                                                                {editingId === currentId ? (
+                                                                                                        <input className="product-edit" name="name" value={editFormData.name || ''} onChange={handleInputChange} style={{ border: '1px solid #ccc', padding: '4px' }} />
+                                                                                                ) : (
+                                                                                                        <span style={{ fontWeight: '500' }}>{product.name}</span>
+                                                                                                )}
+                                                                                        </div>
+                                                                                </td>
+                                                                                {/* 판매가 */}
+                                                                                <td>
+                                                                                        {price.toLocaleString()}원
+                                                                                </td>
+                                                                                {/* 재고수량 */}
+                                                                                <td>
+                                                                                        {editingId === currentId ? (
+                                                                                                <input className="product-edit" type="number" name="count" value={editFormData.count || 0} onChange={handleInputChange} style={{ border: '1px solid #ccc', padding: '4px', width: '60px' }} />
+                                                                                        ) : (
+                                                                                                `${product.count || 0}개`
+                                                                                        )}
+                                                                                </td>
+                                                                                {/* 상태 표시 (재고 기반 동적 세팅) */}
+                                                                                <td className="text-center">
+                                                                                        <span className={`status-badge ${(product.count || 0) <= 0 ? 'waiting' : 'complete'}`}>
+                                                                                                {(product.count || 0) <= 0 ? "품절" : "판매중"}
+                                                                                        </span>
+                                                                                </td>
+                                                                                {/* 관리 조작 버튼 */}
+                                                                                <td style={{ textAlign: 'center' }}>
+                                                                                        {editingId === currentId ? (
+                                                                                                <>
+                                                                                                        <button onClick={handleSaveClick} style={{ color: '#2196F3', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold', marginRight: '8px' }}>저장</button>
+                                                                                                        <button onClick={() => setEditingId(null)} style={{ color: '#666', background: 'none', border: 'none', cursor: 'pointer' }}>취소</button>
+                                                                                                </>
+                                                                                        ) : (
+                                                                                                <>
+                                                                                                        <button onClick={() => handleEditClick(product)} style={{ background: 'none', border: 'none', color: '#666', fontSize: '12px', cursor: 'pointer', marginRight: '8px' }}>수정</button>
+                                                                                                        <button onClick={() => handleDeleteClick(currentId)} style={{ background: 'none', border: 'none', color: '#f44336', fontSize: '12px', cursor: 'pointer' }}>삭제</button>
+                                                                                                </>
+                                                                                        )}
+                                                                                </td>
+                                                                        </tr>
+                                                                );
+                                                        })
+                                                )}
+                                        </tbody>
+                                </table>
+                        </div>
+                </div>
+        );
+};
+
+// 기업 사용자 : 정산내역
+const SettlementHistory = ({ sales }) => {
+
+        const safeSales = Array.isArray(sales) ? sales : [];
+
+        // 필터 상태 관리 ('ALL': 전체, 'WAITING': 정산예정, 'COMPLETE': 정산완료)
+        const [filterStatus, setFilterStatus] = React.useState('ALL')
+
+        // 정산 완료 총액 계산
+        const totalCompletedAmount = safeSales
+                .filter(item => item.settleStatus === 'COMPLETE')
+                .reduce((sum, item) => {
+                        const price = item.price ? Number(item.price.toString().replace(/[^0-9]/g, "")) : 0;
+                        const total = price * (item.count || 1);
+                        return sum + (total - Math.floor(total * 0.1));
+                }, 0);
+
+        // 정산 예정 총액 계산
+        const totalWaitingAmount = safeSales
+                .filter(item => item.settleStatus !== 'COMPLETE') // COMPLETE가 아닌 것들 (WAITING 포함)
+                .reduce((sum, item) => {
+                        const price = item.price ? Number(item.price.toString().replace(/[^0-9]/g, "")) : 0;
+                        const total = price * (item.count || 1);
+                        return sum + (total - Math.floor(total * 0.1));
+                }, 0);
+
+        // 선택된 필터 버튼에 따라 데이터 나누기
+        const filteredSales = safeSales.filter(item => {
+                if (filterStatus === '정산완료') return item.settleStatus === 'COMPLETE';
+                if (filterStatus === '정산예정') return item.settleStatus !== 'COMPLETE';
+                return true; // '전체'
+        });
+
+        // 각 정산 버튼 옆에 카운트 매핑
+        const getButtonCount = (label) => {
+                if (label === '정산완료') return safeSales.filter(item => item.settleStatus === 'COMPLETE').length;
+                if (label === '정산예정') return safeSales.filter(item => item.settleStatus !== 'COMPLETE').length;
+                return safeSales.length;
+        };
+
+        return (
+                <div className="sales-status-container">
+                        {/* 정산 대시보드 */}
+                        <div className="corp-status-cards">
+                                <div className="corp-status-card" onClick={() => setFilterStatus('전체')} style={{ cursor: 'pointer' }}>
+                                        <p style={{ fontSize: '13px', color: '#666' }}>정산 대상 건수</p>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0' }}>{safeSales.length}건</h3>
+                                </div>
+                                <div className="corp-status-card" onClick={() => setFilterStatus('전체')} style={{ cursor: 'pointer' }}>
+                                        <p style={{ fontSize: '13px', color: '#666' }}>정산 완료 금액</p>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#4CAF50' }}>
+                                                {totalCompletedAmount.toLocaleString()}원
+                                        </h3>
+                                </div>
+                                <div className="corp-status-card" onClick={() => setFilterStatus('전체')} style={{ cursor: 'pointer' }}>
+                                        <p style={{ fontSize: '13px', color: '#666' }}>정산 예정 금액</p>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#FF9800' }}>
+                                                {totalWaitingAmount.toLocaleString()}원
+                                        </h3>
+                                </div>
+                        </div>
+
+                        {/* 탭/필터 버튼 영역 (css는 기존 filter-btn 그룹 스타일 활용) */}
+                        <div className="recent-orders" style={{ marginTop: '25px', marginBottom: '10px' }}>
+                                <div className="filter-group" style={{ display: 'flex', gap: '8px' }}>
+                                        {['전체', '정산예정', '정산완료'].map((label) => (
+                                                <button
+                                                        key={label}
+                                                        className={`filter-btn ${filterStatus === label ? 'active' : ''}`}
+                                                        onClick={() => setFilterStatus(label)}
+                                                        style={{ padding: '6px 12px', fontSize: '13px', borderRadius: '4px', cursor: 'pointer' }}
+                                                >
+                                                        {label} ({getButtonCount(label)})
+                                                </button>
+                                        ))}
+                                </div>
+                        </div>
+
+                        {/* 정산 상세 내역 테이블 */}
+                        <div className="recent-orders" style={{ marginTop: '20px' }}>
+                                <table className="management-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                                        <thead>
+                                                <tr style={{ borderBottom: '2px solid #333', textAlign: 'left' }}>
+                                                        <th style={{ padding: '12px', width: '35%' }}>판매 상품명</th>
+                                                        <th style={{ width: '10%' }}>수량</th>
+                                                        <th style={{ width: '15%' }}>총 판매금액</th>
+                                                        <th style={{ width: '15%' }}>수수료(10%)</th>
+                                                        <th style={{ width: '15%' }}>정산 예정금액</th>
+                                                        <th style={{ width: '10%', textAlign: 'center' }}>상태</th>
+                                                </tr>
+                                        </thead>
+                                        <tbody>
+                                                {filteredSales.length > 0 ? (
+                                                        filteredSales.map((item, index) => {
+                                                                const currentId = item.bId || index;
+
+                                                                const price = item.price ? Number(item.price.toString().replace(/[^0-9]/g, "")) : 0;
+                                                                const buyCount = item.count || 1;
+                                                                const totalOrderPrice = price * buyCount;
+
+                                                                const fee = Math.floor(totalOrderPrice * 0.1);
+                                                                const settlePrice = totalOrderPrice - fee;
+
+                                                                const isPaid = item.settleStatus === 'COMPLETE';
+
+                                                                return (
+                                                                        <tr key={currentId} style={{ borderBottom: '1px solid #eee' }}>
+                                                                                <td style={{ padding: '12px' }}>
+                                                                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                                                <strong style={{ color: '#333' }}>{item.product?.name || "상품명 정보 없음"}</strong>
+                                                                                                <span style={{ fontSize: '11px', color: '#999', marginTop: '2px' }}>
+                                                                                                        주문일: {item.writedate ? item.writedate.split("T")[0] : "-"}
+                                                                                                </span>
+                                                                                        </div>
+                                                                                </td>
+                                                                                <td>{buyCount}개</td>
+                                                                                <td>{totalOrderPrice.toLocaleString()}원</td>
+                                                                                <td className="fee-text" style={{ color: '#f44336' }}>-{fee.toLocaleString()}원</td>
+                                                                                <td className="settle-price" style={{ fontWeight: 'bold', color: isPaid ? '#4CAF50' : '#2196F3' }}>
+                                                                                        {settlePrice.toLocaleString()}원
+                                                                                </td>
+                                                                                <td className="text-center">
+                                                                                        {isPaid ? (
+                                                                                                <span className="status-badge complete" style={{ backgroundColor: '#e8f5e9', color: '#4caf50', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>
+                                                                                                        정산완료
+                                                                                                </span>
+                                                                                        ) : (
+                                                                                                <span className="status-badge waiting" style={{ backgroundColor: '#fff3e0', color: '#ff9800', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>
+                                                                                                        정산예정
+                                                                                                </span>
+                                                                                        )}
+                                                                                </td>
+                                                                        </tr>
+                                                                );
+                                                        })
+                                                ) : (
+                                                        <tr>
+                                                                <td colSpan="6" className="empty-row" style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+                                                                        판매 완료 내역이 없어 정산 대상 데이터가 존재하지 않습니다.
+                                                                </td>
+                                                        </tr>
+                                                )}
+                                        </tbody>
+                                </table>
+                        </div>
+                </div>
+        );
+};
+
+// 기업사용자 : 상품 문의 관리
+const CorpInquiryList = ({ inquiries }) => {
+        const [expandedId, setExpandedId] = useState(null);
+        const [replyText, setReplyText] = useState(""); // 기업 답변 입력 상태
+
+        // 문의 열고 닫기 토글
+        const toggleInquiry = (id, currentReply) => {
+                if (expandedId === id) {
+                        setExpandedId(null);
+                        setReplyText("");
+                } else {
+                        setExpandedId(id);
+                        setReplyText(currentReply || ""); // 기존 답변이 있으면 로드
+                }
+        };
+
+        // 백엔드로 답변 등록 요청 전송
+        const handleReplySubmit = async (id) => {
+                if (!replyText.trim()) {
+                        alert("답변 내용을 입력해 주세요.");
+                        return;
+                }
+                try {
+                        // 백엔드 /question 컨트롤러의 PUT 주소로 데이터 전송
+                        await axios.put(`http://localhost:9991/question/seller/reply/${id}`, {
+                                reply: replyText
+                        });
+                        alert("상품 문의 답변이 성공적으로 등록되었습니다.");
+                        window.location.reload(); // 등록 후 리스트 새로고침
+                } catch (error) {
+                        console.error("답변 등록 중 에러 발생:", error);
+                        alert("답변을 저장하지 못했습니다.");
+                }
+        };
+
+        return (
+                <div className="inquiry-list-wrapper">
+                        <table className="management-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                                <thead>
+                                        <tr style={{ borderBottom: '2px solid #333', textAlign: 'left' }}>
+                                                <th style={{ padding: '12px', width: '8%' }}>번호</th>
+                                                <th style={{ width: '25%' }}>문의 상품명</th>
+                                                <th>문의 제목</th>
+                                                <th style={{ width: '12%' }}>작성자</th>
+                                                <th style={{ width: '15%' }}>등록일</th>
+                                                <th style={{ width: '12%', textAlign: 'center' }}>상태</th>
+                                        </tr>
+                                </thead>
+                                <tbody>
+                                        {inquiries.length === 0 ? (
+                                                <tr><td colSpan="6" className="empty-row" style={{ textAlign: 'center', padding: '30px', color: '#888' }}>접수된 상품 문의가 존재하지 않습니다.</td></tr>
+                                        ) : (
+                                                inquiries.map((item, index) => {
+                                                        const currentId = item.id; // PaskEntity의 id
+                                                        const isReplied = !!item.reply; // reply 필드가 있으면 답변완료
+                                                        const writerName = item.member?.userid;
+                                                        const productName = item.product?.name;
+
+                                                        return (
+                                                                <React.Fragment key={currentId || index}>
+                                                                        <tr onClick={() => toggleInquiry(currentId, item.reply)} style={{ borderBottom: '1px solid #eee', cursor: 'pointer' }}>
+                                                                                <td style={{ padding: '12px' }}>{currentId}</td>
+                                                                                <td style={{ fontWeight: '500', color: '#0d47a1' }}>{productName}</td>
+                                                                                <td className="inquiry-title-cell">{item.subject}</td>
+                                                                                <td>{writerName}</td>
+                                                                                <td>{item.writedate ? item.writedate.split('T')[0] : "-"}</td>
+                                                                                <td className="text-center">
+                                                                                        <span className={`status-badge ${isReplied ? 'complete' : 'waiting'}`}
+                                                                                                style={{ backgroundColor: isReplied ? '#e8f5e9' : '#fff3e0', color: isReplied ? '#4caf50' : '#ff9800', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>
+                                                                                                {isReplied ? "답변완료" : "답변대기"}
+                                                                                        </span>
+                                                                                </td>
+                                                                        </tr>
+
+                                                                        {/* 클릭 시 활성화되는 상세 답변 영역 */}
+                                                                        {expandedId === currentId && (
+                                                                                <tr className="inquiry-detail-row" style={{ backgroundColor: '#fafafa' }}>
+                                                                                        <td colSpan="6" style={{ padding: '20px' }}>
+                                                                                                <div className="question-box" style={{ marginBottom: '15px' }}>
+                                                                                                        <strong style={{ color: '#e64a19', display: 'block', marginBottom: '6px' }}>Q. 고객 문의 내용</strong>
+                                                                                                        <p style={{ whiteSpace: 'pre-wrap', color: '#333', margin: 0 }}>{item.context}</p>
+                                                                                                </div>
+
+                                                                                                <div className="reply-admin-box" style={{ marginTop: '15px', borderTop: '1px dashed #ccc', paddingTop: '15px' }}>
+                                                                                                        <strong style={{ color: '#1976d2', display: 'block', marginBottom: '6px' }}>A. 판매자 답변 작성</strong>
+                                                                                                        <div style={{ display: 'flex', gap: '10px' }}>
+                                                                                                                <textarea
+                                                                                                                        style={{ flex: 1, minHeight: '80px', padding: '10px', borderRadius: '4px', border: '1px solid #ddd', resize: 'vertical' }}
+                                                                                                                        placeholder="고객님께 노출될 답변 내용을 친절하게 작성해 주세요."
+                                                                                                                        value={replyText}
+                                                                                                                        onChange={(e) => setReplyText(e.target.value)}
+                                                                                                                />
+                                                                                                                <button
+                                                                                                                        className="btn-dark"
+                                                                                                                        style={{ width: '100px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                                                                                                                        onClick={() => handleReplySubmit(currentId)}
+                                                                                                                >
+                                                                                                                        답변등록
+                                                                                                                </button>
+                                                                                                        </div>
+                                                                                                </div>
+                                                                                        </td>
+                                                                                </tr>
+                                                                        )}
+                                                                </React.Fragment>
+                                                        );
+                                                })
+                                        )}
+                                </tbody>
+                        </table>
+                </div>
+        );
+};
 
 
 export default MyPage;
