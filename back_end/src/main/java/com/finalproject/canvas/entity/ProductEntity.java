@@ -61,4 +61,5 @@ public class ProductEntity {
     // 삭제할 파일 id 리스트
     @Transient
     private List<Integer> delFile;
+    // ───────── 구매 수량 DB연결 ─────────
 }

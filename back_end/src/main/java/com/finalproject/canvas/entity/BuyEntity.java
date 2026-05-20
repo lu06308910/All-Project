@@ -26,6 +26,8 @@ public class BuyEntity {
     private Integer count;
     @Column(name = "discount")
     private Integer discount;
+    @Column(name = "price")
+    private String price;
 
     @Column(name = "m_id")
     private Integer mId;
@@ -40,6 +42,16 @@ public class BuyEntity {
     @JoinColumn(name = "d_id", insertable = false, updatable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private DeliveryEntity delivery;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "p_id", insertable = false, updatable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "fileList", "files", "delFile"})
+    private ProductEntity product;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "m_id", insertable = false, updatable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private DataEntity member;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "is_buy")

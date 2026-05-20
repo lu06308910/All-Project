@@ -125,7 +125,7 @@ function Basket() {
         const checkedItems = cartList.filter(item => item.checked);
 
         const totalProductPrice = checkedItems.reduce((sum, item) => sum + (item.product.price * item.count), 0);
-        const totalDiscount = checkedItems.reduce((sum, item) => sum + (item.discount || 0), 0);
+        const totalDiscount = cartList.reduce((sum, item) => sum + (item.discount * item.count || 0), 0);
         const totalDelivery = checkedItems.reduce((sum, item) => sum + item.newdelivery, 0);
 
         // 최종 결제 예정 금액
