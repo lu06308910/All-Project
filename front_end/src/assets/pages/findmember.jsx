@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './../css/kdh.css';
 
 function FindInfo() {
-        // 찾으려는 항목 (ID 또는 PWD)
+
+        const navigate = useNavigate();
+
         const [findMode, setFindMode] = useState('ID');
 
         // 입력 데이터 상태
@@ -23,19 +25,33 @@ function FindInfo() {
         const handleFind = async (e) => {
                 e.preventDefault();
 
-                const endpoint = findMode === 'ID' ? '/api/member/find-id' : '/api/member/find-pwd';
+                const endpoint = findMode === 'ID'
+                        ? 'http://localhost:9990/member/find-id'
+                        : 'http://localhost:9990/member/find-pwd';
 
                 try {
+                        // 비밀번호 찾기의 경우 메일 전송 시간이 걸릴 수 있으므로 미리 안내
+                        if (findMode === 'PWD') {
+                                alert("임시 비밀번호 메일을 전송 중입니다. 잠시만 기다려주세요...");
+                        }
+
                         const response = await axios.post(endpoint, formData);
-                        if (response.data.status === 'success') {
-                                // 예: "찾으시는 아이디는 [abc***] 입니다." 또는 "이메일로 임시 비밀번호를 발송했습니다."
-                                alert(response.data.message);
+
+                        // 백엔드의 리턴 상태값 "OK"에 맞춰 분기 처리
+                        if (response.data.status === 'OK') {
+                                if (findMode === 'ID') {
+                                        alert(`조회하신 아이디는 [ ${response.data.userid} ] 입니다.`);
+                                } else {
+                                        alert(response.data.message); // 메일 전송 성공 안내 문구
+                                }
+                                navigate('/login'); // 성공 후 로그인 페이지로 이동
                         } else {
-                                alert("일치하는 회원 정보가 없습니다.");
+                                // 백엔드가 보낸 구체적인 실패 메시지 노출 ("일치하는 회원 정보가 없습니다." 등)
+                                alert(response.data.message || "일치하는 회원 정보가 없습니다.");
                         }
                 } catch (error) {
                         console.error("Find Error:", error);
-                        alert("처리 중 오류가 발생했습니다.");
+                        alert("처리 중 서버 통신 오류가 발생했습니다.");
                 }
         };
         // ------------------------------------------------------------------------------------
@@ -68,7 +84,10 @@ function FindInfo() {
                                 <div className="find-mode-tab" style={{ display: 'flex', marginBottom: '20px', borderBottom: '1px solid #ddd' }}>
                                         <button
                                                 className={`mode-btn ${findMode === 'ID' ? 'active' : ''}`}
-                                                onClick={() => setFindMode('ID')}
+                                                onClick={() => {
+                                                        setFindMode('ID');
+                                                        setFormData(prev => ({ ...prev, userid: '' }))
+                                                }}
                                                 style={{ flex: 1, padding: '15px', border: 'none', background: 'none', cursor: 'pointer', fontWeight: findMode === 'ID' ? '700' : '400' }}
                                         >
                                                 아이디 찾기
@@ -87,7 +106,11 @@ function FindInfo() {
                                         {findMode === 'PWD' && (
                                                 <div className="input-group">
                                                         <p>ID</p>
-                                                        <input type="text" name="userid" placeholder="가입하신 아이디를 입력하세요" onChange={handleChange} required />
+                                                        <input type="text"
+                                                                name="userid"
+                                                                placeholder="가입하신 아이디를 입력하세요"
+                                                                onChange={handleChange}
+                                                                required />
                                                 </div>
                                         )}
 

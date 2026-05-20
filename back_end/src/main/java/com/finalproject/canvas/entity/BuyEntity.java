@@ -22,15 +22,19 @@ public class BuyEntity {
 
     @Column(name = "status")
     private String status;
+    @Column(name = "count")
+    private Integer count;
+    @Column(name = "discount")
+    private Integer discount;
 
     @Column(name = "m_id")
     private Integer mId;
-
     @Column(name = "p_id")
     private Integer pId;
-
     @Column(name = "cart_id")
     private Integer cartId;
+    @Column(name = "d_id")
+    private Integer dId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "d_id", insertable = false, updatable = false)

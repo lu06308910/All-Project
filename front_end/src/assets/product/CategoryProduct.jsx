@@ -12,6 +12,11 @@ function CategoryProduct() {
 
         const { id } = useParams(); // URL에서 카테고리 정보 추출
 
+        // 리뷰,별점
+        const [reviews, setReviews] = useState({}); // 백엔드 받아오기
+        const [starMap, setStarMap] = useState({});// 예: { 1: 4.2, 3: 0, 5: 3.7 }
+        const [dataList, setDataList] = useState([]);
+
         const toggleMenu = (menuName) => {
                 setOpenMenu(openMenu === menuName ? null : menuName);
         };
@@ -76,6 +81,36 @@ function CategoryProduct() {
                                 );
                         })
                         .catch(err => console.log(err));
+        }
+
+
+
+        // 별 리뷰 수 가져오기
+        useEffect(() => {
+                if (!data || data.length === 0) return;
+
+                data.forEach(product => {
+                        axios.get(`http://localhost:9990/review/avg/${product.pid}`)
+                                .then(res => {
+                                        setStarMap(prev => ({
+                                                ...prev,
+                                                [product.pid]: res.data
+                                        }));
+                                })
+                                .catch(err => console.log(err));
+                });
+        }, [data]);
+        // 숫자 → 별(★) 변환 함수
+        function renderStars(avg) {
+                if (!avg) return "☆☆☆☆☆";  // 값 없을 때
+
+                const fullStars = Math.floor(avg);      // 정수 부분 (예: 3.7 → 3)
+                const halfStar = avg % 1 >= 0.5 ? 1 : 0; // 반개 여부
+                const emptyStars = 5 - fullStars - halfStar;
+
+                return "★".repeat(fullStars)
+                        + (halfStar ? "☆" : "")
+                        + "☆".repeat(emptyStars);
         }
 
         return (
@@ -222,12 +257,7 @@ function CategoryProduct() {
                                                                         </div>
 
                                                                         <div className="rating">
-                                                                                <img src="/bal.png" alt="" />
-                                                                                <img src="/bal.png" alt="" />
-                                                                                <img src="/bal.png" alt="" />
-                                                                                <img src="/bal.png" alt="" />
-                                                                                <img src="/bal.png" alt="" />
-                                                                                <span>(168)</span>
+                                                                                {renderStars(starMap[item.pid])}
                                                                         </div>
 
                                                                 </div>
