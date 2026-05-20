@@ -113,4 +113,33 @@ public class ProductService {
     public List<ProductEntity> getBysCategory(String sCategory) {
         return productRepository.findBysCategory(sCategory.trim());
     }
+
+    // 특정 기업(판매자)이 등록한 상품 목록 조회
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<ProductEntity> getProductsBySeller(String sellerId) {
+        // 앞서 ProductRepository에 추가하기로 한 findProductsBySeller를 호출합니다.
+        return productRepository.findProductsBySeller(sellerId);
+    }
+
+
+    // 상품 간이 수정 (마이페이지 관리 화면용: 이름, 가격, 재고, 상태)
+
+    @org.springframework.transaction.annotation.Transactional
+    public void updateProductSimple(Integer pId, ProductEntity updateDto) {
+        ProductEntity product = productRepository.findById(pId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상품입니다."));
+
+        product.setName(updateDto.getName());
+        product.setPrice(updateDto.getPrice());
+        product.setCount(updateDto.getCount());
+    }
+    // 상품 삭제
+    @org.springframework.transaction.annotation.Transactional
+    public void deleteSellerProduct(Integer id) {
+        // 기존에 연관된 이벤트 테이블 등을 지우는 로직이 이미 구현되어 있으므로
+        // 서비스 내부에 만들어두신 기존 productDelete 메서드를 그대로 호출하여 안전하게 삭제합니다.
+        this.productDelete(id);
+    }
+
 }

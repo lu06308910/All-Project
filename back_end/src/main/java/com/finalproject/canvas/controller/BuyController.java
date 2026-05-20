@@ -54,4 +54,9 @@ public class BuyController {
         log.info("회원 번호 {} 번의 취소/반품/교환 내역 요청 수신", mId);
         return buyRepository.findCancelListByMember(mId);
     }
+
+    @GetMapping("/seller/saleslist")
+    public List<BuyEntity> getSellerSales(@RequestParam("sellerId") String sellerId) {
+        return buyService.getSalesList(sellerId);
+    }
 }

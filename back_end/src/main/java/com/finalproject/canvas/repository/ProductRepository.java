@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -44,8 +45,10 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Integer>
             @Param("context") String context,
             @Param("price") String price
     );
+
     //상품명으로 검색
     List<ProductEntity> findByNameContaining(String name);
+
     //기업명으로 검색
     List<ProductEntity> findByCompany_BusinessNameContaining(String businessName);
 
@@ -56,6 +59,12 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Integer>
             "WHERE m.userid = :userid", nativeQuery = true)
     List<ProductEntity> findWishListByUserId(@Param("userid") String userid);
 
+    // 판매현황 리스트 - 대호추가
     @Query("SELECT p FROM ProductEntity p WHERE p.sCategory LIKE CONCAT('%', :sCategory, '%')")
-    List<ProductEntity> findBysCategory(String sCategory); // 카테고리별 페이지
+    List<ProductEntity> findBysCategory(String sCategory);
+
+    // 상품 관리 쿼리문 - 대호추가
+    @Query("SELECT p FROM ProductEntity p WHERE p.company.userid = :sellerId ORDER BY p.pId DESC")
+    List<ProductEntity> findProductsBySeller(@Param("sellerId") String sellerId);
+
 }

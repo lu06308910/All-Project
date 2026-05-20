@@ -2,10 +2,7 @@ package com.finalproject.canvas.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.finalproject.canvas.entity.CpDataEntity;
-import com.finalproject.canvas.entity.FileEntity;
-import com.finalproject.canvas.entity.ProductEntity;
-import com.finalproject.canvas.entity.SearchVO;
+import com.finalproject.canvas.entity.*;
 import com.finalproject.canvas.service.ProductService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -318,7 +315,7 @@ public class ProductController {
     @GetMapping("/categoryproduct/{sCategory}")
     public ResponseEntity<?> getByCategory(@PathVariable String sCategory) {
 
-        System.out.println("🔥 들어온 값: " + sCategory);
+        System.out.println("들어온 값: " + sCategory);
         System.out.println("SEARCH CATEGORY = [" + sCategory + "]");
         List<ProductEntity> list = productService.getBysCategory(sCategory);
 
@@ -346,4 +343,35 @@ public class ProductController {
 
         return map;
     }
+
+    // 판매자의 상품 목록 조회 - 대호추가
+    @GetMapping("/product/seller/list")
+    public List<ProductEntity> getSellerProducts(@RequestParam("sellerId") String sellerId) {
+        return productService.getProductsBySeller(sellerId);
+    }
+
+    // 상품 정보 수정 - 대호추가
+    @PutMapping("/product/seller/update/{pId}")
+    public String updateProductSimple(@PathVariable("pId") Integer pId, @RequestBody ProductEntity updateDto) {
+        try {
+            productService.updateProductSimple(pId, updateDto);
+            return "SUCCESS";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "FAIL";
+        }
+    }
+
+    // 상품 삭제
+    @DeleteMapping("/product/seller/delete/{pId}")
+    public String deleteProduct(@PathVariable("pId") Integer pId) {
+        try {
+            productService.deleteSellerProduct(pId);
+            return "SUCCESS";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "FAIL";
+        }
+    }
+
 }

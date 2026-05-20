@@ -12,6 +12,8 @@ const MyPage = () => {
         const [wishItems, setWishItems] = useState([]); // DB-> 찜목록
         const [inquiries, setInquiries] = useState([]); // DB-> 문의 목록
 
+        const [salesList, setSalesList] = useState([]); // DB -> 판매목록(기업)
+        const [products, setProducts] = useState([]); // DB -> 상품 목록 조회 및 수정(기업)
         const [activeMenu, setActiveMenu] = useState('');
 
         // 세션에서 정보 가져오기 (로그인 시 저장했던 값)
@@ -51,9 +53,19 @@ const MyPage = () => {
                                         setOrders(orderRes.data); // 주문목록
 
                                         const cancelRes = await axios.get(`http://localhost:9991/buy/cancel/list/${ordersMemberId}`);
-                                        setCancelItems(cancelRes.data); // 취소목록
+                                        setCancelItems(cancelRes.data); // 취소목록              
 
                                 }
+                                if (logId && isCorporate) {
+                                        const salesRes = await axios.get(`http://localhost:9991/buy/seller/saleslist?sellerId=${logId}`);
+                                        setSalesList(salesRes.data); // 판매목록
+
+                                        const prodRes = await axios.get(`http://localhost:9991/product/seller/list?sellerId=${logId}`);
+                                        console.log("백엔드에서 받아온 데이터:", prodRes.data);
+                                        console.log("현재 로그인된 기업 ID (logId):", logId);
+                                        setProducts(prodRes.data); // 상품 목록, 수정
+                                }
+
                         } catch (error) {
                                 console.error("데이터 로딩 실패:", error);
                         } finally {
@@ -96,10 +108,8 @@ const MyPage = () => {
                 // 기업용 메뉴
                 if (isCorporate) {
                         switch (activeMenu) {
-                                case '판매 현황':
-                                        return <SalesStatus />;
-                                case '상품 등록/관리':
-                                        return <ProductManagement />;
+                                case '판매 현황': return <SalesStatus sales={salesList} />;
+                                case '상품 등록/관리': return <ProductManagement products={products} setProducts={setProducts} />;
                                 case '정산내역':
                                         return <SettlementHistory products={products} />
                                 case '고객 문의 관리':
@@ -134,12 +144,6 @@ const MyPage = () => {
                         alert("삭제에 실패했습니다.");
                 }
         };
-
-        const [products, setProducts] = useState([
-                { id: 1, name: "크로켓 2000 거실장", price: "230,000", status: "판매완료" },
-                { id: 2, name: "심플 라인 소파", price: "450,000", status: "판매완료" },
-                { id: 3, name: "캔버스 체어", price: "120,000", status: "판매중" }
-        ]);
 
         // --------------------------------------------------마이스토어 공통 ---------------------------------------
         return (
@@ -499,7 +503,6 @@ const CancelHistory = ({ cancelItems }) => {
                                                         <section>
                                                                 <h4>요청 정보</h4>
                                                                 <p>접수일시: {selectedCancel.writedate ? selectedCancel.writedate.replace("T", " ") : "정보 없음"}</p>
-                                                                {/* 백엔드에 사유 컬럼이 별도로 없다면 기본 문구 노출 */}
                                                                 <p>접수사유: {selectedCancel.cancelReason || '단순 변심 / 서비스 기준 접수'}</p>
                                                                 <p>처리상태: <span style={{ color: '#d9534f', fontWeight: 'bold' }}>{selectedCancel.status}</span></p>
                                                         </section>
@@ -627,227 +630,236 @@ const InquiryList = ({ inquiries, isCorp }) => {
         );
 };
 
-// ----------------------------------------- 기업 -------------------------------------------
-/* 판매 현황  */
-const SalesStatus = () => {
-        const [salesSummary] = useState({
-                todaySales: "1,150,000",
-                monthlySales: "28,400,000",
-                pendingDelivery: 3,
-                returnRequests: 1
-        });
-
-        return (
-                <div className="sales-status-container">
-                        <div className="corp-status-cards" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-                                <div className="corp-status-card" >
-                                        <p>오늘의 매출</p>
-                                        <h3 style={{ fontSize: '20px', margin: '10px 0' }}>{salesSummary.todaySales}원</h3>
-                                </div>
-                                <div className="corp-status-card">
-                                        <p >이달의 누적 매출</p>
-                                        <h3 style={{ fontSize: '20px', margin: '10px 0' }}>{salesSummary.monthlySales}원</h3>
-                                </div>
-                                <div className="corp-status-card" >
-                                        <p>배송 준비 중</p>
-                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#2196F3' }}>{salesSummary.pendingDelivery}건</h3>
-                                </div>
-                                <div className="corp-status-card" >
-                                        <p>반품/교환 요청</p>
-                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#f44336' }}>{salesSummary.returnRequests}건</h3>
-                                </div>
-                        </div>
-
-                        <div>
-                                <h4 style={{ marginBottom: '15px' }}>최근 주문 내역</h4>
-                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-                                        <thead>
-                                                <tr style={{ borderBottom: '2px solid #333', textAlign: 'left' }}>
-                                                        <th style={{ padding: '12px' }}>주문번호</th>
-                                                        <th>상품명</th>
-                                                        <th>주문자</th>
-                                                        <th>결제금액</th>
-                                                        <th>상태</th>
-                                                </tr>
-                                        </thead>
+// 기업 사용자 : 판매현황
+const SalesStatus = ({ sales }) => {
+        if (!sales || sales.length === 0) {
+                return (
+                        <div className="recent-orders">
+                                <table className="management-table">
                                         <tbody>
-                                                <tr style={{ borderBottom: '1px solid #eee' }}>
-                                                        <td style={{ padding: '12px' }}>20260506-001</td>
-                                                        <td>크로켓 2000 거실장</td>
-                                                        <td>김*호</td>
-                                                        <td>230,000원</td>
-                                                        <td><span className="corp-status-badge">결제완료</span></td>
+                                                <tr>
+                                                        <td className="empty-row" style={{ textAlign: 'center', padding: '50px', color: '#888' }}>
+                                                                현재 접수된 판매/주문 현황이 없습니다.
+                                                        </td>
                                                 </tr>
                                         </tbody>
                                 </table>
                         </div>
+                );
+        }
+
+        return (
+                <div className="recent-orders">
+                        <table className="management-table">
+                                <thead>
+                                        <tr>
+                                                <th style={{ width: '15%' }}>주문일시</th>
+                                                <th>상품정보</th>
+                                                <th style={{ width: '10%' }}>수량</th>
+                                                <th style={{ width: '18%' }}>결제금액</th>
+                                                <th style={{ width: '15%' }}>주문자 ID</th>
+                                                <th style={{ width: '12%', textAlign: 'center' }}>상태</th>
+                                        </tr>
+                                </thead>
+                                <tbody>
+                                        {sales.map((item, index) => {
+                                                const price = item.price ? Number(item.price.toString().replace(/[^0-9]/g, "")) : 0;
+                                                return (
+                                                        <tr key={item.bId || index}>
+                                                                {/* 주문일시 */}
+                                                                <td className="order-date">
+                                                                        {item.writedate ? item.writedate.split("T")[0] : "날짜 없음"}
+                                                                </td>
+                                                                {/* 상품명 */}
+                                                                <td>
+                                                                        <strong>{item.product?.name || "상품명 없음"}</strong>
+                                                                </td>
+                                                                {/* 수량 */}
+                                                                <td>{item.count || 1}개</td>
+                                                                {/* 결제금액 */}
+                                                                <td className="settle-price">{price.toLocaleString()}원</td>
+                                                                {/* 주문자 ID */}
+                                                                <td>{item.member?.userid || `회원(${item.mId || '정보없음'})`}</td>
+                                                                {/* 주문상태 뱃지 */}
+                                                                <td className="text-center">
+                                                                        <span className={`status-badge ${item.status === '결제완료' ? 'complete' : 'waiting'}`}>
+                                                                                {item.status || "결제완료"}
+                                                                        </span>
+                                                                </td>
+                                                        </tr>
+                                                );
+                                        })}
+                                </tbody>
+                        </table>
                 </div>
         );
 };
 
-/* 상품 등록/관리 */
-const ProductManagement = () => {
-        const [products, setProducts] = useState([
-                { id: 1, name: "canvas 의자", price: "250,000", stock: 5, status: "판매중", date: "2026-05-01" },
-                { id: 2, name: "canvan 책상", price: "480,000", stock: 2, status: "판매중", date: "2026-04-28" },
-                { id: 3, name: "canvas 침대", price: "180,000", stock: 0, status: "품절", date: "2026-04-25" },
-        ]);
-
+// 기업 사용자 : 상품 등록/수정
+const ProductManagement = ({ products, setProducts }) => {
         const [editingId, setEditingId] = useState(null);
         const [editFormData, setEditFormData] = useState({});
 
-        // 수정 버튼 클릭 시
+        // 안전한 배열 변환 가드
+        const safeProducts = Array.isArray(products) ? products : [];
+
+        // 수정 모드 진입
         const handleEditClick = (product) => {
-                setEditingId(product.id);
+                setEditingId(product.pId || product.pid);
                 setEditFormData({ ...product });
         };
 
-        // 입력 값 변경 시
+        // 입력 데이터 체인지 핸들러
         const handleInputChange = (e) => {
                 const { name, value } = e.target;
                 setEditFormData({ ...editFormData, [name]: value });
         };
 
-        // 저장 버튼 클릭 시
-        const handleSaveClick = () => {
-                setProducts(products.map(p => p.id === editingId ? editFormData : p));
-                setEditingId(null);
+        // DB 수정 요청
+        const handleSaveClick = async () => {
+                const targetId = editingId;
+                try {
+                        // 백엔드로 수정 데이터 전송
+                        await axios.put(`http://localhost:9991/product/seller/update/${targetId}`, editFormData);
+
+                        // 프론트 UI 실시간 업데이트 반영
+                        setProducts(products.map(p => (p.pId === targetId || p.pid === targetId) ? editFormData : p));
+                        setEditingId(null);
+                        alert("상품 정보가 성공적으로 수정되었습니다.");
+                } catch (error) {
+                        console.error("상품 수정 실패:", error);
+                        alert("수정 중 오류가 발생했습니다.");
+                }
         };
+
+        // DB 삭제 요청
+        const handleDeleteClick = async (pId) => {
+                if (!window.confirm("정말 이 상품을 완전히 삭제하시겠습니까?\n삭제된 상품은 복구할 수 없습니다.")) return;
+                try {
+                        // 백엔드로 삭제 요청 보내기
+                        await axios.delete(`http://localhost:9991/product/seller/delete/${pId}`);
+
+                        // 프론트 UI에서 제외하기
+                        setProducts(prev => prev.filter(p => (p.pId !== pId && p.pid !== pId)));
+                        alert("상품이 삭제되었습니다.");
+                } catch (error) {
+                        console.error("상품 삭제 실패:", error);
+                        alert("삭제 중 오류가 발생했습니다.");
+                }
+        };
+
+        // 대시보드 통계 count 가 0 이하면 품절
+        const totalCount = safeProducts.length;
+        const activeCount = safeProducts.filter(p => (p.count || 0) > 0).length;
+        const soldOutCount = totalCount - activeCount;
 
         return (
                 <div className="sales-status-container">
-                        <div className="corp-status-cards" >
-                                <div className="corp-status-card" >
+                        <div className="corp-status-cards">
+                                <div className="corp-status-card">
                                         <p style={{ fontSize: '13px', color: '#666' }}>전체 상품</p>
-                                        <h3 style={{ fontSize: '20px', margin: '10px 0' }}>{products.length}건</h3>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0' }}>{totalCount}건</h3>
                                 </div>
-                                <div className="corp-status-card" >
+                                <div className="corp-status-card">
                                         <p style={{ fontSize: '13px', color: '#666' }}>판매 중</p>
-                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#2196F3' }}>2건</h3>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#2196F3' }}>{activeCount}건</h3>
                                 </div>
                                 <div className="corp-status-card">
                                         <p style={{ fontSize: '13px', color: '#666' }}>품절/중지</p>
-                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#f44336' }}>1건</h3>
+                                        <h3 style={{ fontSize: '20px', margin: '10px 0', color: '#f44336' }}>{soldOutCount}건</h3>
                                 </div>
                         </div>
 
-                        {/* 검색 및 등록 버튼 */}
                         <div className="recent-orders">
                                 <div className="filter-group" style={{ display: 'flex', gap: '8px' }}>
                                         {['전체', '판매중', '품절'].map((label) => (
                                                 <button
                                                         key={label}
-                                                        style={{
-                                                                padding: '6px 12px',
-                                                                fontSize: '13px',
-                                                                borderRadius: '4px',
-                                                                border: '1px solid #ddd',
-                                                                background: label === '전체' ? '#333' : '#fff',
-                                                                color: label === '전체' ? '#fff' : '#333',
-                                                                cursor: 'pointer'
-                                                        }}
+                                                        className={`filter-btn ${label === '전체' ? 'active' : ''}`}
+                                                        style={{ padding: '6px 12px', fontSize: '13px', borderRadius: '4px', cursor: 'pointer' }}
                                                 >
                                                         {label}
                                                 </button>
                                         ))}
                                 </div>
                                 <button className="btn-dark" style={{ padding: '8px 20px', borderRadius: '4px' }}
-                                        onClick={() => { location.href = "/mypage/addproduct" }}>+ 새 상품 등록
+                                        onClick={() => { window.location.href = "/mypage/addproduct" }}>+ 새 상품 등록
                                 </button>
                         </div>
 
                         <div className="recent-orders">
-                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                                <table className="management-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
                                         <thead>
                                                 <tr style={{ borderBottom: '2px solid #333', textAlign: 'left' }}>
                                                         <th style={{ padding: '12px' }}>상품 정보</th>
                                                         <th>판매가</th>
                                                         <th>재고</th>
-                                                        <th>상태</th>
+                                                        <th style={{ textAlign: 'center' }}>상태</th>
                                                         <th style={{ textAlign: 'center' }}>관리</th>
                                                 </tr>
                                         </thead>
                                         <tbody>
-                                                {products.map(product => (
-                                                        <tr key={product.id} style={{ borderBottom: '1px solid #eee' }}>
-                                                                <td style={{ padding: '12px' }}>
-                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                                                <div style={{ width: '40px', height: '40px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}></div>
-                                                                                {editingId === product.id ? (
-                                                                                        <input className="product-edit"
-                                                                                                name="name"
-                                                                                                value={editFormData.name}
-                                                                                                onChange={handleInputChange}
-                                                                                        />
-                                                                                ) : (
-                                                                                        <span style={{ fontWeight: '500' }}>{product.name}</span>
-                                                                                )}
-                                                                        </div>
-                                                                </td>
+                                                {totalCount === 0 ? (
+                                                        <tr><td colSpan="5" className="empty-row" style={{ textAlign: 'center', padding: '30px' }}>등록된 상품이 없습니다.</td></tr>
+                                                ) : (
+                                                        safeProducts.map((product, index) => {
+                                                                const currentId = product.pid || product.pId || index;
+                                                                const price = product.price ? Number(product.price.toString().replace(/[^0-9]/g, "")) : 0;
 
-                                                                {/* 판매가 */}
-                                                                <td>
-                                                                        {editingId === product.id ? (
-                                                                                <input className="product-edit"
-                                                                                        name="price"
-                                                                                        value={editFormData.price}
-                                                                                        onChange={handleInputChange}
-                                                                                />
-                                                                        ) : (
-                                                                                `${product.price}원`
-                                                                        )}
-                                                                </td>
+                                                                return (
+                                                                        <tr key={currentId} style={{ borderBottom: '1px solid #eee' }}>
+                                                                                {/* 상품명 및 이미지 */}
+                                                                                <td style={{ padding: '12px' }}>
+                                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                                                                <div style={{ width: '40px', height: '40px', backgroundColor: '#f5f5f5', borderRadius: '4px', overflow: 'hidden' }}>
+                                                                                                        {product.fileList && product.fileList[0] && (
+                                                                                                                <img src={`http://localhost:9991/static/uploads/${product.fileList[0].filename}.${product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                                                        )}
+                                                                                                </div>
 
-                                                                {/* 재고 */}
-                                                                <td>
-                                                                        {editingId === product.id ? (
-                                                                                <input className="product-edit"
-                                                                                        type="number"
-                                                                                        name="stock"
-                                                                                        value={editFormData.stock}
-                                                                                        onChange={handleInputChange}
-                                                                                />
-                                                                        ) : (
-                                                                                `${product.stock}개`
-                                                                        )}
-                                                                </td>
-
-                                                                {/* 상태 */}
-                                                                <td>
-                                                                        {editingId === product.id ? (
-                                                                                <select className="product-edit"
-                                                                                        name="status"
-                                                                                        value={editFormData.status}
-                                                                                        onChange={handleInputChange}
-                                                                                >
-                                                                                        <option value="판매중">판매중</option>
-                                                                                        <option value="품절">품절</option>
-                                                                                </select>
-                                                                        ) : (
-                                                                                <span style={{
-                                                                                        background: product.status === '품절' ? '#ffebee' : '#e3f2fd',
-                                                                                        color: product.status === '품절' ? '#c62828' : '#1976d2',
-                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                }}>{product.status}</span>
-                                                                        )}
-                                                                </td>
-
-                                                                {/* 관리 버튼 영역 */}
-                                                                <td style={{ textAlign: 'center' }}>
-                                                                        {editingId === product.id ? (
-                                                                                <>
-                                                                                        <button onClick={handleSaveClick} style={{ color: '#2196F3', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold', marginRight: '8px' }}>저장</button>
-                                                                                        <button onClick={() => setEditingId(null)} style={{ color: '#666', background: 'none', border: 'none', cursor: 'pointer' }}>취소</button>
-                                                                                </>
-                                                                        ) : (
-                                                                                <>
-                                                                                        <button onClick={() => handleEditClick(product)} style={{ background: 'none', border: 'none', color: '#666', fontSize: '12px', cursor: 'pointer', marginRight: '8px' }}>수정</button>
-                                                                                        <button style={{ background: 'none', border: 'none', color: '#f44336', fontSize: '12px', cursor: 'pointer' }}>삭제</button>
-                                                                                </>
-                                                                        )}
-                                                                </td>
-                                                        </tr>
-                                                ))}
+                                                                                                {editingId === currentId ? (
+                                                                                                        <input className="product-edit" name="name" value={editFormData.name || ''} onChange={handleInputChange} style={{ border: '1px solid #ccc', padding: '4px' }} />
+                                                                                                ) : (
+                                                                                                        <span style={{ fontWeight: '500' }}>{product.name}</span>
+                                                                                                )}
+                                                                                        </div>
+                                                                                </td>
+                                                                                {/* 판매가 */}
+                                                                                <td>                                                          
+                                                                                                {price.toLocaleString()}원                                                  
+                                                                                </td>
+                                                                                {/* 재고수량 */}
+                                                                                <td>
+                                                                                        {editingId === currentId ? (
+                                                                                                <input className="product-edit" type="number" name="count" value={editFormData.count || 0} onChange={handleInputChange} style={{ border: '1px solid #ccc', padding: '4px', width: '60px' }} />
+                                                                                        ) : (
+                                                                                                `${product.count || 0}개`
+                                                                                        )}
+                                                                                </td>
+                                                                                {/* 상태 표시 (재고 기반 동적 세팅) */}
+                                                                                <td className="text-center">
+                                                                                        <span className={`status-badge ${(product.count || 0) <= 0 ? 'waiting' : 'complete'}`}>
+                                                                                                {(product.count || 0) <= 0 ? "품절" : "판매중"}
+                                                                                        </span>
+                                                                                </td>
+                                                                                {/* 관리 조작 버튼 */}
+                                                                                <td style={{ textAlign: 'center' }}>
+                                                                                        {editingId === currentId ? (
+                                                                                                <>
+                                                                                                        <button onClick={handleSaveClick} style={{ color: '#2196F3', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold', marginRight: '8px' }}>저장</button>
+                                                                                                        <button onClick={() => setEditingId(null)} style={{ color: '#666', background: 'none', border: 'none', cursor: 'pointer' }}>취소</button>
+                                                                                                </>
+                                                                                        ) : (
+                                                                                                <>
+                                                                                                        <button onClick={() => handleEditClick(product)} style={{ background: 'none', border: 'none', color: '#666', fontSize: '12px', cursor: 'pointer', marginRight: '8px' }}>수정</button>
+                                                                                                        <button onClick={() => handleDeleteClick(currentId)} style={{ background: 'none', border: 'none', color: '#f44336', fontSize: '12px', cursor: 'pointer' }}>삭제</button>
+                                                                                                </>
+                                                                                        )}
+                                                                                </td>
+                                                                        </tr>
+                                                                );
+                                                        })
+                                                )}
                                         </tbody>
                                 </table>
                         </div>

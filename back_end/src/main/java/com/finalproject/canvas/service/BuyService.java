@@ -83,4 +83,10 @@ public class BuyService {
     public List<BuyEntity> getCancelList(Integer mId) {
         return buyRepository.findCancelListByMember(mId);
     }
+
+    // 기업 사용자의 판매 현황 조회
+    public List<BuyEntity> getSalesList(String sellerId) {
+        return buyRepository.findSalesBySeller(sellerId);
+    }
+
 }
