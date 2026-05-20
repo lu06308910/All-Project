@@ -1,6 +1,7 @@
 package com.finalproject.canvas.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -26,8 +27,11 @@ public class CartEntity {
     private String size;
 
     @Column(name = "m_id")
+    @JsonProperty("mId") // 이슬추가
     private Integer mId;
+
     @Column(name = "p_id")
+    @JsonProperty("pId") // 이슬추가
     private Integer pId;
 
     @ManyToOne(fetch = FetchType.EAGER)
