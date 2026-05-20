@@ -26,8 +26,8 @@ function FindInfo() {
                 e.preventDefault();
 
                 const endpoint = findMode === 'ID'
-                        ? 'http://localhost:9990/member/find-id'
-                        : 'http://localhost:9990/member/find-pwd';
+                        ? 'http://localhost:9991/member/find-id'
+                        : 'http://localhost:9991/member/find-pwd';
 
                 try {
                         // 비밀번호 찾기의 경우 메일 전송 시간이 걸릴 수 있으므로 미리 안내

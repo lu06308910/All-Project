@@ -80,7 +80,7 @@ function QnaWrite() {
 
         try {
             // 환경 변수 주소 사용
-            const BASE_URL = import.meta.env.REACT_APP_API_URL || "http://localhost:9990";
+            const BASE_URL = import.meta.env.REACT_APP_API_URL || "http://localhost:9991";
             const response = await axios.post(`${BASE_URL}/support/write`, sendData, {
                 headers: {
                     "Content-Type": "multipart/form-data"

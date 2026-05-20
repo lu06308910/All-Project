@@ -61,7 +61,7 @@ function ProductDetail() {
 
                 if (!loginUserId) return;
 
-                axios.get(`http://localhost:9990/like/list/${mId}`)
+                axios.get(`http://localhost:9991/like/list/${mId}`)
                         .then(res => setLikedItems(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -159,7 +159,7 @@ function ProductDetail() {
 
         // 상품 정보 백엔드
         function getDataDetail() {
-                axios.get(`http://localhost:9990/productDetail/${id}`)
+                axios.get(`http://localhost:9991/productDetail/${id}`)
 
                         .then((response) => {
 
@@ -196,7 +196,7 @@ function ProductDetail() {
                                 d.fileList?.forEach((f) => {
                                         file.push({
                                                 color: f.colorName,
-                                                url: `http://localhost:9990/upload/${f.filename}.${f.extname}`
+                                                url: `http://localhost:9991/upload/${f.filename}.${f.extname}`
                                         });
                                 });
                                 setFilelist(file);
@@ -219,7 +219,7 @@ function ProductDetail() {
                         return;
                 }
 
-                axios.post("http://localhost:9990/like/toggle", {
+                axios.post("http://localhost:9991/like/toggle", {
                         memberId: mId,
                         productId: productId
                 })
@@ -254,7 +254,7 @@ function ProductDetail() {
                                 size: opt.extraOption
                         };
 
-                        axios.post("http://localhost:9990/cart/add", payload)
+                        axios.post("http://localhost:9991/cart/add", payload)
                                 .catch(err => console.log(err));
                 });
 
@@ -296,7 +296,7 @@ function ProductDetail() {
                         formData.append("file", file);
                 }
 
-                axios.post("http://localhost:9990/review/write", formData)
+                axios.post("http://localhost:9991/review/write", formData)
                         .then(res => {
                                 console.log("리뷰 작성 성공:", res.data);
 
@@ -305,7 +305,7 @@ function ProductDetail() {
                         .catch(err => console.log("리뷰 에러:", err));
         }
         function getReviews() {
-                axios.get(`http://localhost:9990/review/list/${data?.id}`)
+                axios.get(`http://localhost:9991/review/list/${data?.id}`)
                         .then(res => {
                                 setReviews(res.data);
 
@@ -315,7 +315,7 @@ function ProductDetail() {
 
         // 문의 불러오기
         function getQuestions() {
-                axios.get(`http://localhost:9990/question/list/${data.id}`)
+                axios.get(`http://localhost:9991/question/list/${data.id}`)
                         .then(res => setQuestions(res.data))
                         .catch(err => console.log("문의 리스트 에러", err));
         }
@@ -330,7 +330,7 @@ function ProductDetail() {
                 formData.append("subject", qnaTitle);
                 formData.append("context", questionText);
 
-                axios.post("http://localhost:9990/question/write", formData)
+                axios.post("http://localhost:9991/question/write", formData)
                         .then(() => {
                                 setQuestionText("");
                                 setQnaTitle("");
@@ -664,8 +664,8 @@ function ProductDetail() {
                                                                 .map((r) => (
                                                                         <img
                                                                                 key={r.id}
-                                                                                src={`http://localhost:9990/upload/review/${r.imgUrl}`} // 서버 주소 + 이미지 경로
-                                                                                onClick={() => setZoomImage(`http://localhost:9990/upload/review/${r.imgUrl}`)}
+                                                                                src={`http://localhost:9991/upload/review/${r.imgUrl}`} // 서버 주소 + 이미지 경로
+                                                                                onClick={() => setZoomImage(`http://localhost:9991/upload/review/${r.imgUrl}`)}
                                                                                 style={{
                                                                                         width: "200px",
                                                                                         height: "200px",
