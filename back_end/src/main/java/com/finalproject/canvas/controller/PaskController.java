@@ -1,17 +1,26 @@
 package com.finalproject.canvas.controller;
 
 import com.finalproject.canvas.entity.PaskEntity;
+import com.finalproject.canvas.repository.PaskRepository;
 import com.finalproject.canvas.service.PaskService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/question")
 @RequiredArgsConstructor
+@Slf4j
 public class PaskController {
 
     private final PaskService paskService;
+    private final PaskRepository paskRepository; // 기업 조회를 위해 레포지토리 추가 - 대호
 
     // 문의 등록
     @PostMapping("/write")
@@ -32,5 +41,28 @@ public class PaskController {
         return ResponseEntity.ok(
                 paskService.getQuestionList(pId)
         );
+    }
+
+
+     // 기업용 고객 문의 조회 - 대호추가
+    @Transactional(readOnly = true)
+    @GetMapping("/seller/list")
+    public List<PaskEntity> getSellerInquiries(@RequestParam("sellerId") String sellerId) {
+        log.info("기업 판매자 [{}]의 고객 문의 관리 내역 요청 수신", sellerId);
+        return paskRepository.findInquiriesBySeller(sellerId);
+    }
+
+    // 고객 문의사항에 답변 등록 및 수정하기 - 대호추가
+    @Transactional
+    @PutMapping("/seller/reply/{id}")
+    public ResponseEntity<?> updateSellerReply(@PathVariable Integer id, @RequestBody Map<String, String> body) {
+        String replyContent = body.get("reply");
+        log.info("문의사항 번호 {}번에 답변 등록 요청: {}", id, replyContent);
+
+        return paskRepository.findById(id).map(ask -> {
+            ask.setReply(replyContent); // reply 필드에 답변 저장
+            paskRepository.save(ask);
+            return ResponseEntity.ok().body("답변이 정상적으로 등록되었습니다.");
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

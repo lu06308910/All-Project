@@ -63,4 +63,7 @@ public class BuyEntity {
 
     @Column(name = "payment_method")
     private String paymentMethod = "신용카드"; // 환불/결제 수단
+
+    @Column(name = "settle_status", nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'WAITING'")
+    private String settleStatus = "WAITING";
 }
