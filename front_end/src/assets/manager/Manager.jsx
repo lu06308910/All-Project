@@ -31,7 +31,6 @@ ChartJS.register(
 );
 
 function Manager() {
-
         //게시글관리
         const [events, setEvents] = useState([]);
         useEffect(() => {
@@ -83,6 +82,40 @@ function Manager() {
                 .catch(err=>console.log(err))
         }, [])
 
+        //통계용 buy테이블 연결
+        const [buys, setBuys] = useState([]);
+        useEffect(() => {
+                axios.get('http://localhost:9991/buy/list/all')
+                        .then(res => setBuys(res.data))
+                        .catch(err => console.log(err));
+        }, []);
+        //통계 서치 키워드
+        const [buySearchKey, setBuySearchKey] = useState('name');
+        const [buySearchWord, setBuySearchWord] = useState('');
+        const [selectedBuyItem, setSelectedBuyItem] = useState(null);
+        // 통계 내용 분석 및 가져오기
+        const dateGrouped = buys.reduce((acc, item) => {
+                const date = item.writedate?.slice(0, 10) || '';
+                const key = `${date}_${item.pId}`;
+                if (!acc[key]) {
+                        acc[key] = {
+                        pId: item.pId,
+                        product: item.product,
+                        writedate: date,
+                        totalCount: 0,
+                        totalPrice: 0,
+                        totalDiscount: 0,
+                        rawItems: [],
+                        };
+                }
+                acc[key].totalCount    += item.count || 0;
+                acc[key].totalPrice    += parseInt(item.price || 0) * (item.count || 0);
+                acc[key].totalDiscount += item.discount || 0;
+                acc[key].rawItems.push(item);
+                return acc;
+        }, {});
+        const groupedList = Object.values(dateGrouped).sort((a, b) => b.writedate.localeCompare(a.writedate));
+
         const [activeMenu, setActiveMenu] = useState('대시보드');
         const [isPostOpen, setIsPostOpen] = useState(false);
         const [modalOpen, setModalOpen] = useState(false);
@@ -131,7 +164,26 @@ function Manager() {
                         prev.includes(pid) ? prev.filter(id=>id!==pid):[...prev, pid]
                 );
         };
-
+        
+        //날짜 변수
+        const [startDate, setStartDate] = useState('');
+        const [endDate, setEndDate] = useState('');
+        const [productStartDate, setProductStartDate] = useState('');
+        const [productEndDate, setProductEndDate] = useState('');
+        
+        // 검색 + 날짜 필터 적용, buytag
+        const filteredGroupedList = groupedList.filter(item => {
+                if (productStartDate && item.writedate < productStartDate) return false;
+                if (productEndDate   && item.writedate > productEndDate)   return false;
+                if (buySearchWord) {
+                        if (buySearchKey === 'name')
+                        return item.product?.name?.includes(buySearchWord);
+                        if (buySearchKey === 'businessName')
+                        return item.product?.company?.businessName?.includes(buySearchWord);
+                }
+                return true;
+        });
+        
         //회원 삭제 명령어
         const handleBulkUnregister = () => {
         const targets = selectedItems['회원관리'] || [];
@@ -276,11 +328,7 @@ function Manager() {
         const menus = ['대시보드', '회원 관리', '기업 관리', '상품 관리', '세일 관리', '문의 관리', '통계', '정산'];
         const submenus = ['-예약', '-이벤트 관리']
 
-        //날짜 변수
-        const [startDate, setStartDate] = useState('');
-        const [endDate, setEndDate] = useState('');
-        const [productStartDate, setProductStartDate] = useState('');
-        const [productEndDate, setProductEndDate] = useState('');
+        
 
         const handleDateProductPreset = (period, value) => {
                 const today = new Date();
@@ -600,14 +648,14 @@ function Manager() {
                                                 <th style={{ backgroundColor: '#eeeeee' }}>결제금액</th>
                                         </tr>
                                 </thead>
-                                {products.map((buy)=>(
-                                        <tbody>
+                                {buys.map((buy)=>(
+                                        <tbody key={buy.bid}>
                                                 <tr>
-                                                        <td>{buy.tag}</td>
-                                                        <td>{buy.product.pid}</td>
-                                                        <td>{buy.member.mid}</td>
-                                                        <td>{buy.member.name}</td>
-                                                        <td>{buy.cart.pay}</td>
+                                                        <td>{buy.bid}</td>
+                                                        <td>{buy.product?.name}</td>
+                                                        <td>{buy.member?.userid}</td>
+                                                        <td>{buy.member?.username}</td>
+                                                        <td>{(parseInt(buy.price || 0) * buy.count).toLocaleString()}</td>
                                                 </tr>
                                         </tbody>
                                 ))}
@@ -1415,10 +1463,10 @@ function Manager() {
                                                                         <div className="col-1" style={{ fontSize: '0.8em' }}>{ask.member?.username ?? ask.writer}</div>
                                                                         <div className="col-2" style={{ fontSize: '0.8em' }}>{ask.writedate.slice(0, 10)}</div>
                                                                         <div className="col-1" style={{
-                                                                                background: ask.answer_ok == 'N' ? '#ffebee' : '#e3f2fd',
-                                                                                color: ask.answer_ok == 'N' ? '#c62828' : '#1976d2',
-                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                        }}>{ask.answer_ok=='N'?'답변 미작성':'답변 완료'}</div>
+                                                                                background: ask.answerOk == 'N' ? '#ffebee' : '#e3f2fd',
+                                                                                color: ask.answerOk == 'N' ? '#c62828' : '#1976d2',
+                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
+                                                                        }}>{ask.answerOk=='N'?'답변 중':'답변 완료'}</div>
                                                                         <div className="col-2">
                                                                                 <button className='button2' style={{ marginRight: '10px' }}>수정</button>
                                                                                 <button className='button2'>삭제</button>
@@ -1492,21 +1540,30 @@ function Manager() {
                                                 <div style={{ textAlign: 'left', width: '500px' }}>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                                 <p>기업명 :</p>
-                                                                <select className="cat1" style={{ width: '100px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}>
+                                                                <select className="cat1" style={{ width: '100px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px' }}
+                                                                        value={buySearchKey}
+                                                                        onChange={(e) => setBuySearchKey(e.target.value)}
+                                                                >
                                                                         <option value="null">전체</option>
-                                                                        <option value="category">상품명</option>
-                                                                        <option value="category">기업명</option>
+                                                                        <option value="name">상품명</option>
+                                                                        <option value="businessName">기업명</option>
                                                                 </select>
-                                                                <input type='text' style={{ width: '320px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px', border: '1px solid #333333' }} placeholder="검색어를 입력하세요."></input>
+                                                                <input type='text' style={{ width: '320px', padding: '3px',
+                                                                        borderRadius: '10px', fontSize: '0.8em', height: '30px',
+                                                                        border: '1px solid #333333' }} placeholder="검색어를 입력하세요."
+                                                                        value={buySearchWord}
+                                                                        onChange={(e) => setBuySearchWord(e.target.value)}
+                                                                />
                                                         </div>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                                 <p style={{ width: "80px d-inline-flex" }}>등록일자 :</p>
                                                                 <div className="row mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
-                                                                        <div className="col p-1 text-center" onClick={() => handleDatePreset('day')}>당일</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleProductDatePreset('week')}>일주일</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleProductDatePreset('month', 1)}>1개월</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleProductDatePreset('month', 3)}>3개월</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleProductDatePreset('year')}>1년</div>
+                                                                        <div className="col p-1 text-center" onClick={() => handleDateProductPreset('day')}>당일</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('week')}>일주일</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('month', 1)}>1개월</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('month', 3)}>3개월</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('year')}>1년</div>
                                                                 </div>
                                                         </div>
                                                         <div style={{ marginLeft: "85px" }}>
@@ -1535,25 +1592,29 @@ function Manager() {
                                                                         <th style={{ backgroundColor: '#eeeeee' }}>기업명</th>
                                                                         <th style={{ backgroundColor: '#eeeeee' }}>판매가</th>
                                                                         <th style={{ backgroundColor: '#eeeeee' }}>주문건수</th>
-                                                                        <th style={{ backgroundColor: '#eeeeee' }}>배송비</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>구매비</th>
                                                                         <th style={{ backgroundColor: '#eeeeee' }}>수수료</th>
                                                                         <th style={{ backgroundColor: '#eeeeee' }}>상세보기</th>
                                                                 </tr>
                                                         </thead>
-                                                        {products.map((item) => (
-                                                                <tbody>
+                                                        {groupedList.map((item) => (
+                                                                <tbody key={item.product.pId}>
                                                                         <tr>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.writedate.slice(0, 10)}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.pid}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.b_category}〉{item.s_category}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.name}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.company.businessName}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.price}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.gumaesuriyang}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.deliver}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.susuryo}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.pid}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.s_category}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.name}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.company?.businessName}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.price}원</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.totalCount}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                                        {(item.totalPrice - item.totalDiscount).toLocaleString()}원
+                                                                                </td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                                        {Math.floor(item.totalPrice * 0.1).toLocaleString()}원
+                                                                                </td>
                                                                                 <td>
-                                                                                        <button className='button2' onClick={()=>setModalOpen(true)} style={{width:'80px'}}>상세보기</button>
+                                                                                        <button className='button2' onClick={() => { setSelectedBuyItem(item); setModalOpen(true); }} style={{width:'80px'}}>상세보기</button>
                                                                                 </td>
                                                                         </tr>
                                                                 </tbody>

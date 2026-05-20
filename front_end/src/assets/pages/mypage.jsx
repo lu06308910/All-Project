@@ -8,6 +8,7 @@ const MyPage = () => {
         const [userInfo, setUserInfo] = useState(null);
         const [loading, setLoading] = useState(true);
         const [inquiries, setInquiries] = useState([]); // DB에서 가져올 문의 목록
+        const [orders, setOrders] = useState([]); // DB에서 가져올 주문목록
         const [activeMenu, setActiveMenu] = useState('');
 
         // 세션에서 정보 가져오기 (로그인 시 저장했던 값)
@@ -19,7 +20,7 @@ const MyPage = () => {
         // 이름/기업명 동적 할당 (DataEntity: username / CpDataEntity: businessName)
         const userName = isCorporate ? userInfo?.businessName : userInfo?.username;
 
-        // 2. 서버에서 데이터 불러오기
+        // 서버에서 데이터 불러오기
         useEffect(() => {
                 const fetchData = async () => {
                         try {
@@ -34,10 +35,13 @@ const MyPage = () => {
                                         const inqRes = await axios.get(`http://localhost:9991/support/list?writer=${loginName}`);
                                         setInquiries(inqRes.data);
                                 }
-                                // 3. 찜 목록 (새로 추가!)
-                                if (logId && !isCorporate) { // 일반 유저일 때만 찜 목록 호출
+                                // 일반사용자 목록
+                                if (logId && !isCorporate) {
                                         const wishRes = await axios.get(`http://localhost:9991/wish/list?userid=${logId}`);
-                                        setWishItems(wishRes.data);
+                                        setWishItems(wishRes.data); // 찜목록
+
+                                        const orderRes = await axios.get(`http://localhost:9991/delivery/list?userid=${currentMId}`);
+                                        setOrders(orderRes.data); // 주문목록
                                 }
                         } catch (error) {
                                 console.error("데이터 로딩 실패:", error);
@@ -52,9 +56,7 @@ const MyPage = () => {
 
         // -----------------------------------------------------------------------------------------------------------------------
 
-        const [orders] = useState([
-                { id: 1, brand: "CANVAS", name: "크로켓 2000 거실장", price: "230,000", rating: "★★★☆☆", status: "배송 중", deliveryDate: "26.04.27", deliveryStatus: "도착(예정)" }
-        ]);
+
 
         const [cancelItems] = useState([
                 { id: 101, brand: "CANVAS", name: "크로켓 2000 거실장[1200 / 1500 / 2000]", option: "월넛 / 1200cm / 1개", price: "230,000", status: "취소 완료", date: "26.04.11(토)" },
@@ -76,11 +78,10 @@ const MyPage = () => {
         const unansweredCount = inquiries.filter(inq => !inq.answer).length;
 
         const totalAmount = orders.reduce((sum, order) => {
-                const price = typeof order.price === 'string'
-                        ? parseInt(order.price.replace(/,/g, ""))
-                        : order.price;
+                const price = order.price?.price || 0;
                 return sum + (price || 0);
         }, 0);
+
         // 배송 중 건수
         const deliveryCount = orders.filter(order => order.status === "배송 중").length;
 
@@ -228,6 +229,53 @@ const MyPage = () => {
                 </div>
         );
 };
+
+// 일반사용자 : 찜목록
+const WishList = ({ wishItems, onDelete }) => {
+        return (
+                <div className="wishlist-container">
+                        <div className="wish-count-bar">
+                                전체 <strong>{wishItems.length}</strong>개
+                        </div>
+
+                        {wishItems.length === 0 ? (
+                                <div className="empty-state">찜한 상품이 없습니다.</div>
+                        ) : (
+                                <div className="wish-grid">
+                                        {wishItems.map((item) => (
+                                                <div className="order-item" key={item.pid}>
+                                                        <div className="item-img-box">
+                                                                {item.fileList && item.fileList.length > 0 && item.fileList[0] ? (
+                                                                        <img
+                                                                                src={`http://localhost:9991/static/uploads/${item.fileList[0].filename}.${item.fileList[0].extname}`}
+                                                                                alt={item.pname}
+                                                                                style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                                                                        />
+                                                                ) : (
+                                                                        <div style={{ width: '100px', height: '100px', backgroundColor: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#999' }}>이미지 없음</div>
+                                                                )}
+                                                        </div>
+                                                        <div className="item-info">
+                                                                <span className="brand-name">{item.brand || "브랜드"}</span>
+                                                                <h3 className="product-name">{item.pname}</h3>
+                                                                <p className="product-price">{Number(item.price).toLocaleString()}원</p>
+                                                        </div>
+                                                        <div className="btn-group">
+                                                                <button className="btn-dark" onClick={() => window.location.href = `/product/${item.pid}`}>
+                                                                        구매하기
+                                                                </button>
+                                                                <button className="btn-light" onClick={() => onDelete(item.pid)}>
+                                                                        삭제
+                                                                </button>
+                                                        </div>
+                                                </div>
+                                        ))}
+                                </div>
+                        )}
+                </div>
+        );
+};
+
 // 일반 사용자 : 문의하기
 const InquiryList = ({ inquiries, isCorp }) => {
         const [expandedId, setExpandedId] = useState(null);
@@ -291,109 +339,59 @@ const InquiryList = ({ inquiries, isCorp }) => {
                 </div>
         );
 };
-// 일반사용자 : 찜목록
-const WishList = ({ wishItems, onDelete }) => {
-        return (
-                <div className="wishlist-container">
-                        <div className="wish-count-bar">
-                                전체 <strong>{wishItems.length}</strong>개
-                        </div>
 
-                        {wishItems.length === 0 ? (
-                                <div className="empty-state">찜한 상품이 없습니다.</div>
-                        ) : (
-                                <div className="wish-grid">
-                                        {wishItems.map((item) => (
-                                                <div className="order-item" key={item.pid}>
-                                                        <div className="item-img-box">
-                                                                <img
-                                                                        src={`http://localhost:9991/static/uploads/${item.fileList[0].filename}.${item.fileList[0].extname}`}
-                                                                        alt={item.name}
-                                                                        style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                                                                />
-                                                        </div>
-                                                        <div className="item-info">
-                                                                <span className="brand-name">{item.brand || "브랜드"}</span>
-                                                                <h3 className="product-name">{item.pname}</h3>
-                                                                <p className="product-price">{Number(item.price).toLocaleString()}원</p>
-                                                        </div>
-                                                        <div className="btn-group">
-                                                                <button className="btn-dark" onClick={() => window.location.href = `/product/${item.pid}`}>
-                                                                        구매하기
-                                                                </button>
-                                                                <button className="btn-light" onClick={() => onDelete(item.pid)}>
-                                                                        삭제
-                                                                </button>
-                                                        </div>
-                                                </div>
-                                        ))}
-                                </div>
-                        )}
-                </div>
-        );
-};
-// ----------------------------------------- 일반 사용자 -------------------------------------------
-/* 주문내역 */
+
+// 일반 사용자 : 주문내역
 const OrderHistory = ({ orders }) => {
         if (!orders || orders.length === 0) {
                 return <div className="empty-state">주문한 상품이 없습니다.</div>;
         }
-        const totalAmount = orders ? orders.reduce((sum, item) => {
-                // 혹시 price가 문자열일 수도 있으니 숫자로 바꿔서 더해줍니다.
-                const price = typeof item.price === 'string'
-                        ? parseInt(item.price.replace(/[^0-9]/g, ""))
-                        : item.price;
-                return sum + (price || 0);
-        }, 0) : 0;
 
-        // 1. 모달 열림 상태와 선택된 주문 정보를 담을 State
         const [selectedOrder, setSelectedOrder] = useState(null);
+        const [selectedDelivery, setSelectedDelivery] = useState(null);
 
-        // 상세 내역 닫기 함수
         const closeModal = () => setSelectedOrder(null);
+        const closeDeliveryModal = () => setSelectedDelivery(null);
 
         return (
                 <>
-
                         <div className="search-bar">
                                 <input type="text" placeholder="검색할 상품을 입력해주세요." />
                                 <button className="search-icon"></button>
                         </div>
                         <hr />
-                        {orders.map((item) => (
-                                <div className="order-item" key={item.id}>
-                                        <div className="item-img"></div>
+                        {orders.map((item, index) => (
+                                <div className="order-item" key={item.dId || index}>
+                                        <div className="item-img">
+                                                {item.product?.fileList?.[0] && (
+                                                        <img src={`http://localhost:9991/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                )}
+                                        </div>
                                         <div className="item-info">
-                                                <span className="brand-name">{item.brand}</span>
-                                                <h3 className="product-name">{item.name}</h3>
-                                                <p className="product-price">{item.price}원</p>
+                                                <span className="brand-name">{item.product?.brand || "CANVAS"}</span>
+                                                <h3 className="product-name">{item.product?.pname || "상품명 없음"}</h3>
+                                                <p className="product-price">{item.product?.price ? Number(item.product.price).toLocaleString() : 0}원</p>
                                         </div>
                                         <div className="btn-group">
-                                                <span style={{ color: '#ffc107' }}>{item.rating}</span>
-                                                <button className="btn-light"
-                                                        onClick={() => {
-                                                                window.location.href = '/productDetail/'
-                                                        }}>후기작성</button>
+                                                <span style={{ color: '#ffc107' }}>★★★☆☆</span>
+                                                <button className="btn-light" onClick={() => window.location.href = `/productDetail/${item.product?.pId}`}>후기작성</button>
                                         </div>
                                         <div className="btn-group">
-                                                <span className="status-text">{item.status}</span>
-                                                <button className="btn-light">배송조회</button>
+                                                <span className="status-text">{item.status || "배송 준비중"}</span>
+                                                <button className="btn-light" onClick={() => setSelectedDelivery(item)}>배송조회</button>
                                         </div>
                                         <div className="btn-group">
                                                 <span style={{ fontSize: '12px', textAlign: 'center' }}>
-                                                        {item.deliveryDate}<br />{item.deliveryStatus}
+                                                        {item.deliveryDate || "기한 미정"}<br />{item.deliveryStatus || ""}
                                                 </span>
-                                                <button className="btn-dark"
-                                                        onClick={() => {
-                                                                console.log("클릭한 아이템", item);
-                                                                setSelectedOrder(item)
-                                                        }}>
+                                                <button className="btn-dark" onClick={() => setSelectedOrder(item)}>
                                                         상세보기
                                                 </button>
                                         </div>
                                 </div>
                         ))}
-                        {/* 2. 모달 조건부 렌더링 (selectedOrder가 있을 때만 표시) */}
+
+                        {/* 주문 상세보기 모달 */}
                         {selectedOrder && (
                                 <div className="modal-overlay" onClick={closeModal}>
                                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -411,26 +409,64 @@ const OrderHistory = ({ orders }) => {
                                                         <hr />
                                                         <section>
                                                                 <h4>배송지 정보</h4>
-                                                                <p>받는분: 김대호</p>
-                                                                <p>주소: 서울특별시 강남구</p>
+                                                                <p>수령인: {selectedOrder.name || "본인"}</p>
+                                                                <p>연락처: {selectedOrder.tel}</p>
+                                                                <p>배송주소: {selectedOrder.address}</p>
+                                                                <p>배송메모: {selectedOrder.memo || "없음"}</p>
                                                         </section>
                                                 </div>
                                         </div>
                                 </div>
                         )}
 
+                        {/* 배송조회 모달 */}
+                        {selectedDelivery && (
+                                <div className="modal-overlay" onClick={closeDeliveryModal}>
+                                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                                                <div className="modal-header">
+                                                        <h2>배송 조회 ({selectedDelivery.product?.pname})</h2>
+                                                        <button className="close-btn" onClick={closeDeliveryModal}>&times;</button>
+                                                </div>
+                                                <div className="modal-body">
+                                                        <section style={{ marginBottom: '15px' }}>
+                                                                <h4>기본 배송 정보</h4>
+                                                                <p>택배사: 캔버스 로지스틱스</p>
+                                                                <p>운송장번호: {selectedDelivery.trackingNo || '등록 대기중'}</p>
+                                                                <p>현재상태: <strong style={{ color: '#2196F3' }}>{selectedDelivery.status || "배송 준비중"}</strong></p>
+                                                        </section>
+                                                        <hr />
+                                                        <section style={{ marginTop: '15px' }}>
+                                                                <h4>배송 진행 상황</h4>
+                                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '10px 5px' }}>
+                                                                        <div style={{ display: 'flex', gap: '15px', color: '#2196F3', fontWeight: 'bold' }}>
+                                                                                <span style={{ fontSize: '13px', minWidth: '70px' }}>실시간</span>
+                                                                                <div>
+                                                                                        <strong style={{ fontSize: '14px' }}>{selectedDelivery.status || "배송 준비중"}</strong>
+                                                                                        <p style={{ margin: '3px 0 0 0', fontSize: '12px', color: '#2196F3' }}>
+                                                                                                {selectedDelivery.status === '배송 완료' ? '고객님께 배송이 완료되었습니다.' : '상품을 신속하게 배송해 드리기 위해 준비 중입니다.'}
+                                                                                        </p>
+                                                                                </div>
+                                                                        </div>
+                                                                </div>
+                                                        </section>
+                                                </div>
+                                        </div>
+                                </div>
+                        )}
                 </>
         );
 };
+// ----------------------------------------- 일반 사용자 -------------------------------------------
+
+
 /* 취소/반품/ 교환 내역 */
 const CancelHistory = ({ cancelItems }) => {
+        const [selectedCancel, setSelectedCancel] = useState(null);
+        const closeModal = () => setSelectedCancel(null);
+
         if (!cancelItems || cancelItems.length === 0) {
                 return <div className="empty-state">취소/반품/교환 내역이 없습니다.</div>;
         }
-
-        const [selectedCancel, setSelectedCancel] = useState(null);
-
-        const closeModal = () => setSelectedCancel(null);
 
         return (
                 <>
@@ -442,30 +478,26 @@ const CancelHistory = ({ cancelItems }) => {
                         {cancelItems.map((item) => (
                                 <div className="order-item" key={item.id}>
                                         <div className="item-img" ></div>
-
                                         <div className="item-info">
                                                 <span className="brand-name">{item.brand}</span>
                                                 <h3 className="product-name">{item.name}</h3>
                                                 <p style={{ fontSize: '13px', color: '#888', margin: '4px 0' }}>{item.option}</p>
                                                 <p className="product-price">{item.price}원</p>
                                         </div>
-
-                                        {/* 상태 표시 (취소 완료, 반품 신청 등) */}
                                         <div className="btn-group">
                                                 <span className="status-text" style={{ fontWeight: 'bold' }}>{item.status}</span>
                                                 {item.status === '교환 신청' && <button className="btn-light">배송조회</button>}
                                         </div>
-
                                         <div className="btn-group">
                                                 <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{item.date}</span>
-                                                <button className="btn-light" style={{ border: '1px solid #333' }}
-                                                        onClick={() => { setSelectedCancel(item) }}>
+                                                <button className="btn-light" style={{ border: '1px solid #333' }} onClick={() => setSelectedCancel(item)}>
                                                         {item.status.split(' ')[0]} 상세보기
                                                 </button>
                                         </div>
                                 </div>
                         ))}
-                        {/*  취소 상세 보기 */}
+
+                        {/* 취소 상세 내역 모달 */}
                         {selectedCancel && (
                                 <div className="modal-overlay" onClick={closeModal}>
                                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -477,7 +509,6 @@ const CancelHistory = ({ cancelItems }) => {
                                                         <section>
                                                                 <h4>{selectedCancel.status} 정보</h4>
                                                                 <p>접수일시: {selectedCancel.date}</p>
-                                                                {/* 취소 사유가 데이터에 없다면 기본 문구 출력 */}
                                                                 <p>접수사유: {selectedCancel.reason || '단순 변심'}</p>
                                                                 <p>처리상태: <span style={{ color: '#d9534f' }}>{selectedCancel.status}</span></p>
                                                         </section>
