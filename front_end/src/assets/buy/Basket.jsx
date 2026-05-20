@@ -4,33 +4,57 @@ import React, { useEffect, useState } from "react";
 import axios from 'axios';
 
 function Basket() {
+
         const navigate = useNavigate();
-        //로그인 시 정보 저장
+        const [cartList, setCartList] = useState([]);
+
+        // 로그인 사용자
         const mId = sessionStorage.getItem("mId");
+
+        //  장바구니 목록 DB에서 가져오기
         useEffect(() => {
+                if (!mId) {
+                        console.log("mId 없음");
+                        return;
+                }
+
                 axios.get(`http://localhost:9990/cart/list/${mId}`)
-                        .then(res => setCartList(res.data.map(item => ({
-                                ...item,
-                                newdelivery: item.product.price >= 50000 ? 0 : 3000,
-                                checked: false
-                        }))))
+                        .then(res => {
+                                console.log("cart response:", res.data);
+
+                                setCartList(res.data.map(item => ({
+                                        ...item,
+                                        newdelivery: item.product?.price * item.count >= 50000 ? 0 : 3000,
+                                        checked: false
+                                })));
+                        })
                         .catch(err => console.log(err));
-        }, []);
+
+        }, [mId]);
+
+        // 콤마 제거 후 숫자로 변환하는 함수
+        const toNumber = (value) => {
+                if (value === null || value === undefined) return 0;
+                return Number(String(value).replace(/,/g, ""));
+        };
 
         // 버튼 클릭 시 수량 조절
-        const [cartList, setCartList] = useState([]);
 
         // 직접 입력 시 숫자만 허용하고 수정된 수치 상태 반영 및 유지
         const handleInputChange = (id, e) => {
                 const value = e.target.value.replace(/[^0-9]/g, '');
-                const newCount = value === '' ? 1 : parseInt(value);
+                const newCount = value === '' ? 1 : Number(value);
 
                 setCartList(prevList =>
                         prevList.map(item => {
                                 if (item.cartId === id) {
-                                        const currentCount = newCount === 0 ? 1 : newCount; // 최종 계산은 최소 1로
-                                        const newDelivery = (item.product.price * currentCount >= 50000) ? 0 : 3000;
-                                        return { ...item, count: newCount, newdelivery: newDelivery };
+                                        const price = toNumber(item.product.price);
+
+                                        return {
+                                                ...item,
+                                                count: newCount,
+                                                newdelivery: price * newCount >= 50000 ? 0 : 3000
+                                        };
                                 }
                                 return item;
                         })
@@ -42,9 +66,18 @@ function Basket() {
                 setCartList(prevList =>
                         prevList.map(item => {
                                 if (item.cartId === id) {
+                                        const price = toNumber(item.product.price);
+
                                         const newCount = Math.max(1, item.count + delta);
-                                        const updatedDelivery = (item.product.price * newCount < 50000) ? 3000 : 0;
-                                        return { ...item, count: newCount, newdelivery: updatedDelivery };
+
+                                        const updatedDelivery =
+                                                price * newCount >= 50000 ? 0 : 3000;
+
+                                        return {
+                                                ...item,
+                                                count: newCount,
+                                                newdelivery: updatedDelivery
+                                        };
                                 }
                                 return item;
                         })
@@ -122,13 +155,27 @@ function Basket() {
                 navigate('/parchase');
 
         }
+        const checkedItems = cartList.filter(item => item.checked);
 
-        const totalProductPrice = checkedItems.reduce((sum, item) => sum + (item.product.price * item.count), 0);
-        const totalDiscount = cartList.reduce((sum, item) => sum + (item.discount * item.count || 0), 0);
-        const totalDelivery = checkedItems.reduce((sum, item) => sum + item.newdelivery, 0);
+        const totalProductPrice = checkedItems.reduce((sum, item) => {
+                const price = Number(String(item.product.price).replace(/,/g, ''));
+                return sum + price * item.count;
+        }, 0);
+
+        const totalDelivery = checkedItems.reduce(
+                (sum, item) => sum + (item.newdelivery || 0),
+                0
+        );
+
+        const totalDiscount = checkedItems.reduce(
+                (sum, item) => sum + (item.discount || 0),
+                0
+        );
 
         // 최종 결제 예정 금액
         const totalPayment = totalProductPrice - totalDiscount + totalDelivery;
+
+
 
         return (
                 <>
@@ -201,28 +248,50 @@ function Basket() {
                                                                                 </td>
                                                                                 <td style={{ width: '40%' }}>
                                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '20px' }}>
-                                                                                                <img src='image/bed.jpeg' className='img-basket' alt="제품" />
-                                                                                                <div style={{
-                                                                                                        display: 'flex', flexDirection: 'column', gap: '4px',
-                                                                                                        flex: 1, minWidth: 0
-                                                                                                }}>
-                                                                                                        <button className='button3' style={{
-                                                                                                                width: 'fit-content', maxWidth: '90%', overflow: 'hidden',
-                                                                                                                textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block'
-                                                                                                        }}>
+                                                                                                <img src={item.product.fileList?.[0]
+                                                                                                        ? `http://localhost:9990/upload/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`
+                                                                                                        : "/no-image.png"
+                                                                                                }
+                                                                                                        className='img-basket' alt="제품" />
+
+                                                                                                <div
+                                                                                                        style={{
+                                                                                                                display: 'flex',
+                                                                                                                flexDirection: 'column',
+                                                                                                                gap: '6px',
+                                                                                                                flex: 1,
+                                                                                                                minWidth: 0
+                                                                                                        }}
+                                                                                                >
+                                                                                                        {/* 상품명 버튼 */}
+                                                                                                        <button
+                                                                                                                className='button3'
+                                                                                                                style={{
+                                                                                                                        width: 'fit-content',
+                                                                                                                        maxWidth: '90%',
+                                                                                                                        overflow: 'hidden',
+                                                                                                                        textOverflow: 'ellipsis',
+                                                                                                                        whiteSpace: 'nowrap',
+                                                                                                                        display: 'block',
+                                                                                                                        fontWeight: '600',
+                                                                                                                }}
+                                                                                                        >
                                                                                                                 {item.product.name}
                                                                                                         </button>
-                                                                                                        <span
-                                                                                                                style={{
-                                                                                                                        overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
-                                                                                                                        WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, whiteSpace: 'normal',
-                                                                                                                        height: '1.5em', fontWeight: '500', width: '90%'
-                                                                                                                }}>
-                                                                                                                {item.product.name}
-                                                                                                        </span>
-                                                                                                        <div>
+
+                                                                                                        {/* 옵션 + 옵션변경 */}
+                                                                                                        <div style={{ fontSize: '14px', color: '#555' }}>
                                                                                                                 <span>{item.product.option} </span>
-                                                                                                                <span>옵션변경</span>
+                                                                                                                <span
+                                                                                                                        style={{
+                                                                                                                                marginLeft: '8px',
+                                                                                                                                color: '#007bff',
+                                                                                                                                cursor: 'pointer',
+                                                                                                                                textDecoration: 'underline'
+                                                                                                                        }}
+                                                                                                                >
+                                                                                                                        옵션변경
+                                                                                                                </span>
                                                                                                         </div>
                                                                                                 </div>
                                                                                         </div>
@@ -253,13 +322,19 @@ function Basket() {
                                                                                         </div>
                                                                                 </td>
                                                                                 <td style={{ width: '10%', textAlign: 'center' }}>
-                                                                                        {item.product.price.toLocaleString()}원
+                                                                                        {Number(String(item.product.price).replace(/,/g, '')).toLocaleString()}원
                                                                                 </td>
+
                                                                                 <td style={{ width: '10%', textAlign: 'center' }}>
-                                                                                        {item.newdelivery.toLocaleString()}원
+                                                                                        {Number(item.newdelivery || 0).toLocaleString()}원
                                                                                 </td>
+
                                                                                 <td style={{ width: '10%', textAlign: 'center' }}>
-                                                                                        {(item.product.price * item.count + item.newdelivery).toLocaleString()}
+                                                                                        {(
+                                                                                                Number(String(item.product.price).replace(/,/g, '')) *
+                                                                                                Number(item.count || 0) +
+                                                                                                Number(item.newdelivery || 0)
+                                                                                        ).toLocaleString()}원
                                                                                 </td>
                                                                                 <td style={{ width: '10%', textAlign: 'center' }}>
                                                                                         <button className='button3' style={{ backgroundColor: 'black', color: 'white' }}
@@ -269,15 +344,27 @@ function Basket() {
                                                                                         </button>
                                                                                 </td>
                                                                         </tr>
-                                                                        <hr style={{ width: '100%' }} />
+
                                                                 </tbody>
                                                         ))
                                                 )}
                                         </table>
+                                        <hr style={{ width: '100%' }} />
                                         <div style={{ textAlign: 'center', backgroundColor: '#eeeeee', padding: '20px 0px' }}>
                                                 <h5 style={{ fontWeight: '600' }}>
                                                         <span style={{ marginLeft: '10px' }}>
-                                                                {totalPayment.toLocaleString()}원
+                                                                {cartList
+                                                                        .reduce((acc, item) => {
+                                                                                const price = Number(String(item?.product?.price ?? 0).replace(/,/g, ''));
+                                                                                const count = Number(item?.count ?? 0);
+                                                                                const discount = Number(item?.discount ?? 0);
+                                                                                const delivery = Number(item?.newdelivery ?? 0);
+
+                                                                                const itemTotal = price * count;
+
+                                                                                return acc + (itemTotal - discount + delivery);
+                                                                        }, 0)
+                                                                        .toLocaleString()} 원
                                                         </span>
                                                 </h5>
                                         </div>

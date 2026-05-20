@@ -22,6 +22,8 @@ function ProductDetail() {
         const [selectedOptions, setSelectedOptions] = useState([]);
         const [openReviewModal, setOpenReviewModal] = useState(false);
 
+
+
         // 사이즈 옵션
         const [sizes, setSizes] = useState([]);
 
@@ -33,10 +35,10 @@ function ProductDetail() {
         // 리뷰 
         const [reviewFilter, setReviewFilter] = useState("all"); // 리뷰글보기 , 사진만 보기 버튼
         const [zoomImage, setZoomImage] = useState(null); // 리뷰 확대 사진
-        
+
         const [content, setContent] = useState("");
         const [file, setFile] = useState(null);
-        
+
         const [reviews, setReviews] = useState([]); // 백엔드 받아오기
         const [star, setStar] = useState(0);
 
@@ -232,9 +234,35 @@ function ProductDetail() {
                         })
                         .catch(err => console.log(err));
         }
+        // 장바구니 담기 버튼 클릭시 선택한 옵션값 보내기
+        const addToCart = () => {
+                const mId = Number(sessionStorage.getItem("mId"));
+                console.log("mId:", mId);
+                console.log("productId:", data.id);
+
+                if (selectedOptions.length === 0) {
+                        return alert("추가한 옵션이 없습니다.");
+                }
+
+                selectedOptions.forEach(opt => {
+                        const payload = {
+                                mId: Number(mId),
+                                pId: Number(data.id),
+                                discount: 0,
+                                count: opt.count,
+                                color: opt.color,
+                                size: opt.extraOption
+                        };
+
+                        axios.post("http://localhost:9990/cart/add", payload)
+                                .catch(err => console.log(err));
+                });
+
+                alert("장바구니에 담겼습니다!");
+        };
+
 
         // 리뷰 작성
-
         const averageStar =
                 reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.star, 0) / reviews.length).toFixed(1) : 0; // 평균별점 계산
         const renderStar = (score) => {
@@ -456,7 +484,7 @@ function ProductDetail() {
                                                 </div>
                                         )}
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '10px 0', justifyContent: 'space-between' }}>
-                                                <button className="buy-btn">장바구니</button>
+                                                <button className="buy-btn" onClick={addToCart}>장바구니</button>
                                                 <button className="buy-btn">구매하기</button>
                                         </div>
                                 </div>
