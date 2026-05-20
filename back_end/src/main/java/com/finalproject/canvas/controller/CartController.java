@@ -1,6 +1,7 @@
 package com.finalproject.canvas.controller;
 
 import com.finalproject.canvas.entity.CartEntity;
+import com.finalproject.canvas.repository.CartRepository;
 import com.finalproject.canvas.service.CartService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import java.util.List;
 @RequestMapping("/cart")
 public class CartController {
     private final CartService cartService;
+    private final CartRepository cartRepository;
 
     //모든 회원 정보 가져오기 (관리자 페이지)
     @GetMapping("/all")
@@ -45,5 +47,23 @@ public class CartController {
 
         cartService.addCart(cart);
         return ResponseEntity.ok("success");
+    }
+    // 장바구니페이지에서 옵션변경 기능
+    @PutMapping("/update/{cartId}")
+    public ResponseEntity<?> updateCart(
+            @PathVariable Integer cartId,
+            @RequestBody CartEntity req
+    ) {
+        CartEntity cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new RuntimeException("cart not found"));
+
+        cart.setColor(req.getColor());
+        cart.setSize(req.getSize());
+        cart.setCount(req.getCount());
+        cart.setPrice(req.getPrice());
+
+        cartRepository.save(cart);
+
+        return ResponseEntity.ok("updated");
     }
 }

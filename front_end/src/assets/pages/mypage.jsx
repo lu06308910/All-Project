@@ -35,7 +35,7 @@ const MyPage = () => {
                                 if (logId) {
                                         const userRes = await axios.get(`http://localhost:9991/member/edit?userid=${logId}&usertype=${usertype}`);
                                         setUserInfo(userRes.data);
-                                        // 주문목록 가져올때 필요한 기업 id
+                                        // 주문목록 가져올때 필요한 id
                                         ordersMemberId = userRes.data?.mid;
                                 }
 
@@ -87,10 +87,19 @@ const MyPage = () => {
 
 
         // 대시보드
-        const unansweredCount = inquiries.filter(inq => !inq.reply).length; // 미답변문의
+        // 미답변 상품문의 카운트 (기업용 공통)
+        const unansweredCount = inquiries ? inquiries.filter(inq => !inq.reply).length : 0;
 
+        // 기업 사용자용: 오늘 들어온 주문 건수 계산
+        const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        const todaySalesCount = salesList ? salesList.filter(item => item.writedate && item.writedate.startsWith(todayStr)).length : 0;
+
+        //기업 사용자용: 현재 정상 판매 중인 상품 수 (재고 > 0)
+        const safeProducts = Array.isArray(products) ? products : [];
+        const activeProductsCount = safeProducts.filter(p => (p.count || 0) > 0).length;
+
+        // 일반 사용자용: 총 구매 금액 합산
         const totalAmount = orders ? orders.reduce((sum, order) => {
-                // BuyEntity의 price 필드를 직접 참조하되 없으면 0 처리
                 const priceValue = order.price || 0;
                 const price = typeof priceValue === 'string'
                         ? parseInt(priceValue.replace(/[^0-9]/g, ""), 10)
@@ -98,13 +107,11 @@ const MyPage = () => {
                 return sum + (price || 0);
         }, 0) : 0;
 
-        // 배송 중 건수
-        const deliveryCount = orders.filter(order => order.status === "배송 중").length;
+        // 일반 사용자용: 배송 중 및 결제 완료 상태를 묶은 배송/거래 프로세스 카운트
+        const activeDeliveryCount = orders ? orders.filter(order => order.status === "배송 중" || order.status === "결제완료").length : 0;
 
-        // 작성할 리뷰)
-        const reviewCount = 5;
-
-        const cancelCount = cancelItems ? cancelItems.length : 0;
+        // 일반 사용자용: 내가 찜한 상품 카운트
+        const totalWishCount = wishItems ? wishItems.length : 0;
 
 
         /* 마이페이지 컴포넌트 */
@@ -136,7 +143,7 @@ const MyPage = () => {
                 if (!window.confirm("찜 목록에서 삭제하시겠습니까?")) return;
                 try {
                         // ProductDetail에서 쓰던 toggleLike와 같은 주소
-                        await axios.post(`http://localhost:9991/wish/toggle`, {
+                        await axios.post(`http://localhost:9991/like/toggle`, {
                                 pid: pid,
                                 userid: logId
                         });
@@ -152,56 +159,57 @@ const MyPage = () => {
                 <div className="mypage-container">
                         <h1 className="mypage-title">마이스토어 {`(${userName}) 님`}</h1>
 
+                        {/* 🌟 수정된 대시보드 스탯 섹션 */}
                         <section className="info-box">
                                 <div className="profile-header">
                                         <div className="nickname-link">
                                                 <a href={`/member/memberEdit?userid=${logId}&usertype=${usertype}`}>
-                                                        {userName}님 〉
-                                                </a></div>
+                                                        {userName}님 개인정보 관리 〉
+                                                </a>
+                                        </div>
                                 </div>
                                 <div className="info-stats">
                                         {isCorporate ? (
-                                                // 기업용 스탯
+                                                // 💰 기업 사용자용 전용 대시보드 레이아웃
                                                 <>
-                                                        <div className="stat-item">
-                                                                <div className="stat-label">오늘의 주문 〉</div>
-                                                                <div className="stat-value">5건</div>
+                                                        <div className="stat-item" onClick={() => setActiveMenu('판매 현황')} style={{ cursor: 'pointer' }}>
+                                                                <div className="stat-label">오늘의 신규 주문 〉</div>
+                                                                <div className="stat-value" style={{ color: todaySalesCount > 0 ? '#1976d2' : 'inherit' }}>
+                                                                        {todaySalesCount}건
+                                                                </div>
                                                         </div>
-                                                        <div className="stat-item">
-                                                                <div className="stat-label">취소/반품 〉</div>
-                                                                <div className="stat-value" style={{ color: cancelCount > 0 ? 'red' : 'inherit' }}>{cancelCount}건</div>
+                                                        <div className="stat-item" onClick={() => setActiveMenu('상품 등록/관리')} style={{ cursor: 'pointer' }}>
+                                                                <div className="stat-label">정상 판매중 상품 〉</div>
+                                                                <div className="stat-value">{activeProductsCount}종</div>
                                                         </div>
-                                                        <div className="stat-item">
-                                                                <div className="stat-label">미답변 문의 〉</div>
-                                                                <div className="stat-value" style={{ color: unansweredCount > 0 ? 'red' : 'inherit' }}>
+                                                        <div className="stat-item" onClick={() => setActiveMenu('고객문의 관리')} style={{ cursor: 'pointer' }}>
+                                                                <div className="stat-label">미답변 상품 문의 〉</div>
+                                                                <div className="stat-value" style={{ color: unansweredCount > 0 ? '#d32f2f' : 'inherit', fontWeight: unansweredCount > 0 ? 'bold' : 'normal' }}>
                                                                         {unansweredCount}건
                                                                 </div>
                                                         </div>
                                                 </>
                                         ) : (
+                                                // 🧑‍💻 일반 사용자용 전용 대시보드 레이아웃
                                                 <>
-                                                        <div className="stat-item" onClick={() => setActiveMenu('주문내역')}>
-                                                                <div className="stat-label">총구매 금액 〉</div>
-                                                                <div className="stat-value">
+                                                        <div className="stat-item" onClick={() => setActiveMenu('주문내역')} style={{ cursor: 'pointer' }}>
+                                                                <div className="stat-label">총 누적 구매 금액 〉</div>
+                                                                <div className="stat-value" style={{ fontSize: '18px' }}>
                                                                         {totalAmount.toLocaleString()}원
                                                                 </div>
                                                         </div>
-
-                                                        {/* 2. 배송 중: 현재 가장 궁금한 정보 (실시간성) */}
-                                                        <div className="stat-item" >
-                                                                <div className="stat-label">배송 중 〉</div>
+                                                        <div className="stat-item" onClick={() => setActiveMenu('주문내역')} style={{ cursor: 'pointer' }}>
+                                                                <div className="stat-label">진행중인 주문/배송 〉</div>
                                                                 <div className="stat-value">
-                                                                        <span style={{ color: deliveryCount > 0 ? '#2c2c2e' : '#ccc' }}>
-                                                                                {deliveryCount}건
+                                                                        <span style={{ color: activeDeliveryCount > 0 ? '#2c2c2e' : '#ccc', fontWeight: activeDeliveryCount > 0 ? 'bold' : 'normal' }}>
+                                                                                {activeDeliveryCount}건
                                                                         </span>
                                                                 </div>
                                                         </div>
-
-                                                        {/* 3. 작성할 리뷰: 재방문 및 참여 유도 */}
-                                                        <div className="stat-item">
-                                                                <div className="stat-label">작성할 리뷰 〉</div>
-                                                                <div className="stat-value" style={{ color: reviewCount > 0 ? '#ffc107' : '#ccc' }}>
-                                                                        {reviewCount}건
+                                                        <div className="stat-item" onClick={() => setActiveMenu('찜')} style={{ cursor: 'pointer' }}>
+                                                                <div className="stat-label">나의 찜 목록 〉</div>
+                                                                <div className="stat-value" style={{ color: totalWishCount > 0 ? '#ffc107' : '#ccc' }}>
+                                                                        {totalWishCount}개
                                                                 </div>
                                                         </div>
                                                 </>
@@ -1039,7 +1047,7 @@ const SettlementHistory = ({ sales }) => {
 // 기업사용자 : 상품 문의 관리
 const CorpInquiryList = ({ inquiries }) => {
         const [expandedId, setExpandedId] = useState(null);
-        const [replyText, setReplyText] = useState(""); // ✍️ 기업 답변 입력 상태
+        const [replyText, setReplyText] = useState(""); // 기업 답변 입력 상태
 
         // 문의 열고 닫기 토글
         const toggleInquiry = (id, currentReply) => {
@@ -1052,7 +1060,7 @@ const CorpInquiryList = ({ inquiries }) => {
                 }
         };
 
-        // 💌 백엔드로 답변 등록 요청 전송
+        // 백엔드로 답변 등록 요청 전송
         const handleReplySubmit = async (id) => {
                 if (!replyText.trim()) {
                         alert("답변 내용을 입력해 주세요.");
@@ -1063,7 +1071,7 @@ const CorpInquiryList = ({ inquiries }) => {
                         await axios.put(`http://localhost:9991/question/seller/reply/${id}`, {
                                 reply: replyText
                         });
-                        alert("상품 문의 답변이 성공적으로 등록되었습니다! ✏️");
+                        alert("상품 문의 답변이 성공적으로 등록되었습니다.");
                         window.location.reload(); // 등록 후 리스트 새로고침
                 } catch (error) {
                         console.error("답변 등록 중 에러 발생:", error);

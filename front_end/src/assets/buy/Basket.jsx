@@ -11,6 +11,32 @@ function Basket() {
         // 로그인 사용자
         const mId = sessionStorage.getItem("mId");
 
+        // 옵션변경 선택시 저장할 정보
+        const [editCartId, setEditCartId] = useState(null);
+        const [editColor, setEditColor] = useState("");
+        const [editSize, setEditSize] = useState("");
+        const [editCount, setEditCount] = useState(1);
+        const openEdit = (item) => {
+                setEditCartId(item.cartId);
+                setEditColor(item.color);
+                setEditSize(item.size);
+                setEditCount(item.count); // ⭐ 이거 필수
+        };
+
+        // 옵션 변경 시 가격 계산 함수
+        const calcPrice = (item, size) => {
+                const base = Number(String(item.product?.price || 0).replace(/,/g, ''));
+
+                const sizes = JSON.parse(item.product?.size || "[]");
+                const selected = sizes.find(s => s.size === size);
+
+                const extra = Number(selected?.price || 0);
+
+                return base + extra;
+        };
+
+
+
         //  장바구니 목록 DB에서 가져오기
         useEffect(() => {
                 if (!mId) {
@@ -22,9 +48,13 @@ function Basket() {
                         .then(res => {
                                 console.log("cart response:", res.data);
 
+
                                 setCartList(res.data.map(item => ({
                                         ...item,
-                                        newdelivery: item.product?.price * item.count >= 50000 ? 0 : 3000,
+
+                                        sizes: JSON.parse(item.product?.size || "[]"), // 사이즈 정보 파싱
+
+                                        newdelivery: item.price * item.count >= 50000 ? 0 : 3000,
                                         checked: false
                                 })));
                         })
@@ -32,57 +62,104 @@ function Basket() {
 
         }, [mId]);
 
+        // 장바구니 정보 DB에 변경한 값으로 update(옵션변경 기능)
+        const updateCartItem = async ({
+                item,
+                color = item.color,
+                size = item.size,
+                count = item.count
+        }) => {
+
+
+
+                const safeCount = Number(count || 1);
+
+                // 1. 원가
+                const basePrice = Number(item.product?.price || 0);
+
+                // 2. 사이즈 목록에서 새 사이즈 추가금 찾기
+                const sizes = JSON.parse(item.product?.size || "[]");
+
+
+
+                const selectedSize = sizes.find(s => s.size === size);
+                const sizeExtra = Number(selectedSize?.price || 0);
+
+                console.log("사이즈 추가금액:", sizeExtra);
+
+                // 3. 단가 = 원가 + 사이즈 추가금
+                const unitPrice = basePrice + sizeExtra;
+
+                // 4. 총 금액
+                const totalPrice = unitPrice * safeCount;
+                console.log("총 금액:", totalPrice);
+
+                // 5. 배송비
+                const newDelivery = totalPrice >= 50000 ? 0 : 3000;
+
+                try {
+                        await axios.put(`http://localhost:9991/cart/update/${item.cartId}`, {
+                                color,
+                                size,
+                                count: safeCount,
+                                price: totalPrice
+                        });
+
+                        setCartList(prev =>
+                                prev.map(c =>
+                                        c.cartId === item.cartId
+                                                ? {
+                                                        ...c,
+                                                        color,
+                                                        size,
+                                                        count: safeCount,
+                                                        price: totalPrice,
+                                                        newdelivery: newDelivery
+                                                }
+                                                : c
+                                )
+                        );
+
+                        setEditCartId(null);
+                        setEditColor("");
+                        setEditSize("");
+                        setEditCount(1);
+
+
+                } catch (err) {
+                        console.log(err);
+                }
+        };
+
+
         // 콤마 제거 후 숫자로 변환하는 함수
         const toNumber = (value) => {
                 if (value === null || value === undefined) return 0;
                 return Number(String(value).replace(/,/g, ""));
         };
 
-        // 버튼 클릭 시 수량 조절
-
         // 직접 입력 시 숫자만 허용하고 수정된 수치 상태 반영 및 유지
-        const handleInputChange = (id, e) => {
+        const handleInputChange = (item, e) => {
                 const value = e.target.value.replace(/[^0-9]/g, '');
                 const newCount = value === '' ? 1 : Number(value);
 
-                setCartList(prevList =>
-                        prevList.map(item => {
-                                if (item.cartId === id) {
-                                        const price = toNumber(item.product.price);
+                const price = calcPrice(item, item.size);
 
-                                        return {
-                                                ...item,
+                setCartList(prev =>
+                        prev.map(c =>
+                                c.cartId === item.cartId
+                                        ? {
+                                                ...c,
                                                 count: newCount,
+                                                price,
                                                 newdelivery: price * newCount >= 50000 ? 0 : 3000
-                                        };
-                                }
-                                return item;
-                        })
+                                        }
+                                        : c
+                        )
                 );
         };
 
-        // 특정 상품의 수량을 변경하는 함수
-        const updateCount = (id, delta) => {
-                setCartList(prevList =>
-                        prevList.map(item => {
-                                if (item.cartId === id) {
-                                        const price = toNumber(item.product.price);
 
-                                        const newCount = Math.max(1, item.count + delta);
-
-                                        const updatedDelivery =
-                                                price * newCount >= 50000 ? 0 : 3000;
-
-                                        return {
-                                                ...item,
-                                                count: newCount,
-                                                newdelivery: updatedDelivery
-                                        };
-                                }
-                                return item;
-                        })
-                );
-        };
 
         // 1. 전체 선택/해제 핸들러
         const handleAllCheck = (e) => {
@@ -157,9 +234,12 @@ function Basket() {
         }
         const checkedItems = cartList.filter(item => item.checked);
 
-        const totalProductPrice = checkedItems.reduce((sum, item) => {
-                const price = Number(String(item.product.price).replace(/,/g, ''));
-                return sum + price * item.count;
+        const totalProductPrice = checkedItems.reduce((acc, item) => {
+                const price = Number(item?.price ?? 0);
+                const discount = Number(item?.discount ?? 0);
+                const delivery = Number(item?.newdelivery ?? 0);
+
+                return acc + (price - discount + delivery);
         }, 0);
 
         const totalDelivery = checkedItems.reduce(
@@ -238,6 +318,8 @@ function Basket() {
                                                         </tbody>
                                                 ) : (
                                                         cartList.map((item) => (
+
+
                                                                 <tbody key={item.cartId}>
                                                                         <tr>
                                                                                 <td style={{ width: '10%', textAlign: 'center' }}>
@@ -275,13 +357,14 @@ function Basket() {
                                                                                                                         display: 'block',
                                                                                                                         fontWeight: '600',
                                                                                                                 }}
+                                                                                                                onClick={() => navigate(`/productDetail/${item.product.pid}`)}
                                                                                                         >
                                                                                                                 {item.product.name}
                                                                                                         </button>
 
                                                                                                         {/* 옵션 + 옵션변경 */}
                                                                                                         <div style={{ fontSize: '14px', color: '#555' }}>
-                                                                                                                <span>{item.product.option} </span>
+                                                                                                                <span>{item.color} / {item.size || "옵션 없음"}</span>
                                                                                                                 <span
                                                                                                                         style={{
                                                                                                                                 marginLeft: '8px',
@@ -289,40 +372,163 @@ function Basket() {
                                                                                                                                 cursor: 'pointer',
                                                                                                                                 textDecoration: 'underline'
                                                                                                                         }}
+                                                                                                                        onClick={() => openEdit(item)}
                                                                                                                 >
                                                                                                                         옵션변경
                                                                                                                 </span>
+                                                                                                                {/* 옵션변경 클릭시 */}
+                                                                                                                {editCartId === item.cartId && (
+                                                                                                                        <div
+                                                                                                                                style={{
+                                                                                                                                        display: 'flex',
+                                                                                                                                        flexDirection: 'column',
+                                                                                                                                        gap: '12px',
+                                                                                                                                        marginTop: '10px',
+                                                                                                                                        padding: '15px',
+                                                                                                                                        border: '1px solid #ddd',
+                                                                                                                                        borderRadius: '10px',
+                                                                                                                                        backgroundColor: '#fafafa'
+                                                                                                                                }}
+                                                                                                                        >
+
+                                                                                                                                {/* 옵션 영역 */}
+                                                                                                                                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+
+                                                                                                                                        <select
+                                                                                                                                                value={editColor}
+                                                                                                                                                onChange={(e) => setEditColor(e.target.value)}
+                                                                                                                                                style={{
+                                                                                                                                                        padding: '6px',
+                                                                                                                                                        borderRadius: '6px',
+                                                                                                                                                        border: '1px solid #ccc'
+                                                                                                                                                }}
+                                                                                                                                        >
+                                                                                                                                                <option value="">색상 선택</option>
+                                                                                                                                                {item.product.color.split(",").map((c, i) => (
+                                                                                                                                                        <option key={i} value={c}>{c}</option>
+                                                                                                                                                ))}
+                                                                                                                                        </select>
+
+                                                                                                                                        <select
+                                                                                                                                                value={editSize}
+                                                                                                                                                onChange={(e) => setEditSize(e.target.value)}
+                                                                                                                                                style={{
+                                                                                                                                                        padding: '6px',
+                                                                                                                                                        borderRadius: '6px',
+                                                                                                                                                        border: '1px solid #ccc'
+                                                                                                                                                }}
+                                                                                                                                        >
+
+                                                                                                                                                <option value="">사이즈 선택</option>
+
+                                                                                                                                                {/* 실제 옵션 */}
+                                                                                                                                                {JSON.parse(item.product.size || "[]").map((s, i) => (
+                                                                                                                                                        <option key={i} value={s.size}>
+                                                                                                                                                                {s.size} {s.price ? `( +${s.price}원 )` : ""}
+                                                                                                                                                        </option>
+                                                                                                                                                ))}
+                                                                                                                                        </select>
+
+                                                                                                                                </div>
+
+                                                                                                                                {/* 수량 + 버튼 */}
+                                                                                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+
+                                                                                                                                        <button
+                                                                                                                                                onClick={() => setEditCount(prev => Math.max(1, prev - 1))}
+                                                                                                                                                style={{
+                                                                                                                                                        width: '28px',
+                                                                                                                                                        height: '28px',
+                                                                                                                                                        border: '1px solid #ccc',
+                                                                                                                                                        backgroundColor: 'white',
+                                                                                                                                                        cursor: 'pointer'
+                                                                                                                                                }}
+                                                                                                                                        >
+                                                                                                                                                -
+                                                                                                                                        </button>
+
+                                                                                                                                        <input
+                                                                                                                                                value={editCount}
+                                                                                                                                                onChange={(e) => {
+                                                                                                                                                        const value = e.target.value.replace(/[^0-9]/g, '');
+                                                                                                                                                        setEditCount(value === '' ? 1 : Number(value));
+                                                                                                                                                }}
+                                                                                                                                                style={{
+                                                                                                                                                        width: '50px',
+                                                                                                                                                        textAlign: 'center',
+                                                                                                                                                        border: '1px solid #ccc',
+                                                                                                                                                        padding: '4px'
+                                                                                                                                                }}
+                                                                                                                                        />
+
+                                                                                                                                        <button
+                                                                                                                                                onClick={() => setEditCount(prev => prev + 1)}
+                                                                                                                                                style={{
+                                                                                                                                                        width: '28px',
+                                                                                                                                                        height: '28px',
+                                                                                                                                                        border: '1px solid #ccc',
+                                                                                                                                                        backgroundColor: 'white',
+                                                                                                                                                        cursor: 'pointer'
+                                                                                                                                                }}
+                                                                                                                                        >
+                                                                                                                                                +
+                                                                                                                                        </button>
+
+                                                                                                                                </div>
+
+                                                                                                                                {/* 버튼 영역 */}
+                                                                                                                                <div style={{ display: 'flex', gap: '8px' }}>
+
+                                                                                                                                        <button
+                                                                                                                                                onClick={() =>
+                                                                                                                                                        updateCartItem({
+                                                                                                                                                                item,
+                                                                                                                                                                color: editColor,
+                                                                                                                                                                size: editSize,
+                                                                                                                                                                count: editCount
+                                                                                                                                                        })
+                                                                                                                                                }
+                                                                                                                                                style={{
+                                                                                                                                                        flex: 1,
+                                                                                                                                                        backgroundColor: 'black',
+                                                                                                                                                        color: 'white',
+                                                                                                                                                        padding: '8px',
+                                                                                                                                                        borderRadius: '6px',
+                                                                                                                                                        border: 'none',
+                                                                                                                                                        cursor: 'pointer'
+                                                                                                                                                }}
+                                                                                                                                        >
+                                                                                                                                                저장
+                                                                                                                                        </button>
+
+                                                                                                                                        <button
+                                                                                                                                                onClick={() => setEditCartId(null)}
+                                                                                                                                                style={{
+                                                                                                                                                        flex: 1,
+                                                                                                                                                        backgroundColor: '#ccc',
+                                                                                                                                                        color: 'black',
+                                                                                                                                                        padding: '8px',
+                                                                                                                                                        borderRadius: '6px',
+                                                                                                                                                        border: 'none',
+                                                                                                                                                        cursor: 'pointer'
+                                                                                                                                                }}
+                                                                                                                                        >
+                                                                                                                                                취소
+                                                                                                                                        </button>
+
+                                                                                                                                </div>
+
+                                                                                                                        </div>
+                                                                                                                )}
                                                                                                         </div>
                                                                                                 </div>
                                                                                         </div>
                                                                                 </td>
                                                                                 <td style={{ width: '10%', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                                                                                {/* 마이너스 버튼 */}
-                                                                                                <button
-                                                                                                        onClick={() => updateCount(item.cartId, -1)}
-                                                                                                        style={{ padding: '1px 7px', backgroundColor: 'white', cursor: 'pointer', border: '1px solid' }}
-                                                                                                >
-                                                                                                        -
-                                                                                                </button>
-
-                                                                                                {/* 수량 입력창 */}
-                                                                                                <input type="text" value={item.count} onChange={(e) => handleInputChange(item.cartId, e)}
-                                                                                                        style={{
-                                                                                                                width: '40px', padding: '1px 5px', border: '1px solid black', textAlign: 'center'
-                                                                                                        }}
-                                                                                                />
-
-                                                                                                {/* 플러스 버튼 */}
-                                                                                                <button
-                                                                                                        onClick={() => updateCount(item.cartId, 1)}
-                                                                                                        style={{ padding: '1px 5px', backgroundColor: 'white', cursor: 'pointer', border: '1px solid' }}>
-                                                                                                        +
-                                                                                                </button>
-                                                                                        </div>
+                                                                                        {item.count}
                                                                                 </td>
                                                                                 <td style={{ width: '10%', textAlign: 'center' }}>
-                                                                                        {Number(String(item.product.price).replace(/,/g, '')).toLocaleString()}원
+                                                                                        {Number(String(item.price).replace(/,/g, '')).toLocaleString()}원
                                                                                 </td>
 
                                                                                 <td style={{ width: '10%', textAlign: 'center' }}>
@@ -331,8 +537,7 @@ function Basket() {
 
                                                                                 <td style={{ width: '10%', textAlign: 'center' }}>
                                                                                         {(
-                                                                                                Number(String(item.product.price).replace(/,/g, '')) *
-                                                                                                Number(item.count || 0) +
+                                                                                                Number(item.price || 0) +
                                                                                                 Number(item.newdelivery || 0)
                                                                                         ).toLocaleString()}원
                                                                                 </td>
@@ -355,14 +560,11 @@ function Basket() {
                                                         <span style={{ marginLeft: '10px' }}>
                                                                 {cartList
                                                                         .reduce((acc, item) => {
-                                                                                const price = Number(String(item?.product?.price ?? 0).replace(/,/g, ''));
-                                                                                const count = Number(item?.count ?? 0);
+                                                                                const price = Number(item?.price ?? 0);
                                                                                 const discount = Number(item?.discount ?? 0);
                                                                                 const delivery = Number(item?.newdelivery ?? 0);
 
-                                                                                const itemTotal = price * count;
-
-                                                                                return acc + (itemTotal - discount + delivery);
+                                                                                return acc + (price - discount + delivery);
                                                                         }, 0)
                                                                         .toLocaleString()} 원
                                                         </span>
