@@ -31,7 +31,7 @@ const MyPage = () => {
 
                                 // 유저 정보 가져오기
                                 if (logId) {
-                                        const userRes = await axios.get(`http://localhost:9991/member/edit?userid=${logId}&usertype=${usertype}`);
+                                        const userRes = await axios.get(`http://localhost:9990/member/edit?userid=${logId}&usertype=${usertype}`);
                                         setUserInfo(userRes.data);
                                         // 주문목록 가져올때 필요한 기업 id
                                         ordersMemberId = userRes.data?.mid;
@@ -39,18 +39,18 @@ const MyPage = () => {
 
                                 // 문의 내역 가져오기 (DB 연동)
                                 if (loginName) {
-                                        const inqRes = await axios.get(`http://localhost:9991/support/list?writer=${loginName}`);
+                                        const inqRes = await axios.get(`http://localhost:9990/support/list?writer=${loginName}`);
                                         setInquiries(inqRes.data);
                                 }
                                 // 일반사용자 목록
                                 if (logId && !isCorporate) {
-                                        const wishRes = await axios.get(`http://localhost:9991/wish/list?userid=${logId}`);
+                                        const wishRes = await axios.get(`http://localhost:9990/wish/list?userid=${logId}`);
                                         setWishItems(wishRes.data); // 찜목록
 
-                                        const orderRes = await axios.get(`http://localhost:9991/buy/list/${ordersMemberId}`);
+                                        const orderRes = await axios.get(`http://localhost:9990/buy/list/${ordersMemberId}`);
                                         setOrders(orderRes.data); // 주문목록
 
-                                        const cancelRes = await axios.get(`http://localhost:9991/buy/cancel/list/${ordersMemberId}`);
+                                        const cancelRes = await axios.get(`http://localhost:9990/buy/cancel/list/${ordersMemberId}`);
                                         setCancelItems(cancelRes.data); // 취소목록
 
                                 }
@@ -124,7 +124,7 @@ const MyPage = () => {
                 if (!window.confirm("찜 목록에서 삭제하시겠습니까?")) return;
                 try {
                         // ProductDetail에서 쓰던 toggleLike와 같은 주소
-                        await axios.post(`http://localhost:9991/wish/toggle`, {
+                        await axios.post(`http://localhost:9990/wish/toggle`, {
                                 pid: pid,
                                 userid: logId
                         });
@@ -254,7 +254,7 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
 
                 try {
                         // 백엔드로 상태 변경 요청 전송 (QueryString 파라미터 방식)
-                        await axios.post(`http://localhost:9991/buy/status/${bId}?action=${actionType}`);
+                        await axios.post(`http://localhost:9990/buy/status/${bId}?action=${actionType}`);
                         alert(`${actionLabel} 처리가 완료되었습니다.`);
 
                         // 화면 반영을 위한 상태 텍스트 매핑 변수
@@ -289,7 +289,7 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
                                 <div className="order-item" key={item.bId || index}>
                                         <div className="item-img">
                                                 {item.product?.fileList && item.product.fileList[0] ? (
-                                                        <img src={`http://localhost:9991/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        <img src={`http://localhost:9990/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                 ) : (
                                                         <div style={{ width: '100%', height: '100%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#aaa' }}>이미지 준비중</div>
                                                 )}
@@ -456,7 +456,7 @@ const CancelHistory = ({ cancelItems }) => {
                                         {/* 상품 이미지 출력 */}
                                         <div className="item-img">
                                                 {item.product?.fileList && item.product.fileList[0] ? (
-                                                        <img src={`http://localhost:9991/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        <img src={`http://localhost:9990/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                 ) : (
                                                         <div style={{ width: '100%', height: '100%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#aaa' }}>이미지 준비중</div>
                                                 )}
@@ -534,7 +534,7 @@ const WishList = ({ wishItems, onDelete }) => {
                                                         <div className="item-img-box">
                                                                 {item.fileList && item.fileList.length > 0 && item.fileList[0] ? (
                                                                         <img
-                                                                                src={`http://localhost:9991/static/uploads/${item.fileList[0].filename}.${item.fileList[0].extname}`}
+                                                                                src={`http://localhost:9990/static/uploads/${item.fileList[0].filename}.${item.fileList[0].extname}`}
                                                                                 alt={item.pname}
                                                                                 style={{ width: '100px', height: '100px', objectFit: 'cover' }}
                                                                         />

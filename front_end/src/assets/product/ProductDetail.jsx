@@ -26,6 +26,8 @@ function ProductDetail() {
 
         // 사이즈 옵션
         const [sizes, setSizes] = useState([]);
+        const selectedSize = sizes.find(s => s.size === extraOption);
+        const sizeExtraPrice = Number(selectedSize?.price || 0);
 
         // 메인 상품 이미지 상태
         const [mainImage, setMainImage] = useState("");
@@ -61,7 +63,7 @@ function ProductDetail() {
 
                 if (!loginUserId) return;
 
-                axios.get(`http://localhost:9991/like/list/${mId}`)
+                axios.get(`http://localhost:9990/like/list/${mId}`)
                         .then(res => setLikedItems(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -136,30 +138,49 @@ function ProductDetail() {
 
 
         const addOption = () => {
-                if (!color || !extraOption) return alert("옵션을 모두 선택하세요!");
+                if (!color || !extraOption) {
+                        alert("옵션을 모두 선택하세요!");
+                        return;
+                }
+
+                const selectedSize = sizes.find(s => s.size === extraOption);
+                const sizeExtraPrice = Number(selectedSize?.price || 0);
+
+                const basePrice = Number(data.price || 0);
+
+                const finalPrice = basePrice + sizeExtraPrice;
 
                 const newOption = {
+                        productId: data.id,
+                        name: data.name,
+
                         color,
-                        extraOption,
-                        count
+                        size: extraOption,
+                        count,
+
+                        basePrice,
+                        sizeExtraPrice,
+                        finalPrice   // ⭐ 핵심
                 };
 
-                setSelectedOptions([...selectedOptions, newOption]);
+                setSelectedOptions(prev => [...prev, newOption]);
 
                 // 초기화
                 setColor("");
                 setExtraOption("");
                 setCount(1);
         };
+
         // 상품문의
         const [openQna, setOpenQna] = useState(false);
         const [openAnswer, setOpenAnswer] = useState(null);
         const [questionText, setQuestionText] = useState("");
 
 
+
         // 상품 정보 백엔드
         function getDataDetail() {
-                axios.get(`http://localhost:9991/productDetail/${id}`)
+                axios.get(`http://localhost:9990/productDetail/${id}`)
 
                         .then((response) => {
 
@@ -196,7 +217,7 @@ function ProductDetail() {
                                 d.fileList?.forEach((f) => {
                                         file.push({
                                                 color: f.colorName,
-                                                url: `http://localhost:9991/upload/${f.filename}.${f.extname}`
+                                                url: `http://localhost:9990/upload/${f.filename}.${f.extname}`
                                         });
                                 });
                                 setFilelist(file);
@@ -219,7 +240,7 @@ function ProductDetail() {
                         return;
                 }
 
-                axios.post("http://localhost:9991/like/toggle", {
+                axios.post("http://localhost:9990/like/toggle", {
                         memberId: mId,
                         productId: productId
                 })
@@ -245,16 +266,22 @@ function ProductDetail() {
                 }
 
                 selectedOptions.forEach(opt => {
+
+                        const totalPrice =
+                                Number(opt.basePrice) +
+                                Number(opt.sizeExtraPrice || 0);
+
                         const payload = {
                                 mId: Number(mId),
                                 pId: Number(data.id),
                                 discount: 0,
                                 count: opt.count,
                                 color: opt.color,
-                                size: opt.extraOption
+                                size: opt.size || opt.extraOption,
+                                price: opt.finalPrice // 총금액(사이즈별 추가금액도 합산)
                         };
 
-                        axios.post("http://localhost:9991/cart/add", payload)
+                        axios.post("http://localhost:9990/cart/add", payload)
                                 .catch(err => console.log(err));
                 });
 
@@ -296,7 +323,7 @@ function ProductDetail() {
                         formData.append("file", file);
                 }
 
-                axios.post("http://localhost:9991/review/write", formData)
+                axios.post("http://localhost:9990/review/write", formData)
                         .then(res => {
                                 console.log("리뷰 작성 성공:", res.data);
 
@@ -305,7 +332,7 @@ function ProductDetail() {
                         .catch(err => console.log("리뷰 에러:", err));
         }
         function getReviews() {
-                axios.get(`http://localhost:9991/review/list/${data?.id}`)
+                axios.get(`http://localhost:9990/review/list/${data?.id}`)
                         .then(res => {
                                 setReviews(res.data);
 
@@ -315,7 +342,7 @@ function ProductDetail() {
 
         // 문의 불러오기
         function getQuestions() {
-                axios.get(`http://localhost:9991/question/list/${data.id}`)
+                axios.get(`http://localhost:9990/question/list/${data.id}`)
                         .then(res => setQuestions(res.data))
                         .catch(err => console.log("문의 리스트 에러", err));
         }
@@ -330,7 +357,7 @@ function ProductDetail() {
                 formData.append("subject", qnaTitle);
                 formData.append("context", questionText);
 
-                axios.post("http://localhost:9991/question/write", formData)
+                axios.post("http://localhost:9990/question/write", formData)
                         .then(() => {
                                 setQuestionText("");
                                 setQnaTitle("");
@@ -448,39 +475,74 @@ function ProductDetail() {
                                         {/* 선택한 옵션 보이기 */}
                                         {selectedOptions.length > 0 && (
                                                 <div style={{ marginTop: '15px' }}>
-                                                        <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>✔ 선택한 옵션</p>
+                                                        <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>
+                                                                ✔ 선택한 옵션
+                                                        </p>
 
-                                                        {selectedOptions.map((opt, index) => (
-                                                                <div key={index}
-                                                                        style={{
-                                                                                padding: '10px',
-                                                                                border: '1px solid #ddd',
-                                                                                borderRadius: '8px',
-                                                                                marginBottom: '8px',
-                                                                                display: 'flex',
-                                                                                justifyContent: 'space-between',
-                                                                                alignItems: 'center'
-                                                                        }}
-                                                                >
-                                                                        <span>{opt.color} / {opt.extraOption} / {opt.count}개</span>
+                                                        {selectedOptions.map((opt, index) => {
 
-                                                                        <button
+                                                                const price =
+                                                                        (Number(opt.basePrice || 0) + Number(opt.sizeExtraPrice || 0)) *
+                                                                        Number(opt.count || 1);
+
+                                                                return (
+                                                                        <div key={index}
                                                                                 style={{
-                                                                                        background: '#ccc',
-                                                                                        border: 'none',
-                                                                                        padding: '5px 10px',
-                                                                                        cursor: 'pointer',
-                                                                                        borderRadius: '4px'
+                                                                                        padding: '10px',
+                                                                                        border: '1px solid #ddd',
+                                                                                        borderRadius: '8px',
+                                                                                        marginBottom: '8px',
+                                                                                        display: 'flex',
+                                                                                        justifyContent: 'space-between',
+                                                                                        alignItems: 'center'
                                                                                 }}
-                                                                                onClick={() =>
-                                                                                        setSelectedOptions(selectedOptions.filter((_, i) => i !== index))
-                                                                                }
                                                                         >
-                                                                                삭제
-                                                                        </button>
-                                                                </div>
-                                                        ))}
+                                                                                <span>
+                                                                                        {opt.color} / {opt.size} / {opt.count}개
+                                                                                        {" "}
+                                                                                        ( +{Number(opt.sizeExtraPrice || 0).toLocaleString()}원 )
+                                                                                </span>
 
+                                                                                <span>
+                                                                                        {price.toLocaleString()}원
+                                                                                </span>
+
+                                                                                <button
+                                                                                        style={{
+                                                                                                background: '#ccc',
+                                                                                                border: 'none',
+                                                                                                padding: '5px 10px',
+                                                                                                cursor: 'pointer',
+                                                                                                borderRadius: '4px'
+                                                                                        }}
+                                                                                        onClick={() =>
+                                                                                                setSelectedOptions(
+                                                                                                        selectedOptions.filter((_, i) => i !== index)
+                                                                                                )
+                                                                                        }
+                                                                                >
+                                                                                        삭제
+                                                                                </button>
+                                                                        </div>
+                                                                );
+                                                        })}
+
+                                                        {/* 총합계 */}
+                                                        <div style={{
+                                                                marginTop: '15px',
+                                                                padding: '10px',
+                                                                borderTop: '2px solid #000',
+                                                                fontWeight: 'bold',
+                                                                textAlign: 'right'
+                                                        }}>
+                                                                총 합계: {" "}
+                                                                {selectedOptions.reduce((acc, opt) => {
+                                                                        const price =
+                                                                                (Number(opt.basePrice || 0) + Number(opt.sizeExtraPrice || 0)) *
+                                                                                Number(opt.count || 1);
+                                                                        return acc + price;
+                                                                }, 0).toLocaleString()}원
+                                                        </div>
                                                 </div>
                                         )}
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '10px 0', justifyContent: 'space-between' }}>
@@ -664,8 +726,8 @@ function ProductDetail() {
                                                                 .map((r) => (
                                                                         <img
                                                                                 key={r.id}
-                                                                                src={`http://localhost:9991/upload/review/${r.imgUrl}`} // 서버 주소 + 이미지 경로
-                                                                                onClick={() => setZoomImage(`http://localhost:9991/upload/review/${r.imgUrl}`)}
+                                                                                src={`http://localhost:9990/upload/review/${r.imgUrl}`} // 서버 주소 + 이미지 경로
+                                                                                onClick={() => setZoomImage(`http://localhost:9990/upload/review/${r.imgUrl}`)}
                                                                                 style={{
                                                                                         width: "200px",
                                                                                         height: "200px",

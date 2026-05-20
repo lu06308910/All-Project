@@ -51,7 +51,7 @@ function PopularQna() {
                 };
 
                 try {
-                        const response = await axios.post("http://localhost:9991/service/write", sendData);
+                        const response = await axios.post("http://localhost:9990/service/write", sendData);
 
                         if (response.status === 200 || response.status === 201) {
                                 alert("FAQ가 성공적으로 등록되었습니다!");
