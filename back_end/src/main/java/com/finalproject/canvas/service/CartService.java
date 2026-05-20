@@ -31,6 +31,19 @@ public class CartService {
             cartRepository.deleteById(cartId.intValue());
         }
     }
+    // 상세페이지 -> 장바구니
+    public void addCart(CartEntity cart) {
+        // 필요한 기본값 지정 가능
+        if (cart.getDiscount() == null) {
+            cart.setDiscount(0);
+        }
+
+        if (cart.getCount() == null || cart.getCount() <= 0) {
+            cart.setCount(1);
+        }
+
+        cartRepository.save(cart);
+    }
 
 
 }

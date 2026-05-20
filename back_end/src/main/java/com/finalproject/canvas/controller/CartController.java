@@ -4,6 +4,7 @@ import com.finalproject.canvas.entity.CartEntity;
 import com.finalproject.canvas.service.CartService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,5 +31,19 @@ public class CartController {
     @DeleteMapping("/delete")
     public void deleteCarts(@RequestBody List<Integer> cartIds) {
         cartService.deleteCarts(cartIds);
+    }
+    // 상세페이지 -> 장바구니 정보넘기기 (이슬 추가)
+    @PostMapping("/add")
+    public ResponseEntity<?> addCart(@RequestBody CartEntity cart) {
+        System.out.println("====== 받은 CART ======");
+        System.out.println("mId = " + cart.getMId());
+        System.out.println("pId = " + cart.getPId());
+        System.out.println("color = " + cart.getColor());
+        System.out.println("size = " + cart.getSize());
+        System.out.println("count = " + cart.getCount());
+        System.out.println("======================");
+
+        cartService.addCart(cart);
+        return ResponseEntity.ok("success");
     }
 }

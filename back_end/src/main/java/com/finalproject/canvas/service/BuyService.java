@@ -8,6 +8,7 @@ import com.finalproject.canvas.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -21,16 +22,16 @@ public class BuyService {
     private final ProductRepository productRepository;
 
     public void addFromCart(Map<String, Object> payload) {
-        List<Object> cartIdObjs   = (List<Object>) payload.get("cartIds");
-        List<Object> dIdObjs      = (List<Object>) payload.get("dIds");
-        List<Object> countObjs    = (List<Object>) payload.get("counts");
+        List<Object> cartIdObjs = (List<Object>) payload.get("cartIds");
+        List<Object> dIdObjs = (List<Object>) payload.get("dIds");
+        List<Object> countObjs = (List<Object>) payload.get("counts");
         List<Object> discountObjs = (List<Object>) payload.get("discounts");
-        List<Object> priceObjs    = (List<Object>) payload.get("prices");
+        List<Object> priceObjs = (List<Object>) payload.get("prices");
 
         for (int i = 0; i < cartIdObjs.size(); i++) {
             Integer cartId = ((Number) cartIdObjs.get(i)).intValue();
-            Integer count  = countObjs != null ? ((Number) countObjs.get(i)).intValue() : 1;
-            Integer pId    = cartRepository.findPIdByCartId(cartId);
+            Integer count = countObjs != null ? ((Number) countObjs.get(i)).intValue() : 1;
+            Integer pId = cartRepository.findPIdByCartId(cartId);
 
             // 상품 조회 (재고 차감 + 가격 파싱 위해 먼저)
             ProductEntity product = productRepository.findById(pId)
@@ -56,5 +57,30 @@ public class BuyService {
             product.setCount(Math.max(0, newStock));
             productRepository.save(product);
         }
+    }
+
+    // 상품취소,반품,교환 업데이트 - 대호추가
+    @Transactional
+    public void updateOrderStatus(Integer bId, String actionType) {
+        BuyEntity buy = buyRepository.findById(bId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문 거래입니다."));
+
+        // 사용자가 요청한 actionType에 따라 status 매핑 변경
+        if ("CANCEL".equals(actionType)) {
+            buy.setStatus("취소완료");
+        } else if ("RETURN".equals(actionType)) {
+            buy.setStatus("반품신청");
+        } else if ("EXCHANGE".equals(actionType)) {
+            buy.setStatus("교환신청");
+        } else {
+            throw new IllegalArgumentException("잘못된 요청 타입입니다.");
+        }
+
+        buyRepository.save(buy);
+    }
+
+    // 특정 회원 취소/반품/교환 내역 조회
+    public List<BuyEntity> getCancelList(Integer mId) {
+        return buyRepository.findCancelListByMember(mId);
     }
 }

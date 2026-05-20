@@ -56,4 +56,11 @@ public class BuyEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "is_buy")
     private OutStatus isBuy = OutStatus.N;
+
+    // 대호추가
+    @Column(name = "cancel_reason")
+    private String cancelReason; // 취소/반품 사유 (예: '단순 변심', '상품 파손' 등)
+
+    @Column(name = "payment_method")
+    private String paymentMethod = "신용카드"; // 환불/결제 수단
 }
