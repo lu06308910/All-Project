@@ -8,7 +8,7 @@ function Basket() {
         //로그인 시 정보 저장
         const mId = sessionStorage.getItem("mId");
         useEffect(() => {
-                axios.get(`http://localhost:9991/cart/list/${mId}`)
+                axios.get(`http://localhost:9990/cart/list/${mId}`)
                 .then(res => setCartList(res.data.map(item => ({
                         ...item,
                         newdelivery: item.product.price >= 50000 ? 0 : 3000,
@@ -99,7 +99,7 @@ function Basket() {
 
                 const cartIds = selected.map(item => item.cartId);
 
-                axios.post('http://localhost:9991/buy/add', cartIds)
+                axios.post('http://localhost:9990/buy/add', cartIds)
                         .then(() => {
                                 sessionStorage.setItem('buyItems', JSON.stringify(selected));
                                 navigate('/parchase');
@@ -112,7 +112,7 @@ function Basket() {
                 if (cartList.length === 0) return alert('장바구니가 비어있습니다.');
                 const cartIds = cartList.map(item => item.cartId);
 
-                axios.post('http://localhost:9991/buy/add', cartIds)
+                axios.post('http://localhost:9990/buy/add', cartIds)
                 .then(() => {
                         sessionStorage.setItem('buyItems', JSON.stringify(cartList));
                         navigate('/parchase');
