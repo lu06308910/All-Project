@@ -275,13 +275,15 @@ function Basket() {
                                                                                                                         display: 'block',
                                                                                                                         fontWeight: '600',
                                                                                                                 }}
+                                                                                                                onClick={() => navigate(`/productDetail/${item.product.pid}`)}
                                                                                                         >
                                                                                                                 {item.product.name}
                                                                                                         </button>
 
                                                                                                         {/* 옵션 + 옵션변경 */}
                                                                                                         <div style={{ fontSize: '14px', color: '#555' }}>
-                                                                                                                <span>{item.product.option} </span>
+                                                                                                                <span>{item.color} </span>
+                                                                                                                <span>{item.size} </span>
                                                                                                                 <span
                                                                                                                         style={{
                                                                                                                                 marginLeft: '8px',
