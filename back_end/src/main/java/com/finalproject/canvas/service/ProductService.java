@@ -3,9 +3,7 @@ package com.finalproject.canvas.service;
 import com.finalproject.canvas.entity.FileEntity;
 import com.finalproject.canvas.entity.ProductEntity;
 import com.finalproject.canvas.entity.*;
-import com.finalproject.canvas.repository.EventRepository;
-import com.finalproject.canvas.repository.FileRepository;
-import com.finalproject.canvas.repository.ProductRepository;
+import com.finalproject.canvas.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +21,9 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final FileRepository fileRepository;
     private final EventRepository eventRepository;
+    private final BuyRepository buyRepository;
+    private final DeliveryRepository deliveryRepository;
+    private final CartRepository cartRepository;
 
     // 상품 등록
     public ProductEntity productInsert(ProductEntity productEntity) {
@@ -83,6 +84,16 @@ public class ProductService {
     // 상품 삭제
     public void productDelete(Integer id) {
         eventRepository.deleteByProduct_pId(id);
+
+        List<FileEntity> files = fileRepository.findByProductEntity_pId(id);
+        fileRepository.deleteAll(files);
+
+        List<BuyEntity> buys = buyRepository.findByProduct_pId(id);
+        buyRepository.deleteAll(buys);
+
+        deliveryRepository.deleteBypId(id);
+        cartRepository.deleteBypId(id);
+
         ProductEntity entity = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 상품이 없습니다."));
         productRepository.delete(entity);

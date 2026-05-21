@@ -132,25 +132,41 @@ const MyPage = () => {
                 switch (activeMenu) {
                         case '주문내역': return <OrderHistory orders={orders} setOrders={setOrders} setCancelItems={setCancelItems} />;
                         case '취소/반품/교환 내역': return <CancelHistory cancelItems={cancelItems} />;
-                        case '찜': return <WishList wishItems={wishItems} onDelete={handleDeleteWish} />;
+                        case '찜': return <WishList wishItems={wishItems} onDelete={handleWishDelete} />;
                         case '상품문의 내역': return <InquiryList inquiries={inquiries} />;
                         default: return <div className="empty-state">준비 중인 페이지입니다.</div>;
                 }
         };
 
         // 찜 삭제 함수
-        const handleDeleteWish = async (pid) => {
-                if (!window.confirm("찜 목록에서 삭제하시겠습니까?")) return;
+        const handleWishDelete = async (pid) => {
+                const mId = sessionStorage.getItem("mId"); // 회원 번호 고유값
+
+                if (!window.confirm("정말 찜 목록에서 삭제하시겠습니까?")) return;
+
                 try {
-                        // ProductDetail에서 쓰던 toggleLike와 같은 주소
-                        await axios.post(`http://localhost:9991/like/toggle`, {
-                                pid: pid,
-                                userid: logId
+                        // 아까 통합한 백엔드 LikeController 주소(/like/toggle)로 요청을 보냅니다.
+                        const response = await axios.post("http://localhost:9991/like/toggle", {
+                                userid: logId,
+                                memberId: mId ? Number(mId) : null,
+                                productId: Number(pid),
+                                pid: Number(pid) // 컨트롤러에서 어떤 이름으로 받든 작동하도록 둘 다 전송
                         });
-                        // 서버 삭제 성공 후 UI에서도 즉시 제거
-                        setWishItems(prev => prev.filter(item => item.pid !== pid));
-                } catch (err) {
-                        alert("삭제에 실패했습니다.");
+
+                        // 서버에서 처리가 잘 끝났다면 (성공 응답을 받으면)
+                        if (response.status === 200) {
+                                alert("찜 삭제가 완료되었습니다.");
+
+                                // 새로고침 없이 화면에서 즉시 지워지도록 상태(State) 업데이트!
+                                // 데이터 구조를 확인하여 item.product?.pId 또는 item.pid 둘 다 대응하도록 필터링합니다.
+                                setWishItems(prev => prev.filter(item => {
+                                        const currentPid = item.product?.pid || item.product?.pId || item.pid || item.p_id;
+                                        return Number(currentPid) !== Number(pid);
+                                }));
+                        }
+                } catch (error) {
+                        console.error("찜 삭제 요청 중 오류 발생:", error);
+                        alert("찜 삭제 처리에 실패했습니다.");
                 }
         };
 
@@ -159,7 +175,7 @@ const MyPage = () => {
                 <div className="mypage-container">
                         <h1 className="mypage-title">마이스토어 {`(${userName}) 님`}</h1>
 
-                        {/* 🌟 수정된 대시보드 스탯 섹션 */}
+                        {/*  수정된 대시보드 스탯 섹션 */}
                         <section className="info-box">
                                 <div className="profile-header">
                                         <div className="nickname-link">
@@ -170,7 +186,7 @@ const MyPage = () => {
                                 </div>
                                 <div className="info-stats">
                                         {isCorporate ? (
-                                                // 💰 기업 사용자용 전용 대시보드 레이아웃
+                                                //  기업 사용자용 전용 대시보드 레이아웃
                                                 <>
                                                         <div className="stat-item" onClick={() => setActiveMenu('판매 현황')} style={{ cursor: 'pointer' }}>
                                                                 <div className="stat-label">오늘의 신규 주문 〉</div>
@@ -246,7 +262,13 @@ const MyPage = () => {
 
 // 일반 사용자 : 주문내역
 const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
-        if (!orders || orders.length === 0) {
+        const validOrders = orders ? orders.filter(item =>
+                item.status !== "취소완료" &&
+                item.status !== "반품신청" &&
+                item.status !== "교환신청"
+        ) : [];
+
+        if (validOrders.length === 0) {
                 return <div className="empty-state">주문한 상품이 없습니다.</div>;
         }
 
@@ -262,33 +284,32 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
                 return "★".repeat(starCount) + "☆".repeat(5 - starCount);
         };
 
+
         // 취소 / 반품 / 교환 신청 처리 핸들러
-        const handleOrderAction = async (bId, actionType, actionLabel) => {
+        const handleOrderAction = async (item, actionType, actionLabel) => {
+
+                console.log("전달받은 bId 값:", item);
+                const bid = item.bid;
+
+                if (!bid) {
+                        console.error("주문 번호(bid)를 찾을 수 없습니다:", item);
+                        alert("데이터 오류: 주문 번호를 확인해주세요.");
+                        return;
+                }
+
                 if (!window.confirm(`정말 이 상품을 ${actionLabel} 하시겠습니까?`)) return;
 
                 try {
-                        // 백엔드로 상태 변경 요청 전송 (QueryString 파라미터 방식)
-                        await axios.post(`http://localhost:9991/buy/status/${bId}?action=${actionType}`);
+                        // 2. 경로에 bid를 넣습니다.
+                        await axios.post(`http://localhost:9991/buy/status/${bid}?action=${actionType}`);
+
                         alert(`${actionLabel} 처리가 완료되었습니다.`);
 
-                        // 화면 반영을 위한 상태 텍스트 매핑 변수
-                        let nextStatus = "취소완료";
-                        if (actionType === "RETURN") nextStatus = "반품신청";
-                        if (actionType === "EXCHANGE") nextStatus = "교환신청";
-
-                        // 취소/반품/교환 내역 탭에 실시간 추가 데이터 구성
-                        const targetItem = orders.find(item => item.bId === bId);
-                        if (targetItem) {
-                                const updatedItem = { ...targetItem, status: nextStatus };
-                                setCancelItems(prev => [updatedItem, ...prev]);
-                        }
-
-                        // 현재 주문내역 리스트에서 즉각 삭제 처리 하여 화면에서 지우기
-                        setOrders(prev => prev.filter(item => item.bId !== bId));
+                        setOrders(prev => prev.filter(i => i.bid !== bid));
 
                 } catch (error) {
-                        console.error(`${actionLabel} 요청 중 오류 발생:`, error);
-                        alert(`${actionLabel} 처리에 실패했습니다.`);
+                        console.error("요청 중 오류 발생:", error);
+                        alert("처리에 실패했습니다.");
                 }
         };
 
@@ -299,7 +320,7 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
                                 <button className="search-icon"></button>
                         </div>
                         <hr />
-                        {orders.map((item, index) => (
+                        {validOrders.map((item, index) => (
                                 <div className="order-item" key={item.bId || index}>
                                         <div className="item-img">
                                                 {item.product?.fileList && item.product.fileList[0] ? (
@@ -316,7 +337,6 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
                                                 <p style={{ fontSize: '13px', color: '#888', margin: '4px 0' }}>수량: {item.count || 1}개</p>
                                                 <p className="product-price">
                                                         {item.price ? Number(item.price.toString().replace(/[^0-9]/g, "")).toLocaleString() : 0}원
-
                                                 </p>
                                         </div>
                                         <div className="btn-group">
@@ -332,7 +352,6 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
                                                 <span className="status-text">{item.status || "결제완료"}</span>
                                                 <button className="btn-light" onClick={() => setSelectedDelivery(item)}>배송조회</button>
                                         </div>
-                                        {/* 상세조회 / 주문취소 / 반품 / 교환 버튼 */}
                                         <div className="btn-group" style={{ minWidth: '110px', gap: '4px' }}>
                                                 <span style={{ fontSize: '12px', textAlign: 'center', marginBottom: '2px' }}>
                                                         {item.writedate ? item.writedate.split("T")[0] : "날짜 없음"}
@@ -341,29 +360,27 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
                                                         상세보기
                                                 </button>
 
-                                                {/* 배송 상태에 버튼 제어 조건문 */}
                                                 {item.status !== "배송완료" && item.status !== "배송 완료" && item.status !== "배송중" && item.status !== "배송 중" ? (
                                                         <button
                                                                 className="btn-light"
                                                                 style={{ color: '#d9534f', borderColor: '#d9534f', padding: '4px 8px', fontSize: '12px' }}
-                                                                onClick={() => handleOrderAction(item.bid, "CANCEL", "주문취소")}
+                                                                onClick={() => handleOrderAction(item, "CANCEL", "주문취소")}
                                                         >
                                                                 주문취소
                                                         </button>
                                                 ) : (
-                                                        //배송중이거나 배송완료 상태일 때는 [반품신청] 및 [교환신청] 으로 변경
                                                         <>
                                                                 <button
                                                                         className="btn-light"
                                                                         style={{ color: '#f0ad4e', borderColor: '#f0ad4e', padding: '4px 8px', fontSize: '12px' }}
-                                                                        onClick={() => handleOrderAction(item.bid, "RETURN", "반품신청")}
+                                                                        onClick={() => handleOrderAction(item.bId, "RETURN", "반품신청")}
                                                                 >
                                                                         반품신청
                                                                 </button>
                                                                 <button
                                                                         className="btn-light"
                                                                         style={{ color: '#5bc0de', borderColor: '#5bc0de', padding: '4px 8px', fontSize: '12px' }}
-                                                                        onClick={() => handleOrderAction(item.bid, "EXCHANGE", "교환신청")}
+                                                                        onClick={() => handleOrderAction(item.bId, "EXCHANGE", "교환신청")}
                                                                 >
                                                                         교환신청
                                                                 </button>
@@ -371,7 +388,6 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
                                                 )}
                                         </div>
                                 </div>
-
                         ))}
 
                         {/* 주문 상세보기 모달 */}
@@ -542,34 +558,47 @@ const WishList = ({ wishItems, onDelete }) => {
                                 <div className="empty-state">찜한 상품이 없습니다.</div>
                         ) : (
                                 <div className="wish-grid">
-                                        {wishItems.map((item) => (
-                                                <div className="order-item" key={item.pid}>
-                                                        <div className="item-img-box">
-                                                                {item.fileList && item.fileList.length > 0 && item.fileList[0] ? (
-                                                                        <img
-                                                                                src={`http://localhost:9991/static/uploads/${item.fileList[0].filename}.${item.fileList[0].extname}`}
-                                                                                alt={item.pname}
-                                                                                style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                                                                        />
-                                                                ) : (
-                                                                        <div style={{ width: '100px', height: '100px', backgroundColor: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#999' }}>이미지 없음</div>
-                                                                )}
+                                        {wishItems.map((item) => {
+                                                // 백엔드 반환 구조에 맞춰 id 및 정보 추출 가공
+                                                const currentPid = item.product?.pId || item.pid || item.p_id;
+                                                const productName = item.product?.name || item.name || "상품명 없음";
+                                                const productPrice = item.product?.price || item.price || 0;
+
+                                                return (
+                                                        <div className="order-item" key={currentPid}>
+                                                                <div className="item-img-box">
+                                                                        {item.product?.fileList && item.product.fileList.length > 0 && item.product.fileList[0] ? (
+                                                                                <img
+                                                                                        src={`http://localhost:9991/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`}
+                                                                                        alt={productName}
+                                                                                        style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                                                                                />
+                                                                        ) : item.fileList && item.fileList.length > 0 && item.fileList[0] ? (
+                                                                                <img
+                                                                                        src={`http://localhost:9991/static/uploads/${item.fileList[0].filename}.${item.fileList[0].extname}`}
+                                                                                        alt={productName}
+                                                                                        style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                                                                                />
+                                                                        ) : (
+                                                                                <div style={{ width: '100px', height: '100px', backgroundColor: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#999' }}>이미지 없음</div>
+                                                                        )}
+                                                                </div>
+                                                                <div className="item-info">
+                                                                        <span className="brand-name">CANVAS</span>
+                                                                        <h3 className="product-name">{productName}</h3>
+                                                                        <p className="product-price">{Number(productPrice).toLocaleString()}원</p>
+                                                                </div>
+                                                                <div className="btn-group">
+                                                                        <button className="btn-dark" onClick={() => window.location.href = `/productDetail/${currentPid}`}>
+                                                                                구매하기
+                                                                        </button>
+                                                                        <button className="btn-light" onClick={() => onDelete(currentPid)}>
+                                                                                삭제
+                                                                        </button>
+                                                                </div>
                                                         </div>
-                                                        <div className="item-info">
-                                                                <span className="brand-name">{item.p_id || "CANVAS"}</span>
-                                                                <h3 className="product-name">{item.name}</h3>
-                                                                <p className="product-price">{item.price ? Number(item.price).toLocaleString() : 0}원</p>
-                                                        </div>
-                                                        <div className="btn-group">
-                                                                <button className="btn-dark" onClick={() => window.location.href = `/product/${item.pid}`}>
-                                                                        구매하기
-                                                                </button>
-                                                                <button className="btn-light" onClick={() => onDelete(item.pid)}>
-                                                                        삭제
-                                                                </button>
-                                                        </div>
-                                                </div>
-                                        ))}
+                                                );
+                                        })}
                                 </div>
                         )}
                 </div>
