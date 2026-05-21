@@ -9,8 +9,12 @@
 }
 /* 매니저 카테고리 */
 .manager-container {
-        display: flex;
+        display : flex;
         width: 100%;
+        margin-left: 0 auto;
+        padding: 40px 0;
+        font-family: 'Pretendard', sans-serif;
+        color: #333;
 }
 .category-mana{
         background-color: #333333;

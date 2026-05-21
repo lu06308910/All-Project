@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -30,9 +31,12 @@ public class PaskEntity {
 
     private LocalDateTime writedate;
 
-    // 판매자가 달아줄 답변 - 대호추가
+    // 판매자가 달아줄 답변, 날짜 - 대호추가
     @Column(length = 1000)
     private String reply;
+
+    @Column(name = "replydate")
+    private LocalDateTime replydate; // 혹은 LocalDateTime
 
     // member 조인
     @ManyToOne(fetch = FetchType.LAZY)

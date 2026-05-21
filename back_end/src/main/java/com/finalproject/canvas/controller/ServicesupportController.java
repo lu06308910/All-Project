@@ -56,8 +56,37 @@ public class ServicesupportController {
         List<ServicesupportEntity> list = servicesupportService.mypage(writer);
         return ResponseEntity.ok(list);
     }
+
     @GetMapping("/list/all")
     public ResponseEntity<List<ServicesupportEntity>> getAllInquiries() {
         return ResponseEntity.ok(servicesupportService.getAllSupport());
+    }
+    // 관리자 페이지 수정
+    @PostMapping("/reply")
+    public ResponseEntity<?> registerAdminReply(
+            @RequestParam("s_id") Integer sId,       // 리액트 FormData에서 보낸 s_id
+            @RequestParam("answer") String answer    // 리액트 FormData에서 보낸 answer
+    ) {
+        try {
+            // 서비스단이나 리포지토리를 통해 해당 문의글 조회
+            // (Service단에 구현해 둔 게 없다면 컨트롤러에서 레포지토리 주입받거나, 서비스에 메서드 추가)
+            ServicesupportEntity support = servicesupportService.getSupportById(sId);
+
+            if (support == null) {
+                return ResponseEntity.status(404).body("해당 문의 내역을 찾을 수 없습니다.");
+            }
+
+            // 관리자 답변(answer) 주입 및 답변 완료 상태(Y) 업데이트
+            support.setAnswer(answer);
+            support.setAnswerOk(com.finalproject.canvas.entity.OutStatus.Y); // Enum 타입 매핑
+
+            // 3. DB에 업데이트 반영
+            servicesupportService.insertSupport(support); // 기존 save/insert 메서드 재활용
+
+            return ResponseEntity.ok("success");
+        } catch (Exception e) {
+            log.error("답변 등록 중 서버 에러 발생: ", e);
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
     }
 }

@@ -343,30 +343,41 @@ function ProductDetail() {
         // 문의 불러오기
         function getQuestions() {
                 axios.get(`http://localhost:9991/question/list/${data.id}`)
-                        .then(res => setQuestions(res.data))
+                        .then(res => {
+                                console.log(" Q&A 서버 데이터 전체 확인");
+                                console.log(res.data);
+
+                                setQuestions(res.data);
+                        })
                         .catch(err => console.log("문의 리스트 에러", err));
         }
 
 
         // 문의 작성
-        function handleQuestionSubmit() {
+        const handleQuestionSubmit = () => {
+                if (!qnaTitle.trim() || !questionText.trim()) {
+                        alert("제목과 내용을 모두 입력해주세요.");
+                        return;
+                }
+
                 const formData = new FormData();
                 formData.append("mId", sessionStorage.getItem("mId"));
                 formData.append("pId", data.id);
-                formData.append("cId", 1);              // 문의 유형 (고정이면 임시로 1)
+                formData.append("cId", 1);
                 formData.append("subject", qnaTitle);
                 formData.append("context", questionText);
 
                 axios.post("http://localhost:9991/question/write", formData)
                         .then(() => {
+                                alert("문의가 등록되었습니다.");
                                 setQuestionText("");
                                 setQnaTitle("");
                                 getQuestions();
 
-                                setOpenQna(false) // 작성 후 문의창 닫기
+                                setOpenQna(false);
                         })
                         .catch(err => console.log("문의 작성 에러", err));
-        }
+        };
 
 
         return (
@@ -408,11 +419,7 @@ function ProductDetail() {
                                                 <h3>{data?.name}</h3>
                                                 <span>
                                                         <img
-                                                                src={
-                                                                        likedItems.includes(data?.id)
-                                                                                ? "/like2.png"
-                                                                                : "/like.png"
-                                                                }
+                                                                src={likedItems.includes(data?.id) ? "/like2.png" : "/like.png"}
                                                                 alt="like"
                                                                 onClick={(e) => {
                                                                         console.log("data:", data);
@@ -439,7 +446,6 @@ function ProductDetail() {
                                         <div className="option-box">
                                                 <select value={color} onChange={(e) => setColor(e.target.value)}>
                                                         <option value="">색상 선택</option>
-
                                                         {colors.map((c, idx) => (
                                                                 <option key={idx} value={c}>
                                                                         {c}
@@ -449,7 +455,6 @@ function ProductDetail() {
 
                                                 <select value={extraOption} onChange={(e) => setExtraOption(e.target.value)}>
                                                         <option value="">사이즈 선택</option>
-
                                                         {sizes.map((item, idx) => (
                                                                 <option key={idx} value={item.size}>
                                                                         {item.price && item.price !== "0"
@@ -472,6 +477,7 @@ function ProductDetail() {
                                                         옵션 추가
                                                 </button>
                                         </div>
+
                                         {/* 선택한 옵션 보이기 */}
                                         {selectedOptions.length > 0 && (
                                                 <div style={{ marginTop: '15px' }}>
@@ -554,32 +560,20 @@ function ProductDetail() {
 
                         {/* 탭 메뉴 */}
                         <div className="tab-menu">
-                                <div
-                                        onClick={() => setActiveTab("detail")}
-                                        className={activeTab === "detail" ? "active" : ""}
-                                >
+                                <div onClick={() => setActiveTab("detail")} className={activeTab === "detail" ? "active" : ""} >
                                         상세페이지
                                 </div>
 
-                                <div
-                                        onClick={() => setActiveTab("related")}
-                                        className={activeTab === "related" ? "active" : ""}
-                                >
+                                <div onClick={() => setActiveTab("related")} className={activeTab === "related" ? "active" : ""}>
                                         관련상품
                                 </div>
 
-                                <div
-                                        onClick={() => setActiveTab("review")}
-                                        className={activeTab === "review" ? "active" : ""}
-                                >
+                                <div onClick={() => setActiveTab("review")} className={activeTab === "review" ? "active" : ""}>
                                         리뷰({reviews.length})
                                 </div>
 
-                                <div
-                                        onClick={() => setActiveTab("qna")}
-                                        className={activeTab === "qna" ? "active" : ""}
-                                >
-                                        문의
+                                <div onClick={() => setActiveTab("qna")} className={activeTab === "qna" ? "active" : ""} >
+                                        문의({questions.length})
                                 </div>
                         </div>
 
@@ -587,12 +581,8 @@ function ProductDetail() {
                         <div>
                                 {activeTab === "detail" && (
                                         <div className="detail-toggle-wrapper" style={{ textAlign: 'center', margin: '40px 0' }}>
-
                                                 <div className={`detail-content ${showDetail ? "open" : ""}`}>
-                                                        <div
-                                                                className="detail-html"
-                                                                dangerouslySetInnerHTML={{ __html: data?.content }}
-                                                        />
+                                                        <div className="detail-html" dangerouslySetInnerHTML={{ __html: data?.content }} />
                                                 </div>
 
                                                 {!showDetail && (
@@ -937,117 +927,110 @@ function ProductDetail() {
                                         </div>
                                 )}
 
+                                {/* 문의하기 - 대호수정 */}
                                 {activeTab === "qna" && (
                                         <div style={{ padding: "40px 0", textAlign: "center", minHeight: '700px' }}>
                                                 <div style={{ textAlign: 'left', margin: '20px 0' }}>
                                                         <h3>문의사항</h3>
                                                         <p style={{ color: '#686868' }}>
                                                                 * 상품에 관한 문의가 아닌 배송 / 결제 / 교환 / 반품에 대한 문의는 서비스지원 &gt; 1:1문의 를 이용해 주시기 바랍니다.<br />
-                                                                *  본인 외 타인이 볼 수 있는 공간으로 개인정보 유출의 위험이 있으므로 개인정보 보호로 인해 개인정보가 기재된 게시글은 통보 없이 삭제될 수 있습니다.
+                                                                * 본인 외 타인이 볼 수 있는 공간으로 개인정보 유출의 위험이 있습니다.
                                                         </p>
                                                         <div style={{ float: 'right', margin: '20px 10px' }}>
-                                                                <button id="p-qnaBtn" style={{ margin: '10px', padding: '10px' }}
-                                                                        onClick={() => setOpenQna(true)}>
+                                                                <button id="p-qnaBtn" style={{ margin: '10px', padding: '10px' }} onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        console.log("상품문의 버튼 클릭됨! openQna 변경 전:", openQna);
+                                                                        setOpenQna(true);
+                                                                }}>
                                                                         상품문의
                                                                 </button>
                                                         </div>
                                                 </div>
 
-                                                <table
-                                                        style={{
-                                                                width: '100%',
-                                                                borderTop: '2px solid #000',
-                                                                fontSize: '15px',
-                                                                borderCollapse: 'collapse'
-                                                        }}
-                                                >
+                                                <table className="p-qnaTable" style={{ width: '100%', borderTop: '2px solid #333', fontSize: '15px', borderCollapse: 'collapse' }}>
                                                         <thead>
-                                                                <tr style={{ borderBottom: '1px solid #ccc', height: '50px' }}>
+                                                                <tr style={{ borderBottom: '1px solid #ccc', height: '50px', background: '#f9f9f9' }}>
                                                                         <th style={{ width: '80px' }}>번호</th>
-                                                                        <th style={{ textAlign: 'left', paddingLeft: '60px' }}>제목</th>
+                                                                        <th style={{ textAlign: 'left', paddingLeft: '20px' }}>제목 및 내용</th>
                                                                         <th style={{ width: '120px' }}>작성자</th>
                                                                         <th style={{ width: '120px' }}>작성일</th>
                                                                 </tr>
                                                         </thead>
-
                                                         <tbody>
                                                                 {questions.length === 0 ? (
                                                                         <tr>
-                                                                                <td colSpan="4" style={{ textAlign: "center", padding: "30px 0" }}>
+                                                                                <td colSpan="4" style={{ textAlign: "center", padding: "30px 0", color: "#888" }}>
                                                                                         등록된 문의가 없습니다.
                                                                                 </td>
                                                                         </tr>
                                                                 ) : (
-                                                                        questions.map((q) => {
-                                                                                const isOpen = openAnswer === q.id;
+                                                                        questions.map((q, index) => {
+                                                                                const currentId = q.id || index;
+                                                                                const isOpened = openAnswer === currentId;
+
+                                                                                const rawDate = q.writedate || q.writeday || "";
+                                                                                const formattedDate = rawDate.length >= 10 ? rawDate.substring(0, 10) : rawDate;
+
+                                                                                const rawReplyDate = q.replydate || "";
+                                                                                const formattedReplyDate = rawReplyDate.length >= 10 ? rawReplyDate.substring(0, 10) : rawReplyDate;
 
                                                                                 return (
-                                                                                        <React.Fragment key={q.id}>
-                                                                                                {/* 리스트 row */}
+                                                                                        <React.Fragment key={currentId}>
+                                                                                                {/* 1. 질문 행 */}
                                                                                                 <tr
-                                                                                                        style={{
-                                                                                                                borderBottom: '1px solid #eee',
-                                                                                                                height: '48px',
-                                                                                                                cursor: 'pointer'
-                                                                                                        }}
-                                                                                                        onClick={() =>
-                                                                                                                setOpenAnswer(isOpen ? null : q.id)
-                                                                                                        }
+                                                                                                        style={{ borderBottom: "1px solid #eee", height: "65px", cursor: "pointer" }}
+                                                                                                        onClick={() => setOpenAnswer(isOpened ? null : currentId)}
                                                                                                 >
-                                                                                                        <td>{q.id}</td>
-
-                                                                                                        <td
-                                                                                                                style={{
-                                                                                                                        textAlign: 'left',
-                                                                                                                        paddingLeft: '60px',
-                                                                                                                        fontWeight: 'bold'
-                                                                                                                }}
-                                                                                                        >
-                                                                                                                {q.subject} [{q.answer ? "답변완료" : "답변대기"}]
+                                                                                                        <td>{questions.length - index}</td>
+                                                                                                        <td style={{ textAlign: "left", paddingLeft: "20px" }}>
+                                                                                                                <span style={{ fontWeight: "500", marginRight: '10px', color: '#333' }}>
+                                                                                                                        {q.subject}
+                                                                                                                </span>
+                                                                                                                <span style={{
+                                                                                                                        color: q.reply ? '#1890ff' : '#f5222d',
+                                                                                                                        fontWeight: 'bold',
+                                                                                                                        fontSize: '13px'
+                                                                                                                }}>
+                                                                                                                        {q.reply ? '[답변완료]' : '[답변대기]'}
+                                                                                                                </span>
                                                                                                         </td>
-
-                                                                                                        <td>{q.member.username}</td>
-
-                                                                                                        <td>
-                                                                                                                {q.writedate
-                                                                                                                        ? new Date(q.writedate)
-                                                                                                                                .toISOString()
-                                                                                                                                .slice(0, 10)
-                                                                                                                        : ""}
-                                                                                                        </td>
+                                                                                                        <td>{q.member?.userid || q.userid}</td>
+                                                                                                        <td>{formattedDate}</td>
                                                                                                 </tr>
 
-                                                                                                {/* 펼쳐지는 영역 */}
-                                                                                                {isOpen && (
-                                                                                                        <tr>
-                                                                                                                <td
-                                                                                                                        colSpan="4"
-                                                                                                                        style={{
-                                                                                                                                background: '#f8f8f8',
-                                                                                                                                textAlign: 'left',
-                                                                                                                                padding: '25px 60px',
-                                                                                                                                lineHeight: '1.8'
-                                                                                                                        }}
-                                                                                                                >
-                                                                                                                        {/* Q */}
-                                                                                                                        <div style={{ marginBottom: '20px' }}>
-                                                                                                                                <strong>Q.</strong>
-                                                                                                                                <p style={{ marginTop: '10px' }}>
-                                                                                                                                        {q.context}
-                                                                                                                                </p>
-                                                                                                                        </div>
+                                                                                                {/* 질문 클릭 시 열리는 상세 내용 및 라인 구분 답변 구역 */}
+                                                                                                {isOpened && (
+                                                                                                        <tr style={{ backgroundColor: "#fafafa", borderBottom: "1px solid #eee" }}>
+                                                                                                                <td></td>
+                                                                                                                <td colSpan="3" style={{ textAlign: "left", padding: "25px 20px" }}>
 
-                                                                                                                        {/* A */}
-                                                                                                                        {q.answer ? (
-                                                                                                                                <div>
-                                                                                                                                        <strong>A.</strong>
-                                                                                                                                        <p style={{ marginTop: '10px' }}>
-                                                                                                                                                {q.answer}
+                                                                                                                        {/* 질문 영역 */}
+                                                                                                                        <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: q.reply ? '25px' : '0' }}>
+                                                                                                                                <strong style={{ color: '#333', fontSize: '18px', marginRight: '15px', lineHeight: '1' }}>Q.문의 내용</strong>
+                                                                                                                                <div style={{ flex: 1 }}>
+                                                                                                                                        <p style={{ margin: "0", color: '#444', fontSize: "14px", lineHeight: "1.6", whiteSpace: "pre-wrap" }}>
+                                                                                                                                                {q.context}
                                                                                                                                         </p>
                                                                                                                                 </div>
-                                                                                                                        ) : (
-                                                                                                                                <div style={{ color: "#999" }}>
-                                                                                                                                        아직 답변이 없습니다.
+                                                                                                                        </div>
+
+                                                                                                                        {/* 판매자 답변 영역 */}
+                                                                                                                        {q.reply && (
+                                                                                                                                <div style={{
+                                                                                                                                        paddingTop: "20px",
+                                                                                                                                        borderTop: "1px dashed #e8e8e8"
+                                                                                                                                }}>
+                                                                                                                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: 'center', marginBottom: "10px" }}>
+                                                                                                                                                <span style={{ fontWeight: "bold", color: "#222", fontSize: "14px" }}>
+                                                                                                                                                        A. 판매자 답변
+                                                                                                                                                </span>
+                                                                                                                                                <span style={{ fontSize: "12px", color: "#999" }}>
+                                                                                                                                                        {formattedReplyDate}
+                                                                                                                                                </span>
+                                                                                                                                        </div>
+                                                                                                                                        <p style={{ margin: 0, color: "#555", fontSize: "14px", lineHeight: "1.6", paddingLeft: "15px", whiteSpace: "pre-wrap" }}>
+                                                                                                                                                {q.reply}
+                                                                                                                                        </p>
                                                                                                                                 </div>
                                                                                                                         )}
                                                                                                                 </td>
@@ -1059,110 +1042,41 @@ function ProductDetail() {
                                                                 )}
                                                         </tbody>
                                                 </table>
-                                        </div>
-                                )}
 
-                                {openQna && (
-                                        <div
-                                                style={{
-                                                        position: "fixed",
-                                                        top: 0,
-                                                        left: 0,
-                                                        width: "100vw",
-                                                        height: "100vh",
-                                                        background: "rgba(0,0,0,0.5)",
-                                                        display: "flex",
-                                                        justifyContent: "center",
-                                                        alignItems: "center",
-                                                        zIndex: 9999
-                                                }}
-                                                onClick={() => setOpenQna(false)}  // 바깥 클릭 → 닫힘
-                                        >
-                                                <div
-                                                        style={{
-                                                                background: "#fff",
-                                                                width: "600px",
-                                                                padding: "30px",
-                                                                borderRadius: "8px",
-                                                                position: "relative"
-                                                        }}
-                                                        onClick={(e) => e.stopPropagation()} // 내부 클릭은 유지
-                                                >
-                                                        {/* 닫기(X) 버튼 */}
-                                                        <button
-                                                                onClick={() => setOpenQna(false)}
-                                                                style={{
-                                                                        position: "absolute",
-                                                                        top: "20px",
-                                                                        right: "20px",
-                                                                        background: "none",
-                                                                        border: "none",
-                                                                        fontSize: "24px",
-                                                                        cursor: "pointer"
-                                                                }}
-                                                        >
-                                                                ✕
-                                                        </button>
+                                                {openQna && (
+                                                        <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 10000 }}>
+                                                                <div style={{ background: "#fff", padding: "30px", borderRadius: "12px", width: "500px", position: "relative", boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}>
+                                                                        <button style={{ position: "absolute", top: "15px", right: "15px", background: "none", border: "none", fontSize: "22px", cursor: "pointer", color: '#aaa' }} onClick={() => setOpenQna(false)}>&times;</button>
+                                                                        <h3 style={{ marginBottom: "25px", fontWeight: "bold", textAlign: 'left', fontSize: '20px' }}>상품 문의하기</h3>
 
-                                                        {/* 타이틀 */}
-                                                        <h2 style={{ marginBottom: "20px" }}>상품 문의하기</h2>
+                                                                        <div style={{ marginBottom: "15px", textAlign: "left" }}>
+                                                                                <label style={{ display: "block", marginBottom: "6px", fontWeight: "bold", fontSize: '14px', color: '#333' }}>제목</label>
+                                                                                <input type="text" 
+                                                                                style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "6px", boxSizing: 'border-box' }} 
+                                                                                value={qnaTitle}
+                                                                                onChange={(e) => setQnaTitle(e.target.value)} placeholder="제목을 입력해주세요." />
+                                                                        </div>
 
-                                                        {/* 문의 유형 */}
-                                                        <div style={{ marginBottom: "20px" }}>
-                                                                <label>문의 유형</label>
-                                                                <select style={{ width: "100%", padding: "10px", marginTop: "5px" }}>
-                                                                        <option>문의 유형 선택</option>
-                                                                        <option>상품 문의</option>
-                                                                </select>
+                                                                        <div style={{ marginBottom: "25px", textAlign: "left" }}>
+                                                                                <label style={{ display: "block", marginBottom: "6px", fontWeight: "bold", fontSize: '14px', color: '#333' }}>내용</label>
+                                                                                <textarea style={{ width: "100%", height: "150px", padding: "10px", border: "1px solid #ddd", borderRadius: "6px", resize: "none", boxSizing: 'border-box', lineHeight: '1.5' }}
+                                                                                          value={questionText}
+                                                                                          onChange={(e) => setQuestionText(e.target.value)}
+                                                                                          placeholder="문의하실 내용을 입력해주세요."></textarea>
+                                                                        </div>
+
+                                                                        <div style={{ display: "flex", gap: "10px" }}>
+                                                                                <button type="button" style={{ flex: 1, padding: "12px", background: "#eee", color: "#333", border: "none", borderRadius: "6px", fontSize: "15px", cursor: "pointer" }} onClick={() => setOpenQna(false)}>취소</button>
+                                                                                <button type="button" style={{ flex: 1, padding: "12px", background: "#333", color: "#fff", border: "none", borderRadius: "6px", fontSize: "15px", cursor: "pointer", fontWeight: 'bold' }} onClick={handleQuestionSubmit}>문의등록</button>
+                                                                        </div>
+                                                                </div>
                                                         </div>
+                                                )}
 
-                                                        {/* 제목 */}
-                                                        <div style={{ marginBottom: "20px" }}>
-                                                                <label>제목</label>
-                                                                <input
-                                                                        type="text"
-                                                                        placeholder="제목을 입력해주세요."
-                                                                        style={{ width: "100%", padding: "10px", marginTop: "5px" }}
-                                                                        type="text"
-                                                                        value={qnaTitle}
-                                                                        onChange={(e) => setQnaTitle(e.target.value)}
-                                                                />
-                                                        </div>
-
-                                                        {/* 내용 */}
-                                                        <div style={{ marginBottom: "20px" }}>
-                                                                <label>내용</label>
-                                                                <textarea
-                                                                        placeholder="내용을 입력해주세요."
-                                                                        style={{ width: "100%", height: "150px", padding: "10px", marginTop: "5px" }}
-                                                                        value={questionText}
-                                                                        onChange={(e) => setQuestionText(e.target.value)}
-                                                                />
-                                                        </div>
-
-                                                        {/* 하단 버튼 */}
-                                                        <button
-                                                                style={{
-                                                                        width: "100%",
-                                                                        padding: "12px",
-                                                                        background: "#333",
-                                                                        color: "#fff",
-                                                                        border: "none",
-                                                                        borderRadius: "5px",
-                                                                        fontSize: "16px",
-                                                                        cursor: "pointer"
-                                                                }}
-                                                                onClick={handleQuestionSubmit}
-                                                        >
-                                                                문의하기
-                                                        </button>
-                                                </div>
                                         </div>
                                 )}
                         </div>
-
-                </div>
-        );
+                </div >
+        )
 }
-
 export default ProductDetail;

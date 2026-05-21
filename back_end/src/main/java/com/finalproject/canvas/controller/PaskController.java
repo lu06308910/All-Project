@@ -59,10 +59,8 @@ public class PaskController {
         String replyContent = body.get("reply");
         log.info("문의사항 번호 {}번에 답변 등록 요청: {}", id, replyContent);
 
-        return paskRepository.findById(id).map(ask -> {
-            ask.setReply(replyContent); // reply 필드에 답변 저장
-            paskRepository.save(ask);
-            return ResponseEntity.ok().body("답변이 정상적으로 등록되었습니다.");
-        }).orElse(ResponseEntity.notFound().build());
+        return paskService.updateSellerReply(id, replyContent)
+                .map(updatedAsk -> ResponseEntity.ok().body("답변이 정상적으로 등록되었습니다."))
+                .orElse(ResponseEntity.notFound().build());
     }
 }
