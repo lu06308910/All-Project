@@ -18,45 +18,30 @@ public class LikeController {
     @Autowired
     private LikeService likeService;
 
-    // 좋아요 토글
-    /** @PostMapping("/toggle")
-    public ResponseEntity<?> toggleLike(@RequestBody Map<String, Integer> body) {
 
-        Integer memberId =  body.get("memberId");
-        Integer productId = Integer.valueOf(body.get("productId").toString());
+    @PostMapping("/toggle") // 기존 내용 마이페이지랑 병합 - 대호수정
 
-        boolean liked = likeService.toggleLike(memberId, productId);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("productId", productId);
-        response.put("liked", liked);
-
-        return ResponseEntity.ok(response);
-    } */
-
-    // 마이페이지 찜삭제 - 대호 추가(가영님이랑 확인필요)
-    @PostMapping("/toggle")
-    public ResponseEntity<?> toggleWishProduct(@RequestBody Map<String, Object> body) {
-        // 리액트에서 보내주는 JSON body 데이터 추출
-        Object pidObj = body.get("pid");
+    public ResponseEntity<?> toggleAction(@RequestBody Map<String, Object> body) {
         String userid = (String) body.get("userid");
 
-        log.info("찜 토글 요청 수신 - 사용자: {}, 상품 번호: {}", userid, pidObj);
+        // memberId가 문자열로 오든 숫자로 오든 안전하게 꺼내기
+        Object memberIdObj = body.get("memberId");
+        Integer memberId = (memberIdObj != null) ? Integer.parseInt(memberIdObj.toString()) : null;
 
-        if (pidObj == null || userid == null) {
-            return ResponseEntity.badRequest().body("필수 파라미터(pid, userid)가 누락되었습니다.");
-        }
+        String pidStr = String.valueOf(body.get("pid") != null ? body.get("pid") : body.get("productId"));
+        Integer pid = Integer.parseInt(pidStr);
 
-        // String이나 Integer 타입을 안전하게 변환
-        Integer pid = Integer.parseInt(pidObj.toString());
+        log.info("토글 요청 - 사용자ID: {}, 회원번호: {}, 상품번호: {}", userid, memberId, pid);
 
-        try {
-            return ResponseEntity.ok("wish toggled successfully");
+        // 통합된 서비스 로직 호출 (기존에 잘 되던 서비스 메서드에 맞게 쓰시면 됩니다)
+        boolean liked = likeService.toggleLike(memberId, pid);
 
-        } catch (Exception e) {
-            log.error("찜 토글 처리 중 에러 발생: ", e);
-            return ResponseEntity.internalServerError().body("서버 오류가 발생했습니다.");
-        }
+        // 프론트엔드가 하트 불을 켤 수 있게 'liked' 상태를 맵에 담아 보냅니다!
+        Map<String, Object> response = new HashMap<>();
+        response.put("productId", pid);
+        response.put("liked", liked); // true 또는 false가 들어감
+
+        return ResponseEntity.ok(response);
     }
 
     // 유저가 좋아요한 상품 목록 가져오기

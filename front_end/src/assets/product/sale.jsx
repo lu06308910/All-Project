@@ -1,12 +1,20 @@
 import './../css/kdh.css';
 import './../css/seul.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Carousel } from 'react-bootstrap';
 import { Ellipsis } from 'react-bootstrap/esm/PageItem';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 function sale(){
+
+        const [events, setEvents] = useState([]);
+                useEffect(() => {
+                axios.get('http://localhost:9991/event/active')
+                        .then(res => setEvents(res.data))
+                        .catch(err => console.log(err));
+        }, []);
         
         // 제품 데이터 배열
         const products = [
@@ -25,6 +33,48 @@ function sale(){
                 }
                 return result;
         };
+        
+        const now = new Date();
+        const activeEvent = events.find(e => {
+                const start = e.updatedate ? new Date(e.updatedate) : null;
+                const end = e.enddate ? new Date(e.enddate) : null;
+                return start && end && now >= start && now <= end;
+        });
+
+        // 타이머
+        const [timeLeft, setTimeLeft] = useState('');
+        const [dDay, setDDay] = useState('');
+
+        useEffect(() => {
+                if (!activeEvent) return;
+
+                const end = new Date(activeEvent.enddate);
+                const start = new Date(activeEvent.updatedate);
+
+                const tick = () => {
+                const now = new Date();
+
+                // D-day 계산
+                const diffMs = end - now;
+                if (diffMs <= 0) {
+                        setTimeLeft('종료');
+                        setDDay('종료');
+                        return;
+                }
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                setDDay(diffDays === 0 ? 'D-DAY' : `D-${diffDays}`);
+
+                // 시:분:초
+                const hours = String(Math.floor((diffMs / (1000 * 60 * 60)) % 24)).padStart(2, '0');
+                const minutes = String(Math.floor((diffMs / (1000 * 60)) % 60)).padStart(2, '0');
+                const seconds = String(Math.floor((diffMs / 1000) % 60)).padStart(2, '0');
+                setTimeLeft(`${hours}:${minutes}:${seconds}`);
+        };
+
+                tick(); // 즉시 1회 실행
+                const timer = setInterval(tick, 1000);
+                return () => clearInterval(timer); // 클린업
+        }, [activeEvent]);
 
         const productChunks = chunkProducts(products, 4);
 
@@ -33,8 +83,16 @@ function sale(){
                         <div style={{margin:'0 auto', marginTop:'100px', textAlign:'center'}}>
                                 <h3 style={{fontWeight:'600'}}>CANVAS 특가 상품 기획</h3>
                                 <div style={{display:'flex', gap:'20px', justifyContent: 'center'}}>
-                                        <h1 style={{color:"white", backgroundColor:"black", padding:"2px 10px"}}>D-3</h1>
-                                        <h1>09:09:48</h1>
+                                        {activeEvent ? (
+                                                <>
+                                                        <h1 style={{ color: "white", backgroundColor: "black", padding: "2px 10px" }}>
+                                                                {dDay}
+                                                        </h1>
+                                                        <h1>{timeLeft}</h1>
+                                                </>
+                                                ) : (
+                                                <h1 style={{ color: 'gray' }}>진행 중인 세일이 없습니다</h1>
+                                        )}
                                 </div>
                                 {/* 슬라이드(Carousel) */}
                                 <div style={{display:'flex', gap:'20px', justifyContent: 'center', marginTop:'20px'}}>

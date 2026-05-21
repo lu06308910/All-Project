@@ -58,14 +58,17 @@ function ProductDetail() {
 
         // 좋아요
         useEffect(() => {
-                const loginUserId = sessionStorage.getItem("loginUserId");
                 const mId = sessionStorage.getItem("mId");
+                if (!mId) return;
 
-                if (!loginUserId) return;
-
+                // 컨트롤러의 @GetMapping("/list/{memberId}") 경로를 정확히 찌릅니다.
                 axios.get(`http://localhost:9991/like/list/${mId}`)
-                        .then(res => setLikedItems(res.data))
-                        .catch(err => console.log(err));
+                        .then(res => {
+                                console.log("DB에서 가져온 내 찜 목록(상품ID배열):", res.data);
+                                // 백엔드가 [42, 43, 44] 같은 숫자 배열을 주므로 그대로 저장합니다.
+                                setLikedItems(res.data || []);
+                        })
+                        .catch(err => console.log("찜 목록 로딩 실패:", err));
         }, []);
 
         useEffect(() => {
@@ -229,32 +232,44 @@ function ProductDetail() {
 
 
         }
-        // 좋아요 백엔드
+        // 좋아요 백엔드 - 대호수정
         function handleLike(productId) {
+                const logId = sessionStorage.getItem("logId") || sessionStorage.getItem("loginUserId");
                 const mId = sessionStorage.getItem("mId");
-                console.log("mId:", mId);
-                console.log("productId:", productId);
 
                 if (!mId || !productId) {
-                        console.log("값 없음", mId, productId);
+                        alert("로그인 후 이용 가능합니다.");
                         return;
                 }
 
+                // 컨트롤러의 @PostMapping("/toggle")에 맞춰서 데이터 전송
                 axios.post("http://localhost:9991/like/toggle", {
-                        memberId: mId,
-                        productId: productId
+                        userid: logId,
+                        memberId: Number(mId),
+                        productId: Number(productId),
+                        pid: Number(productId) // 백엔드에서 pid로 받든 productId로 받든 상관없게 둘 다 넣음
                 })
                         .then(res => {
+                                // 백엔드가 새로 보내주는 res.data.liked (true/false) 값을 확인
                                 const { liked } = res.data;
+                                console.log("서버 토글 결과 (liked 상태):", liked);
 
-                                setLikedItems(prev =>
-                                        liked
-                                                ? [...prev, productId]
-                                                : prev.filter(id => id !== productId)
-                                );
+                                setLikedItems(prev => {
+                                        // 안전하게 모든 요소를 숫자로 변환해서 처리
+                                        const cleanList = prev.map(id => Number(id));
+
+                                        if (liked) {
+                                                // 찜 추가 시 배열에 추가
+                                                return [...cleanList, Number(productId)];
+                                        } else {
+                                                // 찜 해제 시 배열에서 삭제
+                                                return cleanList.filter(id => id !== Number(productId));
+                                        }
+                                });
                         })
-                        .catch(err => console.log(err));
+                        .catch(err => console.log("찜하기 요청 에러:", err));
         }
+
         // 장바구니 담기 버튼 클릭시 선택한 옵션값 보내기
         const addToCart = () => {
                 const mId = Number(sessionStorage.getItem("mId"));
@@ -418,19 +433,14 @@ function ProductDetail() {
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                 <h3>{data?.name}</h3>
                                                 <span>
-                                                        <img
-                                                                src={likedItems.includes(data?.id) ? "/like2.png" : "/like.png"}
+                                                        <img // 대호수정
+                                                                src={likedItems.map(id => Number(id)).includes(Number(data?.id)) ? "/like2.png" : "/like.png"}
                                                                 alt="like"
                                                                 onClick={(e) => {
-                                                                        console.log("data:", data);
                                                                         e.preventDefault();
                                                                         handleLike(data.id);
                                                                 }}
-                                                                style={{
-                                                                        width: "30px",
-                                                                        height: "30px",
-                                                                        cursor: "pointer"
-                                                                }}
+                                                                style={{ width: "30px", height: "30px", cursor: "pointer" }}
                                                         />
                                                 </span>
                                         </div>
@@ -1051,18 +1061,18 @@ function ProductDetail() {
 
                                                                         <div style={{ marginBottom: "15px", textAlign: "left" }}>
                                                                                 <label style={{ display: "block", marginBottom: "6px", fontWeight: "bold", fontSize: '14px', color: '#333' }}>제목</label>
-                                                                                <input type="text" 
-                                                                                style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "6px", boxSizing: 'border-box' }} 
-                                                                                value={qnaTitle}
-                                                                                onChange={(e) => setQnaTitle(e.target.value)} placeholder="제목을 입력해주세요." />
+                                                                                <input type="text"
+                                                                                        style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "6px", boxSizing: 'border-box' }}
+                                                                                        value={qnaTitle}
+                                                                                        onChange={(e) => setQnaTitle(e.target.value)} placeholder="제목을 입력해주세요." />
                                                                         </div>
 
                                                                         <div style={{ marginBottom: "25px", textAlign: "left" }}>
                                                                                 <label style={{ display: "block", marginBottom: "6px", fontWeight: "bold", fontSize: '14px', color: '#333' }}>내용</label>
                                                                                 <textarea style={{ width: "100%", height: "150px", padding: "10px", border: "1px solid #ddd", borderRadius: "6px", resize: "none", boxSizing: 'border-box', lineHeight: '1.5' }}
-                                                                                          value={questionText}
-                                                                                          onChange={(e) => setQuestionText(e.target.value)}
-                                                                                          placeholder="문의하실 내용을 입력해주세요."></textarea>
+                                                                                        value={questionText}
+                                                                                        onChange={(e) => setQuestionText(e.target.value)}
+                                                                                        placeholder="문의하실 내용을 입력해주세요."></textarea>
                                                                         </div>
 
                                                                         <div style={{ display: "flex", gap: "10px" }}>

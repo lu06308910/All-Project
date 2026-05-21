@@ -25,7 +25,7 @@ public class CartEntity {
     private String color;
     @Column(nullable = true)
     private String size;
-    @Column(nullable = false) // 가격추가 이슬
+    @Column(nullable = true) // 가격추가 이슬
     private Integer price;
 
     @Column(name = "m_id")
