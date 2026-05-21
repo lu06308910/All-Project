@@ -29,7 +29,7 @@ function Space() {
                 let url = "?";
 
 
-                axios.get(`http://localhost:9991/spaceproduct${url}`)
+                axios.get(`http://localhost:9989/spaceproduct${url}`)
                         .then((response) => {
 
                                 console.log(response.data);
@@ -41,7 +41,7 @@ function Space() {
                                                 title: record.name,
                                                 price: record.price,
                                                 img: record.fileList?.[0]
-                                                        ? `http://localhost:9991/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
+                                                        ? `http://localhost:9989/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
                                                         : "/no-image.png"
                                         };
                                 });
@@ -64,7 +64,7 @@ function Space() {
                         return;
                 }
 
-                axios.post("http://localhost:9991/like/toggle", {
+                axios.post("http://localhost:9989/like/toggle", {
                         memberId: mId,
                         productId: productId
                 })

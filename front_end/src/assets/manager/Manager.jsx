@@ -34,7 +34,7 @@ function Manager() {
         //게시글관리
         const [events, setEvents] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9991/event/all')
+                axios.get('http://localhost:9989/event/all')
                 .then(res => setEvents(res.data))
                 .catch(err => console.log(err));
         }, []);
@@ -55,21 +55,16 @@ function Manager() {
         //회원 업데이트
         const [users, setUsers] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9991/member/all/member')
+                axios.get('http://localhost:9989/member/all/member')
                 .then(res => setUsers(res.data))
                 .catch(err => console.log(err));
         }, []);
-        const [companys, setCompanys] = useState([]);
-        useEffect(() => {
-                axios.get('http://localhost:9991/member/all/business')
-                .then(res => setCompanys(res.data))
-                .catch(err => console.log(err));
-        }, []);
-
+        
+       
         //상품관리
         const [products, setProducts] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9991/all/product')
+                axios.get('http://localhost:9989/all/product')
                 .then(res => setProducts(res.data))
                 .catch(err => console.log(err));
         }, []);
@@ -77,15 +72,15 @@ function Manager() {
         //문의
         const [asks, setAsks] = useState([]);
         useEffect(()=>{
-                axios.get('http://localhost:9991/support/list/all')
+                axios.get('http://localhost:9989/support/list/all')
                 .then(res=>setAsks(res.data))
                 .catch(err=>console.log(err))
         }, [])
-
+        
         //통계용 buy테이블 연결
         const [buys, setBuys] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9991/buy/list/all')
+                axios.get('http://localhost:9989/buy/list/all')
                         .then(res => setBuys(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -93,29 +88,32 @@ function Manager() {
         const [buySearchKey, setBuySearchKey] = useState('name');
         const [buySearchWord, setBuySearchWord] = useState('');
         const [selectedBuyItem, setSelectedBuyItem] = useState(null);
-        // 통계 내용 분석 및 가져오기
+        // 통계 내용 분석 및 가져오기 (pId 별로만 묶기)
         const dateGrouped = buys.reduce((acc, item) => {
+                const resolvedPId = item.pid ?? item.pId ?? item.p_id; // pid 우선
+                const key = resolvedPId;
                 const date = item.writedate?.slice(0, 10) || '';
-                const key = `${date}_${item.pId}`;
                 if (!acc[key]) {
                         acc[key] = {
-                        pId: item.pId,
+                        pId: resolvedPId,
                         product: item.product,
                         writedate: date,
+                        latestDate: date,
                         totalCount: 0,
                         totalPrice: 0,
                         totalDiscount: 0,
                         rawItems: [],
                         };
                 }
+                // 가장 최근 날짜로 갱신
+                if (date > acc[key].latestDate) acc[key].latestDate = date;
                 acc[key].totalCount    += item.count || 0;
                 acc[key].totalPrice    += parseInt(item.price || 0) * (item.count || 0);
                 acc[key].totalDiscount += item.discount || 0;
                 acc[key].rawItems.push(item);
                 return acc;
         }, {});
-        const groupedList = Object.values(dateGrouped).sort((a, b) => b.writedate.localeCompare(a.writedate));
-
+        const groupedList = Object.values(dateGrouped).sort((a, b) => b.latestDate.localeCompare(a.latestDate));
         const [activeMenu, setActiveMenu] = useState('대시보드');
         const [isPostOpen, setIsPostOpen] = useState(false);
         const [modalOpen, setModalOpen] = useState(false);
@@ -126,6 +124,29 @@ function Manager() {
         //선택 변수 저장
         const [selectedItems, setSelectedItems] = useState({});
         const [selectedProIds, setSelectedProIds] = useState([]);
+        
+        const [companys, setCompanys] = useState([]);
+        useEffect(() => {
+                axios.get('http://localhost:9989/member/all/business')
+                .then(res => setCompanys(res.data))
+                .catch(err => console.log(err));
+        }, []);
+
+        //회원 집계 변수
+        const memberDateGrouped = [...users, ...companys].reduce((acc, member) => {
+                const date = member.writedate?.slice(0, 10) || '';
+                if (!acc[date]) {
+                        acc[date] = { date, normalCount: 0, companyCount: 0 };
+                }
+                if (member.usertype === 'BUSINESS') {
+                        acc[date].companyCount += 1;
+                } else {
+                        acc[date].normalCount += 1;
+                }
+                return acc;
+        }, {});
+        const memberDateList = Object.values(memberDateGrouped)
+                .sort((a, b) => b.date.localeCompare(a.date));
 
         const postsPerPage = 10;
         const totalPages = Math.ceil(asks.length / postsPerPage);
@@ -170,20 +191,115 @@ function Manager() {
         const [endDate, setEndDate] = useState('');
         const [productStartDate, setProductStartDate] = useState('');
         const [productEndDate, setProductEndDate] = useState('');
-        
-        // 검색 + 날짜 필터 적용, buytag
-        const filteredGroupedList = groupedList.filter(item => {
-                if (productStartDate && item.writedate < productStartDate) return false;
-                if (productEndDate   && item.writedate > productEndDate)   return false;
-                if (buySearchWord) {
-                        if (buySearchKey === 'name')
-                        return item.product?.name?.includes(buySearchWord);
-                        if (buySearchKey === 'businessName')
-                        return item.product?.company?.businessName?.includes(buySearchWord);
+        const [statsStartDate, setStatsStartDate] = useState('');
+        const [statsEndDate, setStatsEndDate] = useState(''); 
+
+        //통계 날짜 선택 프리셋
+        const handleDateStatsPreset = (period, value) =>{
+                const today = new Date();
+                const start = new Date();
+                setStatsEndDate(formatDate(today));
+                if (period === 'day') {
+                        setStatsStartDate(formatDate(today));
+                } else if (period === 'week') {
+                        start.setDate(today.getDate() - 7);
+                        setStatsStartDate(formatDate(start));
+                } else if (period === 'month') {
+                        start.setMonth(today.getMonth() - value);
+                        setStatsStartDate(formatDate(start));
+                } else if (period === 'year') {
+                        start.setFullYear(today.getFullYear() - 1);
+                        setStatsStartDate(formatDate(start));
                 }
-                return true;
+        }
+        // 통계 테이블: 날짜/검색어 필터 없으면 pId 오름차순 전체 표시
+        const filteredGroupedList = groupedList
+                .filter(item => {
+                        if (statsStartDate || statsEndDate) {
+                                const hasMatch = item.rawItems.some(buy => {
+                                        const d = buy.writedate?.slice(0, 10) || '';
+                                        if (statsStartDate && d < statsStartDate) return false;
+                                        if (statsEndDate   && d > statsEndDate)   return false;
+                                        return true;
+                                });
+                                if (!hasMatch) return false;
+                        }
+                        if (!buySearchWord || !buySearchKey) return true;
+                        if (buySearchKey === 'name')
+                                return item.product?.name?.includes(buySearchWord);
+                        if (buySearchKey === 'businessName')
+                                return item.product?.company?.businessName?.includes(buySearchWord);
+                        return true;
+                })
+                .sort((a, b) => a.pId - b.pId);
+
+        // 일자별 전체 매출 집계
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().slice(0, 10);
+
+        const dailySalesMap = buys.reduce((acc, item) => {
+                const date = item.writedate?.slice(0, 10) || '';
+                if (!date) return acc;
+                if (date < thirtyDaysAgoStr) return acc; //30일 이전은 안 나오게
+                const cleanPrice = parseInt((item.price || '0').toString().replace(/,/g, ''));
+                acc[date] = (acc[date] || 0) + cleanPrice * (item.count || 0);
+                return acc;
+        }, {});
+        const allDates = Array.from({ length: 31 }, (_, i) => {
+                const d = new Date(thirtyDaysAgo);
+                d.setDate(thirtyDaysAgo.getDate() + i);
+                return d.toISOString().slice(0, 10);
         });
-        
+
+        // 상세보기 모달용: 통계 전용 날짜 기준
+        const filteredRawItems = (item) => {
+                if (!item) return [];
+                if (!statsStartDate && !statsEndDate) return item.rawItems;
+                return item.rawItems.filter(buy => {
+                        const d = buy.writedate?.slice(0, 10) || '';
+                        if (statsStartDate && d < statsStartDate) return false;
+                        if (statsEndDate   && d > statsEndDate)   return false;
+                        return true;
+                });
+        };
+
+        // 기업별 총매출 TOP5 (buys 기반)
+        const top5Companies = Object.values(
+                buys.reduce((acc, item) => {
+                const cid = item.product?.company?.cid ?? item.product?.company?.c_id;
+                const bizName = item.product?.company?.businessName;
+                if (!cid) return acc;
+
+                if (!acc[cid]) {
+                        acc[cid] = { cid, businessName: bizName, totalPrice: 0, totalCount: 0 };
+                }
+                        acc[cid].totalPrice += parseInt(item.price || 0) * (item.count || 0);
+                        acc[cid].totalCount += item.count || 0;
+                return acc;
+                }, {})
+        )
+        .sort((a, b) => b.totalPrice - a.totalPrice)
+        .slice(0, 5);
+        //카테고리 별 판매량 집계
+        const top5Categories = Object.values(
+                buys.reduce((acc, item)=>{
+                        const bCat = item.product?.b_category;
+                        const sCat = item.product?.scategory;
+                        if(!bCat) return acc;
+
+                        const key = `${bCat}〉${sCat}`;
+                        if (!acc[key]) {
+                                acc[key] = { key, bCat, sCat, totalCount: 0, totalPrice: 0 };
+                        }const cleanPrice = parseInt((item.price || '0').toString().replace(/,/g, ''));
+                                acc[key].totalCount += item.count || 0;
+                                acc[key].totalPrice += cleanPrice * (item.count || 0);
+                        return acc;
+                }, {})
+        )
+        .sort((a, b) => b.totalCount - a.totalCount)
+        .slice(0, 5);
+                
         //회원 삭제 명령어
         const handleBulkUnregister = () => {
         const targets = selectedItems['회원관리'] || [];
@@ -192,12 +308,12 @@ function Manager() {
 
         Promise.all(
                 targets.map(mid =>
-                axios.patch(`http://localhost:9991/member/unregister/${mid}`)
+                axios.patch(`http://localhost:9989/member/unregister/${mid}`)
                 )
         )
         .then(() => {
                 alert("탈퇴처리 완료");
-                axios.get('http://localhost:9991/member/all')
+                axios.get('http://localhost:9989/member/all')
                 .then(res => setUsers(res.data));
                 setSelectedItems(prev => ({ ...prev, '회원관리': [] }));
         })
@@ -206,10 +322,10 @@ function Manager() {
 
         const handleProDelete = (pid) =>{
                 if(!window.confirm('상품을 삭제하시겠습니까?')) return;
-                axios.delete(`http://localhost:9991/product/${pid}`)
+                axios.delete(`http://localhost:9989/product/${pid}`)
                 .then(()=>{
                         alert('삭제 완료');
-                        axios.get('http://localhost:9991/all/product').then(res=>setProducts(res.data));
+                        axios.get('http://localhost:9989/all/product').then(res=>setProducts(res.data));
                 })
                 .catch(err=>console.log(err));
         };
@@ -217,10 +333,10 @@ function Manager() {
         const handleBulkProDelete = () =>{
                 if (selectedProIds.length==0) return alert('삭제할 제품을 선택해 주세요.');
                 if (!window.confirm(`선택한 ${selectedProIds.length}개의 글을 삭제하시겠습니까?`)) return;
-                Promise.all(selectedProIds.map(id=>axios.delete(`http://localhost:9991/product/${id}`)))
+                Promise.all(selectedProIds.map(id=>axios.delete(`http://localhost:9989/product/${id}`)))
                        .then(()=>{
                         setSelectedProIds([]);
-                        axios.get('http://localhost:9991/all/product').then(res=>setProducts(res.data));
+                        axios.get('http://localhost:9989/all/product').then(res=>setProducts(res.data));
                        })
                        .catch(err=>console.log(err));
         };
@@ -234,10 +350,10 @@ function Manager() {
 
         const handleEventDelete = (eId) => {
         if (!window.confirm('삭제하시겠습니까?')) return;
-                axios.delete(`http://localhost:9991/event/delete/${eId}`)
+                axios.delete(`http://localhost:9989/event/delete/${eId}`)
                         .then(() => {
                         alert('삭제 완료');
-                        axios.get('http://localhost:9991/event/all').then(res => setEvents(res.data));
+                        axios.get('http://localhost:9989/event/all').then(res => setEvents(res.data));
                         })
                         .catch(err => console.log(err));
         };
@@ -245,11 +361,11 @@ function Manager() {
         const handleBulkEventDelete = () => {
                 if (selectedEventIds.length === 0) return alert('삭제할 항목을 선택해주세요.');
                 if (!window.confirm(`선택한 ${selectedEventIds.length}개를 삭제하시겠습니까?`)) return;
-                        axios.delete('http://localhost:9991/event/delete', { data: selectedEventIds })
+                        axios.delete('http://localhost:9989/event/delete', { data: selectedEventIds })
                                 .then(() => {
                                 alert('삭제 완료');
                                 setSelectedEventIds([]);
-                                axios.get('http://localhost:9991/event/all').then(res => setEvents(res.data));
+                                axios.get('http://localhost:9989/event/all').then(res => setEvents(res.data));
                                 })
                                 .catch(err => console.log(err));
         };
@@ -270,7 +386,7 @@ function Manager() {
         const [companyOutSearchWord, setCompanyOutSearchWord] = useState('');
 
         const handleUserSearch = () => {
-                axios.post('http://localhost:9991/member/search',{
+                axios.post('http://localhost:9989/member/search',{
                         searchKey: userSearchKey,
                         searchWord: userSearchWord
                 })
@@ -279,7 +395,7 @@ function Manager() {
         }
 
         const handleCompanySearch = () => {
-                axios.post('http://localhost:9991/member/search/business',{
+                axios.post('http://localhost:9989/member/search/business',{
                         searchKey: companySearchKey,
                         searchWord: companySearchWord
                 })
@@ -288,7 +404,7 @@ function Manager() {
         }
 
         const handleProductSearch = () => {
-                axios.post('http://localhost:9991/search/product', {
+                axios.post('http://localhost:9989/search/product', {
                         searchKey: productSearchKey,
                         searchWord: productSearchWord
                 })
@@ -328,8 +444,6 @@ function Manager() {
         const menus = ['대시보드', '회원 관리', '기업 관리', '상품 관리', '세일 관리', '문의 관리', '통계', '정산'];
         const submenus = ['-예약', '-이벤트 관리']
 
-        
-
         const handleDateProductPreset = (period, value) => {
                 const today = new Date();
                 const start = new Date();
@@ -352,7 +466,7 @@ function Manager() {
                 .filter(pd => {
                         // 1. 카테고리 필터
                         if (productBCategory && pd.b_category !== productBCategory) return false;
-                        if (productSCategory && pd.s_category !== productSCategory) return false;
+                        if (productSCategory && pd.scategory !== productSCategory) return false;
                 return true;
                 })
                 .filter(pd => {
@@ -392,7 +506,7 @@ function Manager() {
                 if (!newEvent.context) return alert('내용을 입력해주세요.');
 
                 console.log('보내는테이터:', newEvent);
-                axios.post('http://localhost:9991/event/add', {
+                axios.post('http://localhost:9989/event/add', {
                                 subject: newEvent.subject,
                                 context: newEvent.context,
                                 updatedate: newEvent.updatedate ? newEvent.updatedate + 'T00:00:00' : null,
@@ -403,7 +517,7 @@ function Manager() {
                                 alert('등록 완료');
                                 setEventModalOpen(false);
                                 setNewEvent({ subject: '', context: '', updatedate: '', enddate: '', pId: '' });
-                                axios.get('http://localhost:9991/event/all')
+                                axios.get('http://localhost:9989/event/all')
                                 .then(res => setEvents(res.data));
                         })
                         .catch(err => console.log(err));
@@ -447,7 +561,7 @@ function Manager() {
                                                                         onChange={()=>handleEventCheck(item.e_id)}
                                                                 />
                                                         </td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.s_category}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
                                                         <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
                                                                 <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                                         {item.subject}
@@ -518,7 +632,7 @@ function Manager() {
                                                                         onChange={()=>handleEventCheck(item.e_id)}
                                                                 />
                                                         </td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.s_category}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
                                                         <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
                                                                 <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                                         {item.subject}
@@ -584,7 +698,7 @@ function Manager() {
                                                                         onChange={()=>handleEventCheck(item.e_id)}
                                                                 />
                                                         </td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.s_category}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
                                                         <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
                                                                 <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                                         {item.subject}
@@ -622,7 +736,10 @@ function Manager() {
                         </div>
                 </div>
         )
-        const BuyTag = () => (
+        const BuyTag = () => {
+                // 날짜 범위 있으면 그 범위만, 없으면 해당 pId 전체 주문
+                const items = filteredRawItems(selectedBuyItem);
+                return (
                 <div style={{
                         position: 'fixed',
                         top: '50%',
@@ -635,7 +752,10 @@ function Manager() {
                         boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
                 }}>
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                <div className='light-but'>2025-02-14 매출</div>
+                                {/* 선택된 상품명 + 최근날짜 표시 */}
+                                <div className='light-but'>
+                                        {selectedBuyItem?.latestDate} · {selectedBuyItem?.product?.name}
+                                </div>
                                 <button style={{ background: "white", border: "1px solid white", color: "black" }} onClick={() => setModalOpen(false)}>X</button>
                         </div>
                         <table className="table table-bordered" style={{ width: '600px', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
@@ -648,17 +768,18 @@ function Manager() {
                                                 <th style={{ backgroundColor: '#eeeeee' }}>결제금액</th>
                                         </tr>
                                 </thead>
-                                {buys.map((buy)=>(
-                                        <tbody key={buy.bid}>
-                                                <tr>
+                                <tbody>
+                                        {/* 해당 pId의 rawItems만 출력 */}
+                                        {items.map((buy) => (
+                                                <tr key={buy.bid}>
                                                         <td>{buy.bid}</td>
                                                         <td>{buy.product?.name}</td>
                                                         <td>{buy.member?.userid}</td>
                                                         <td>{buy.member?.username}</td>
                                                         <td>{(parseInt(buy.price || 0) * buy.count).toLocaleString()}</td>
                                                 </tr>
-                                        </tbody>
-                                ))}
+                                        ))}
+                                </tbody>
                         </table>
                         <nav>
                                 <ul className="pagination" style={{ marginTop: '20px' }}>
@@ -693,7 +814,8 @@ function Manager() {
                                 </ul>
                         </nav>
                 </div>
-        )
+                )
+        }
         const data = {
                 labels: [
                         'A기업',
@@ -712,31 +834,30 @@ function Manager() {
                 }]
         };
         const data2 = {
-                labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+                labels: allDates,
                 datasets: [
                         {
-                                label: '매출',
-                                data: [65, 59, 80, 81, 56, 55, 40],
+                                label: '날짜별 매출',
+                                data: allDates.map(d => dailySalesMap[d] || 0),
                                 borderColor: 'rgb(255, 99, 132)',
                                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
                                 yAxisID: 'y',
                         }
                 ],
         };
-        const labels = ['일반회원', '기업회원'];
         const barData = {
                 labels: ['회원 수'],  // X축은 하나
                         datasets: [
                                 {
                                 label: '일반회원',   // 범례 1
-                                        data: [65],
+                                        data: [users.length],
                                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
                                         borderColor: 'rgb(255, 99, 132)',
                                         borderWidth: 1
                                 },
                                 {
                                 label: '기업회원',   // 범례 2
-                                        data: [59],
+                                        data: [companys.length],
                                         backgroundColor: 'rgba(255, 159, 64, 0.2)',
                                         borderColor: 'rgb(255, 159, 64)',
                                         borderWidth: 1
@@ -744,45 +865,35 @@ function Manager() {
                         ]
                 };
         
+        const COLORS = [
+                'rgb(255, 173, 191)',
+                'rgb(175, 223, 255)',
+                'rgb(255, 240, 206)',
+                'rgb(199, 255, 204)',
+                'rgb(253, 207, 255)'
+        ];
+        const COLORS_LIGHT = [
+                'rgb(255, 173, 191)',
+                'rgb(175, 223, 255)',
+                'rgb(255, 240, 206)',
+                'rgb(199, 255, 204)',
+                'rgb(253, 207, 255)'
+        ];
         const dounutData = {
-                labels: [
-                        '기업1',
-                        '기업2',
-                        '기업3',
-                        '기업4',
-                        '기업5'
-                ],
+                labels: top5Companies.map(c => c.businessName),
                 datasets: [{
-                        label: 'My First Dataset',
-                        data: [300, 50, 100, 200, 150],
-                        backgroundColor: [
-                        'rgb(255, 99, 132)',
-                        'rgb(54, 162, 235)',
-                        'rgb(255, 205, 86)',
-                        'rgb(86, 255, 100)',
-                        'rgb(249, 86, 255)'
-                ],
+                        label: '총 매출',
+                        data: top5Companies.map(c => c.totalPrice),
+                        backgroundColor: COLORS,
                         hoverOffset: 4
                 }]
         };
         const doughnutData = {
-                labels: [
-                        '기업1',
-                        '기업2',
-                        '기업3',
-                        '기업4',
-                        '기업5'
-                ],
+                labels: top5Categories.map(c => c.key),
                 datasets: [{
-                        label: 'My First Dataset',
-                        data: [300, 50, 100, 200, 150],
-                        backgroundColor: [
-                        'rgb(255, 173, 191)',
-                        'rgb(175, 223, 255)',
-                        'rgb(255, 240, 206)',
-                        'rgb(199, 255, 204)',
-                        'rgb(253, 207, 255)'
-                ],
+                        label: '판매수량',
+                        data: top5Categories.map(c => c.totalCount),
+                        backgroundColor: COLORS_LIGHT,
                         hoverOffset: 4
                 }]
         };
@@ -913,20 +1024,30 @@ function Manager() {
                                                         <h6 style={{textAlign:'center'}}>사용자 비율(기업/일반)</h6>
                                                         <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
                                                                 <thead>
-                                                                        <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
-                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>날짜</th>
-                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>일반가입자</th>
-                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업가입자</th>
-                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>합계</th>
-                                                                        </tr>
-                                                                </thead>
+                                                                                <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
+                                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>날짜</th>
+                                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>일반가입자</th>
+                                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업가입자</th>
+                                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>합계</th>
+                                                                                </tr>
+                                                                        </thead>
                                                                 <tbody>
-                                                                        <tr style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>2025-05-28</td>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>54</td>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>34</td>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>88</td>
-                                                                        </tr>
+                                                                        {memberDateList.map((row) => (
+                                                                                <tr key={row.date} style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
+                                                                                        {row.date}
+                                                                                </td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
+                                                                                        {row.normalCount}
+                                                                                </td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
+                                                                                        {row.companyCount}
+                                                                                </td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
+                                                                                        {row.normalCount + row.companyCount}
+                                                                                </td>
+                                                                                </tr>
+                                                                        ))}
                                                                 </tbody>
                                                         </table>
                                                 </div>
@@ -947,20 +1068,22 @@ function Manager() {
                                                         <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
                                                                 <thead>
                                                                         <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업명</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>카테고리</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>상품명</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>판매가</th>
+                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>순위</th>
+                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업명</th>
+                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>판매수량</th>
+                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>판매가</th>
                                                                         </tr>
                                                                 </thead>
                                                                 <tbody>
-                                                                        {filteredProducts.slice(0, 5).map((pd) => (
-                                                                        <tr key={pd.pid} style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.company?.businessName}</td>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.b_category}〉{pd.s_category}</td>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pd.name}</td>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.price}</td>
-                                                                        </tr>
+                                                                        {top5Companies.map((company, index) => (
+                                                                                <tr key={company.cid} style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
+                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
+                                                                                                {index + 1}위
+                                                                                        </td>
+                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{company.businessName}</td>
+                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{company.totalCount}개</td>
+                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{company.totalPrice.toLocaleString()}원</td>
+                                                                                </tr>
                                                                         ))}
                                                                 </tbody>
                                                         </table>
@@ -982,20 +1105,18 @@ function Manager() {
                                                         <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
                                                                 <thead>
                                                                         <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업명</th>
                                                                         <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>카테고리</th>
                                                                         <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>상품명</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>판매가</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>총 판매가</th>
                                                                         </tr>
                                                                 </thead>
                                                                 <tbody>
-                                                                        {filteredProducts.slice(0, 5).map((pd) => (
-                                                                        <tr key={pd.pid} style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.company?.businessName}</td>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.b_category}〉{pd.s_category}</td>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pd.name}</td>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{pd.price}</td>
-                                                                        </tr>
+                                                                        {top5Categories.map((cat) => (
+                                                                                <tr key={cat.key} style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
+                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{cat.key}</td>
+                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>{cat.totalCount}개</td>
+                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cat.totalPrice.toLocaleString()}원</td>
+                                                                                </tr>
                                                                         ))}
                                                                 </tbody>
                                                         </table>
@@ -1291,7 +1412,7 @@ function Manager() {
                                                                         style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}
                                                                 >
                                                                         <option value="">소분류</option>
-                                                                        {[...new Set(products.map(pd => pd.s_category))].map((cat) => (
+                                                                        {[...new Set(products.map(pd => pd.scategory))].map((cat) => (
                                                                                 <option key={cat} value={cat}>{cat}</option>
                                                                         ))}
                                                                 </select>
@@ -1372,7 +1493,7 @@ function Manager() {
                                                                                         />
                                                                                 </td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.company?.businessName}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.b_category}〉{pd.s_category}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.b_category}〉{pd.scategory}</td>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
                                                                                         <div style={{
                                                                                                 maxWidth: '200px',
@@ -1535,7 +1656,7 @@ function Manager() {
                         {activeMenu == '통계' && (
                                 <div style={{ display: 'flex', flexDirection: 'column', width: '80%' }}>
                                         <div className='category-content'>
-                                                <h4 style={{ textAlign: 'left', fontWeight: '600' }}>기업 검색</h4>
+                                                <h4 style={{ textAlign: 'left', fontWeight: '600' }}>통계 정보 검색</h4>
                                                 <hr />
                                                 <div style={{ textAlign: 'left', width: '500px' }}>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1545,7 +1666,7 @@ function Manager() {
                                                                         value={buySearchKey}
                                                                         onChange={(e) => setBuySearchKey(e.target.value)}
                                                                 >
-                                                                        <option value="null">전체</option>
+                                                                        <option value="">전체</option>
                                                                         <option value="name">상품명</option>
                                                                         <option value="businessName">기업명</option>
                                                                 </select>
@@ -1559,29 +1680,29 @@ function Manager() {
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                                 <p style={{ width: "80px d-inline-flex" }}>등록일자 :</p>
                                                                 <div className="row mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
-                                                                        <div className="col p-1 text-center" onClick={() => handleDateProductPreset('day')}>당일</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('week')}>일주일</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('month', 1)}>1개월</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('month', 3)}>3개월</div>
-                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('year')}>1년</div>
+                                                                        <div className="col p-1 text-center" onClick={() => handleDateStatsPreset('day')}>당일</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateStatsPreset('week')}>일주일</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateStatsPreset('month', 1)}>1개월</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateStatsPreset('month', 3)}>3개월</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateStatsPreset('year')}>1년</div>
                                                                 </div>
                                                         </div>
                                                         <div style={{ marginLeft: "85px" }}>
                                                                 <div style={{ display: "flex", gap: "10px", fontSize: "0.8em", padding: "10px" }}>
                                                                         <input type='date' className='calendar'
-                                                                        value={productStartDate}
-                                                                        onChange={(e) => setProductStartDate(e.target.value)}
+                                                                        value={statsStartDate}
+                                                                        onChange={(e) => setStatsStartDate(e.target.value)}
                                                                         />
                                                                         <b>~</b>
-                                                                        <input type='date' className='calendar' value={productEndDate}
-                                                                        onChange={(e) => setProductEndDate(e.target.value)} />
+                                                                        <input type='date' className='calendar' value={statsEndDate}
+                                                                        onChange={(e) => setStatsEndDate(e.target.value)} />
                                                                 </div>
                                                         </div>
                                                 </div>
                                                 {/* 상품 목록 */}
                                                 <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '20px' }}>상품 목록</h4>
                                                 <hr />
-                                                <button className='button' style={{ marginLeft: '88%', border: '1px solid blue', backgroundColor: 'blue' }} onClick={() => setChartOpen(true)}>매출 통계</button>
+                                                <button className='button' style={{ marginLeft: '90%', border: '1px solid blue', backgroundColor: 'blue' }} onClick={() => setChartOpen(true)}>매출 통계</button>
                                                 <table className="table table-bordered" style={{ width: '100%', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
                                                         <thead>
                                                                 <tr style={{ fontSize: '0.8em' }}>
@@ -1597,20 +1718,20 @@ function Manager() {
                                                                         <th style={{ backgroundColor: '#eeeeee' }}>상세보기</th>
                                                                 </tr>
                                                         </thead>
-                                                        {groupedList.map((item) => (
-                                                                <tbody key={item.product.pId}>
-                                                                        <tr>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.writedate.slice(0, 10)}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.pid}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.s_category}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.name}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.company?.businessName}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.price}원</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.totalCount}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                        {filteredGroupedList.map((item) => (
+                                                                <tbody key={item.pId}>
+                                                                        <tr style={{ fontSize: '0.8em' }}>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.latestDate}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.pId}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.name}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.company?.businessName}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.price}원</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.totalCount}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                                                                                         {(item.totalPrice - item.totalDiscount).toLocaleString()}원
                                                                                 </td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                                <td style={{textAlign: 'center', verticalAlign: 'middle' }}>
                                                                                         {Math.floor(item.totalPrice * 0.1).toLocaleString()}원
                                                                                 </td>
                                                                                 <td>

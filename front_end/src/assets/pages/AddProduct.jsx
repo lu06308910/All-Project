@@ -187,7 +187,7 @@ function AddProduct() {
 
 
                 //  전송
-                axios.post("http://localhost:9991/mypage/addproduct", formData)
+                axios.post("http://localhost:9989/mypage/addproduct", formData)
                         .then((response) => {
                                 console.log("response.data", response.data);
 

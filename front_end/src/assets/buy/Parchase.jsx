@@ -23,7 +23,7 @@ function Parchase() {
                 if (mId) {
                         setUserInfo({ mId, logId, logName, usertype });
 
-                        axios.get(`http://localhost:9991/member/info/${mId}`)
+                        axios.get(`http://localhost:9989/member/info/${mId}`)
                                 .then(res=> setUserInfo(prev=>({...prev,...res.data})))
                                 .catch(err=>console.log(err));
                 }
@@ -131,7 +131,7 @@ function Parchase() {
                 }));
 
                 // 여러 개 한 번에 POST
-                axios.post('http://localhost:9991/delivery/add/all', payloads)
+                axios.post('http://localhost:9989/delivery/add/all', payloads)
                         .then(res => {
                                 const savedDeliveries = res.data;
                                 const dIds = savedDeliveries.map(d => d.did);
@@ -142,14 +142,14 @@ function Parchase() {
                                         parseInt(String(item.product.price).replace(/[^0-9]/g, ''))
                                 );
 
-                                return axios.post('http://localhost:9991/buy/add', {
+                                return axios.post('http://localhost:9989/buy/add', {
                                         cartIds, dIds, counts, discounts, prices
                                 });
                         })
                         .then(() => {
                                 // ✅ buy 저장 성공 후 장바구니 삭제
                                 const cartIds = cartList.map(item => item.cartId);
-                                return axios.delete('http://localhost:9991/cart/delete', {
+                                return axios.delete('http://localhost:9989/cart/delete', {
                                 data: cartIds  // axios delete는 data로 body 전송
                                 });
                         })

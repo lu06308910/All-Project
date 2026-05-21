@@ -21,4 +21,6 @@ public interface BuyRepository extends JpaRepository<BuyEntity, Integer> {
             "WHERE c.userid = :sellerId " +
             "ORDER BY b.writedate DESC")
     List<BuyEntity> findSalesBySeller(@Param("sellerId") String sellerId);
+
+    List<BuyEntity> findByProduct_pId(Integer pId);
 }
