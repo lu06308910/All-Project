@@ -37,4 +37,8 @@ public class EventService {
         }
         eventRepository.save(eventEntity);
     }
+    // 진행 중인 이벤트만 (sale.jsx용)
+    public List<EventEntity> getActiveEvents() {
+        return eventRepository.findActiveEvents(LocalDateTime.now());
+    }
 }

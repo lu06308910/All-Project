@@ -1,5 +1,6 @@
 package com.finalproject.canvas.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -38,7 +39,8 @@ public class EventEntity {
     @Column(name = "upload")
     private OutStatus upload = OutStatus.N;
 
-    @ManyToOne
-    @JoinColumn(name = "p_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "p_id", insertable = false, updatable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "fileList", "files", "delFile"})
     private ProductEntity product;
 }

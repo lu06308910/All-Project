@@ -25,6 +25,12 @@ public class EventController {
         return eventService.getAllEvent();
     }
 
+    // 진행 중인 이벤트만 (sale.jsx용)
+    @GetMapping("/active")
+    public List<EventEntity> getActiveEvents() {
+        return eventService.getActiveEvents();
+    }
+
     //게시글 단건 삭제
     @DeleteMapping("/delete/{eId}")
     public String deleteEvent(@PathVariable Integer eId) {
