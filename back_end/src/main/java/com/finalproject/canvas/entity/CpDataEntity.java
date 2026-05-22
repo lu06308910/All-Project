@@ -17,7 +17,7 @@ public class CpDataEntity {
     @Column(name = "c_id")
     private Integer cId;
 
-    @Column(nullable = false, length = 15)
+    @Column(nullable = false, length = 15, unique = true)
     private String userid;
     @Column(nullable = false, length = 255)
     private String userpwd;

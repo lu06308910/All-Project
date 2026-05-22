@@ -151,8 +151,10 @@ function AddProduct() {
                         return;
                 }
 
-
+                
                 const formData = new FormData();
+                const cId = sessionStorage.getItem("cId")
+             
 
                 formData.append("b_category", category);
                 formData.append("sCategory", subCategory);
@@ -160,7 +162,9 @@ function AddProduct() {
                 formData.append("context", html);
                 formData.append("count", count);
                 formData.append("price", price);
-                formData.append("cId", 1);
+                formData.append("cId", cId);
+
+                console.log("formData확인 : ",formData)
 
 
                 // 1️ 컬러 정보 (이미지 제외, JSON)
@@ -187,7 +191,7 @@ function AddProduct() {
 
 
                 //  전송
-                axios.post("http://localhost:9991/mypage/addproduct", formData)
+                axios.post("http://192.168.4.60:9991/mypage/addproduct", formData)
                         .then((response) => {
                                 console.log("response.data", response.data);
 

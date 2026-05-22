@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = "*")
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -36,15 +36,46 @@ public class DataController {
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody Map<String, Object> signupData) {
         String usertype = (String) signupData.get("usertype");
+        String userid = (String) signupData.get("userid");
 
         if (usertype == null) {
-            return ResponseEntity.badRequest().body("usertype 값이 필요합니다.");
+            Map<String, String> err = new HashMap<>();
+            err.put("message", "usertype 값이 필요합니다.");
+            return ResponseEntity.badRequest().body(err);
+        }
+
+        if (userid == null || userid.trim().isEmpty()) {
+            Map<String, String> err = new HashMap<>();
+            err.put("message", "userid 값이 필요합니다.");
+            return ResponseEntity.badRequest().body(err);
+        }
+
+        String cleanUserId = userid.trim();
+
+        // 💡 [수정] 일반 회원 중복 검사 반환 형식을 객체(Map)로 변경
+        DataEntity existingPersonal = dataService.dataSelect(cleanUserId);
+        if (existingPersonal != null && existingPersonal.getUserid().equalsIgnoreCase(cleanUserId)) {
+            Map<String, String> err = new HashMap<>();
+            err.put("message", "이미 존재하는 아이디입니다.");
+            return ResponseEntity.badRequest().body(err); // 프론트엔드가 에러 메시지를 정확히 읽을 수 있게 보냅니다.
+        }
+
+        // 💡 [수정] 기업 회원 중복 검사 반환 형식을 객체(Map)로 변경
+        try {
+            CpDataEntity existingBusiness = dataService.businessSelect(cleanUserId);
+            if (existingBusiness != null && existingBusiness.getUserid().equalsIgnoreCase(cleanUserId)) {
+                Map<String, String> err = new HashMap<>();
+                err.put("message", "이미 존재하는 기업 아이디입니다.");
+                return ResponseEntity.badRequest().body(err);
+            }
+        } catch (Exception e) {
+            log.warn("기업 회원 중복 조회 중 예외 발생: " + e.getMessage());
         }
 
         // 일반 회원 가입
         if (usertype.equals("PERSONAL")) {
             DataEntity entity = new DataEntity();
-            entity.setUserid((String) signupData.get("userid"));
+            entity.setUserid(userid);
             entity.setUserpwd((String) signupData.get("userpwd"));
             entity.setUsername((String) signupData.get("username"));
             entity.setTel((String) signupData.get("tel"));
@@ -76,7 +107,9 @@ public class DataController {
             return ResponseEntity.ok(saved);
         }
 
-        return ResponseEntity.badRequest().body("지원하지 않는 usertype 입니다.");
+        Map<String, String> err = new HashMap<>();
+        err.put("message", "지원하지 않는 usertype 입니다.");
+        return ResponseEntity.badRequest().body(err);
     }
 
     // 로그인(DB조회:select)
@@ -138,7 +171,11 @@ public class DataController {
             result.put("userid", biz.getUserid());
             result.put("usertype", "BUSINESS");
 
+            // 이슬 기업 로그인 아이디추가
+            result.put("cId", biz.getCId());
+
         }
+
 
         result.put("status", "OK");
         return result;
