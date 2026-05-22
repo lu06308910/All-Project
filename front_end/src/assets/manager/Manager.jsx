@@ -34,7 +34,7 @@ function Manager() {
         //게시글관리
         const [events, setEvents] = useState([]);
         useEffect(() => {
-                axios.get('http://192.168.4.60:9991/event/all')
+                axios.get('http://192.168.4.51:9989/event/all')
                         .then(res => setEvents(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -42,12 +42,12 @@ function Manager() {
         today.setHours(0, 0, 0, 0); //자정 기준
 
         //예약
-        const reservedEvents = events.filter((item)=>{
-                const updatedate = item.updatedate ? new Date(item.updatedate):null;
-                return updatedate && updatedate>today;
+        const reservedEvents = events.filter((item) => {
+                const updatedate = item.updatedate ? new Date(item.updatedate) : null;
+                return updatedate && updatedate > today;
         })
         //기간 후 종료 전환
-        const endedEvents = events.filter((item)=>{
+        const endedEvents = events.filter((item) => {
                 const enddate = item.enddate ? new Date(item.enddate) : null;
                 return enddate && enddate < today && item.upload == 'N';
         })
@@ -55,20 +55,20 @@ function Manager() {
         //회원 업데이트
         const [users, setUsers] = useState([]);
         useEffect(() => {
-                axios.get('http://192.168.4.60:9991/member/all/member')
+                axios.get('http://192.168.4.51:9989/member/all/member')
                         .then(res => setUsers(res.data))
                         .catch(err => console.log(err));
         }, []);
-        
-       
+
+
         //상품관리
         const [products, setProducts] = useState([]);
         useEffect(() => {
-                axios.get('http://192.168.4.60:9991/all/product')
+                axios.get('http://192.168.4.51:9989/all/product')
                         .then(res => setProducts(res.data))
                         .catch(err => console.log(err));
         }, []);
-        
+
         //문의
         const [asks, setAsks] = useState([]);
         const [selectedInquiry, setSelectedInquiry] = useState(null); // 답변 작성용 선택된 문의
@@ -76,7 +76,7 @@ function Manager() {
 
         // 문의 목록 함수-------------------------------------------------------------------------- 대호수정
         const getAdminInquiries = () => {
-                axios.get('http://192.168.4.60:9991/support/list/all')
+                axios.get('http://192.168.4.51:9989/support/list/all')
                         .then(res => setAsks(res.data || []))
                         .catch(err => console.log("문의 목록 갱신 에러:", err));
         };
@@ -97,7 +97,7 @@ function Manager() {
                 formData.append("s_id", sId);
                 formData.append("answer", replyText);
 
-                axios.post("http://192.168.4.60:9991/support/reply", formData)
+                axios.post("http://192.168.4.51:9989/support/reply", formData)
                         .then((res) => {
                                 if (res.data === "success") {
                                         alert("답변이 성공적으로 등록되었습니다.");
@@ -115,7 +115,7 @@ function Manager() {
         //통계용 buy테이블 연결
         const [buys, setBuys] = useState([]);
         useEffect(() => {
-                axios.get('http://192.168.4.60:9991/buy/list/all')
+                axios.get('http://192.168.4.51:9989/buy/list/all')
                         .then(res => setBuys(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -130,20 +130,20 @@ function Manager() {
                 const date = item.writedate?.slice(0, 10) || '';
                 if (!acc[key]) {
                         acc[key] = {
-                        pId: resolvedPId,
-                        product: item.product,
-                        writedate: date,
-                        latestDate: date,
-                        totalCount: 0,
-                        totalPrice: 0,
-                        totalDiscount: 0,
-                        rawItems: [],
+                                pId: resolvedPId,
+                                product: item.product,
+                                writedate: date,
+                                latestDate: date,
+                                totalCount: 0,
+                                totalPrice: 0,
+                                totalDiscount: 0,
+                                rawItems: [],
                         };
                 }
                 // 가장 최근 날짜로 갱신
                 if (date > acc[key].latestDate) acc[key].latestDate = date;
-                acc[key].totalCount    += item.count || 0;
-                acc[key].totalPrice    += parseInt(item.price || 0) * (item.count || 0);
+                acc[key].totalCount += item.count || 0;
+                acc[key].totalPrice += parseInt(item.price || 0) * (item.count || 0);
                 acc[key].totalDiscount += item.discount || 0;
                 acc[key].rawItems.push(item);
                 return acc;
@@ -156,14 +156,17 @@ function Manager() {
         const [currentPage, setCurrentPage] = useState(1);
         const [currentPage2, setCurrentPage2] = useState(1);
         const [currentPage3, setCurrentPage3] = useState(1);
+        // 상품 관리 인라인 수정 전용 state
+        const [proEditingId, setProEditingId] = useState(null);
+        const [proEditForm, setProEditForm] = useState({});
         const [openId, setOpenId] = useState(null); // 현재 열려있는 게시글의 ID 저장
         //선택 변수 저장
         const [selectedItems, setSelectedItems] = useState({});
         const [selectedProIds, setSelectedProIds] = useState([]);
-        
+
         const [companys, setCompanys] = useState([]);
         useEffect(() => {
-                axios.get('http://192.168.4.60:9991/member/all/business')
+                axios.get('http://192.168.4.51:9989/member/all/business')
                         .then(res => setCompanys(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -185,7 +188,7 @@ function Manager() {
                 .sort((a, b) => b.date.localeCompare(a.date));
 
 
-        
+
 
         //체크박스 변경 핸들러
         const handleCheck = (menu, id) => {
@@ -197,22 +200,22 @@ function Manager() {
                 });
         };
 
-        const handleProCheck = (pid)=>{
+        const handleProCheck = (pid) => {
                 setSelectedProIds(prev =>
-                        prev.includes(pid) ? prev.filter(id=>id!==pid):[...prev, pid]
+                        prev.includes(pid) ? prev.filter(id => id !== pid) : [...prev, pid]
                 );
         };
-        
+
         //날짜 변수
         const [startDate, setStartDate] = useState('');
         const [endDate, setEndDate] = useState('');
         const [productStartDate, setProductStartDate] = useState('');
         const [productEndDate, setProductEndDate] = useState('');
         const [statsStartDate, setStatsStartDate] = useState('');
-        const [statsEndDate, setStatsEndDate] = useState(''); 
+        const [statsEndDate, setStatsEndDate] = useState('');
 
         //통계 날짜 선택 프리셋
-        const handleDateStatsPreset = (period, value) =>{
+        const handleDateStatsPreset = (period, value) => {
                 const today = new Date();
                 const start = new Date();
                 setStatsEndDate(formatDate(today));
@@ -236,7 +239,7 @@ function Manager() {
                                 const hasMatch = item.rawItems.some(buy => {
                                         const d = buy.writedate?.slice(0, 10) || '';
                                         if (statsStartDate && d < statsStartDate) return false;
-                                        if (statsEndDate   && d > statsEndDate)   return false;
+                                        if (statsEndDate && d > statsEndDate) return false;
                                         return true;
                                 });
                                 if (!hasMatch) return false;
@@ -276,7 +279,7 @@ function Manager() {
                 return item.rawItems.filter(buy => {
                         const d = buy.writedate?.slice(0, 10) || '';
                         if (statsStartDate && d < statsStartDate) return false;
-                        if (statsEndDate   && d > statsEndDate)   return false;
+                        if (statsEndDate && d > statsEndDate) return false;
                         return true;
                 });
         };
@@ -284,39 +287,39 @@ function Manager() {
         // 기업별 총매출 TOP5 (buys 기반)
         const top5Companies = Object.values(
                 buys.reduce((acc, item) => {
-                const cid = item.product?.company?.cid ?? item.product?.company?.c_id;
-                const bizName = item.product?.company?.businessName;
-                if (!cid) return acc;
+                        const cid = item.product?.company?.cid ?? item.product?.company?.c_id;
+                        const bizName = item.product?.company?.businessName;
+                        if (!cid) return acc;
 
-                if (!acc[cid]) {
-                        acc[cid] = { cid, businessName: bizName, totalPrice: 0, totalCount: 0 };
-                }
+                        if (!acc[cid]) {
+                                acc[cid] = { cid, businessName: bizName, totalPrice: 0, totalCount: 0 };
+                        }
                         acc[cid].totalPrice += parseInt(item.price || 0) * (item.count || 0);
                         acc[cid].totalCount += item.count || 0;
-                return acc;
+                        return acc;
                 }, {})
         )
-        .sort((a, b) => b.totalPrice - a.totalPrice)
-        .slice(0, 5);
+                .sort((a, b) => b.totalPrice - a.totalPrice)
+                .slice(0, 5);
         //카테고리 별 판매량 집계
         const top5Categories = Object.values(
-                buys.reduce((acc, item)=>{
+                buys.reduce((acc, item) => {
                         const bCat = item.product?.b_category;
                         const sCat = item.product?.scategory;
-                        if(!bCat) return acc;
+                        if (!bCat) return acc;
 
                         const key = `${bCat}〉${sCat}`;
                         if (!acc[key]) {
                                 acc[key] = { key, bCat, sCat, totalCount: 0, totalPrice: 0 };
-                        }const cleanPrice = parseInt((item.price || '0').toString().replace(/,/g, ''));
-                                acc[key].totalCount += item.count || 0;
-                                acc[key].totalPrice += cleanPrice * (item.count || 0);
+                        } const cleanPrice = parseInt((item.price || '0').toString().replace(/,/g, ''));
+                        acc[key].totalCount += item.count || 0;
+                        acc[key].totalPrice += cleanPrice * (item.count || 0);
                         return acc;
                 }, {})
         )
-        .sort((a, b) => b.totalCount - a.totalCount)
-        .slice(0, 5);
-                
+                .sort((a, b) => b.totalCount - a.totalCount)
+                .slice(0, 5);
+
         // ────────────────────────────────────────────────────────────────
         // [매출 통계 연결] 다른 메뉴에서 검색 후 "매출 통계" 버튼을 눌렀을 때
         // 어떤 컨텍스트(기업명 / 상품명)로 넘어왔는지 저장하는 상태
@@ -327,7 +330,7 @@ function Manager() {
 
         // 매출 통계 모달의 일별 검색 날짜 범위 (없으면 오늘 기준)
         const [salesChartStart, setSalesChartStart] = useState('');
-        const [salesChartEnd,   setSalesChartEnd]   = useState('');
+        const [salesChartEnd, setSalesChartEnd] = useState('');
 
         // 오늘 날짜 문자열 (YYYY-MM-DD)
         const todayStr = new Date().toISOString().slice(0, 10);
@@ -335,7 +338,7 @@ function Manager() {
         // ── 매출 통계 모달에서 사용할 "유효 날짜 범위" ──────────────────
         // 날짜를 선택하지 않으면 오늘 하루만 보여줌
         const salesEffectiveStart = salesChartStart || todayStr;
-        const salesEffectiveEnd   = salesChartEnd   || todayStr;
+        const salesEffectiveEnd = salesChartEnd || todayStr;
 
         // ── 날짜 범위 안에 해당하는 buy 항목만 필터 ─────────────────────
         const buysInRange = buys.filter(item => {
@@ -347,7 +350,7 @@ function Manager() {
         const companyDailySales = Object.values(
                 buysInRange.reduce((acc, item) => {
                         const bizName = item.product?.company?.businessName || '(미상)';
-                        const cid     = item.product?.company?.cid ?? item.product?.company?.c_id ?? bizName;
+                        const cid = item.product?.company?.cid ?? item.product?.company?.c_id ?? bizName;
                         if (!acc[cid]) {
                                 acc[cid] = { cid, businessName: bizName, totalPrice: 0, totalCount: 0 };
                         }
@@ -415,43 +418,69 @@ function Manager() {
 
         //회원 삭제 명령어
         const handleBulkUnregister = () => {
-        const targets = selectedItems['회원관리'] || [];
+                const targets = selectedItems['회원관리'] || [];
                 if (targets.length === 0) return alert("탈퇴처리할 회원을 선택해주세요.");
                 if (!window.confirm(`선택한 ${targets.length}명을 탈퇴처리 하시겠습니까?`)) return;
 
-        Promise.all(
-                targets.map(mid =>
-                axios.patch(`http://192.168.4.60:9991/member/unregister/${mid}`)
+                Promise.all(
+                        targets.map(mid =>
+                                axios.patch(`http://192.168.4.51:9989/member/unregister/${mid}`)
+                        )
                 )
-        )
-        .then(() => {
-                alert("탈퇴처리 완료");
-                axios.get('http://192.168.4.60:9991/member/all')
-                .then(res => setUsers(res.data));
-                setSelectedItems(prev => ({ ...prev, '회원관리': [] }));
-        })
-        .catch(err => console.log(err));
+                        .then(() => {
+                                alert("탈퇴처리 완료");
+                                axios.get('http://192.168.4.51:9989/member/all/member')
+                                        .then(res => setUsers(res.data));
+                                setSelectedItems(prev => ({ ...prev, '회원관리': [] }));
+                        })
+                        .catch(err => console.log(err));
         }
 
-        const handleProDelete = (pid) =>{
-                if(!window.confirm('상품을 삭제하시겠습니까?')) return;
-                axios.delete(`http://192.168.4.60:9991/product/${pid}`)
-                .then(()=>{
-                        alert('삭제 완료');
-                        axios.get('http://192.168.4.60:9991/all/product').then(res=>setProducts(res.data));
-                })
-                .catch(err=>console.log(err));
+        const handleProDelete = (pid) => {
+                if (!window.confirm('상품을 삭제하시겠습니까?')) return;
+                axios.delete(`http://192.168.4.51:9989/product/${pid}`)
+                        .then(() => {
+                                alert('삭제 완료');
+                                axios.get('http://192.168.4.51:9989/all/product').then(res => setProducts(res.data));
+                        })
+                        .catch(err => console.log(err));
         };
 
-        const handleBulkProDelete = () =>{
-                if (selectedProIds.length==0) return alert('삭제할 제품을 선택해 주세요.');
+        // 상품 수정 모드 진입
+        const handleProEditClick = (pd) => {
+                setProEditingId(pd.pid);
+                setProEditForm({ ...pd });
+        };
+
+        // 수정 입력 핸들러
+        const handleProEditChange = (e) => {
+                const { name, value } = e.target;
+                setProEditForm(prev => ({ ...prev, [name]: value }));
+        };
+
+        // 수정 저장 (DB 반영)
+        const handleProSaveClick = async () => {
+                const targetId = proEditingId;
+                try {
+                        await axios.put(`http://localhost:9989/product/seller/update/${targetId}`, proEditForm);
+                        setProducts(products.map(p => (p.pid === targetId) ? { ...p, ...proEditForm } : p));
+                        setProEditingId(null);
+                        alert('수정 완료되었습니다.');
+                } catch (err) {
+                        console.error(err);
+                        alert('수정 중 오류가 발생했습니다.');
+                }
+        };
+
+        const handleBulkProDelete = () => {
+                if (selectedProIds.length == 0) return alert('삭제할 제품을 선택해 주세요.');
                 if (!window.confirm(`선택한 ${selectedProIds.length}개의 글을 삭제하시겠습니까?`)) return;
-                Promise.all(selectedProIds.map(id=>axios.delete(`http://192.168.4.60:9991/product/${id}`)))
-                       .then(()=>{
-                        setSelectedProIds([]);
-                        axios.get('http://192.168.4.60:9991/all/product').then(res=>setProducts(res.data));
-                       })
-                       .catch(err=>console.log(err));
+                Promise.all(selectedProIds.map(id => axios.delete(`http://192.168.4.51:9989/product/${id}`)))
+                        .then(() => {
+                                setSelectedProIds([]);
+                                axios.get('http://192.168.4.51:9989/all/product').then(res => setProducts(res.data));
+                        })
+                        .catch(err => console.log(err));
         };
 
         const [selectedEventIds, setSelectedEventIds] = useState([]);
@@ -463,10 +492,10 @@ function Manager() {
 
         const handleEventDelete = (eId) => {
                 if (!window.confirm('삭제하시겠습니까?')) return;
-                axios.delete(`http://192.168.4.60:9991/event/delete/${eId}`)
+                axios.delete(`http://192.168.4.51:9989/event/delete/${eId}`)
                         .then(() => {
                                 alert('삭제 완료');
-                                axios.get('http://192.168.4.60:9991/event/all').then(res => setEvents(res.data));
+                                axios.get('http://192.168.4.51:9989/event/all').then(res => setEvents(res.data));
                         })
                         .catch(err => console.log(err));
         };
@@ -474,11 +503,11 @@ function Manager() {
         const handleBulkEventDelete = () => {
                 if (selectedEventIds.length === 0) return alert('삭제할 항목을 선택해주세요.');
                 if (!window.confirm(`선택한 ${selectedEventIds.length}개를 삭제하시겠습니까?`)) return;
-                axios.delete('http://192.168.4.60:9991/event/delete', { data: selectedEventIds })
+                axios.delete('http://192.168.4.51:9989/event/delete', { data: selectedEventIds })
                         .then(() => {
                                 alert('삭제 완료');
                                 setSelectedEventIds([]);
-                                axios.get('http://192.168.4.60:9991/event/all').then(res => setEvents(res.data));
+                                axios.get('http://192.168.4.51:9989/event/all').then(res => setEvents(res.data));
                         })
                         .catch(err => console.log(err));
         };
@@ -499,30 +528,30 @@ function Manager() {
         const [companyOutSearchWord, setCompanyOutSearchWord] = useState('');
 
         const handleUserSearch = () => {
-                axios.post('http://192.168.4.60:9991/member/search', {
+                axios.post('http://192.168.4.51:9989/member/search', {
                         searchKey: userSearchKey,
                         searchWord: userSearchWord
                 })
-                .then(res => setUsers(res.data))
-                .catch(err => console.log(err));
+                        .then(res => setUsers(res.data))
+                        .catch(err => console.log(err));
         }
 
         const handleCompanySearch = () => {
-                axios.post('http://192.168.4.60:9991/member/search/business', {
+                axios.post('http://192.168.4.51:9989/member/search/business', {
                         searchKey: companySearchKey,
                         searchWord: companySearchWord
                 })
-                .then(res => setCompanys(res.data))
-                .catch(err => console.log(err));
+                        .then(res => setCompanys(res.data))
+                        .catch(err => console.log(err));
         }
 
         const handleProductSearch = () => {
-                axios.post('http://192.168.4.60:9991/search/product', {
+                axios.post('http://192.168.4.51:9989/search/product', {
                         searchKey: productSearchKey,
                         searchWord: productSearchWord
                 })
-                .then(res => setProducts(res.data))
-                .catch(err => console.log(err));
+                        .then(res => setProducts(res.data))
+                        .catch(err => console.log(err));
         }
 
         // 더보기
@@ -580,7 +609,7 @@ function Manager() {
                         // 1. 카테고리 필터
                         if (productBCategory && pd.b_category !== productBCategory) return false;
                         if (productSCategory && pd.scategory !== productSCategory) return false;
-                return true;
+                        return true;
                 })
                 .filter(pd => {
                         // 2. 날짜 필터
@@ -588,7 +617,7 @@ function Manager() {
                         const writedate = pd.writedate?.split('T')[0];
                         if (productStartDate && writedate < productStartDate) return false;
                         if (productEndDate && writedate > productEndDate) return false;
-                return true;
+                        return true;
                 })
                 .filter(pd => {
                         // 3. 검색어 필터
@@ -604,7 +633,7 @@ function Manager() {
 
         const postsPerPage3 = 10;
         const totalPages3 = Math.ceil(filteredProducts.length / postsPerPage3);
-        
+
         // 페이지 이동 함수
         const paginate = (pageNumber, e) => {
                 e.preventDefault(); // 클릭 시 페이지 새로고침 방지
@@ -642,25 +671,25 @@ function Manager() {
                 if (!newEvent.context) return alert('내용을 입력해주세요.');
 
                 console.log('보내는테이터:', newEvent);
-                axios.post('http://192.168.4.60:9991/event/add', {
-                                subject: newEvent.subject,
-                                context: newEvent.context,
-                                updatedate: newEvent.updatedate ? newEvent.updatedate + 'T00:00:00' : null,
-                                enddate: newEvent.enddate ? newEvent.enddate + 'T00:00:00' : null,
-                                p_id: Number(newEvent.pId)
-                        })
+                axios.post('http://192.168.4.51:9989/event/add', {
+                        subject: newEvent.subject,
+                        context: newEvent.context,
+                        updatedate: newEvent.updatedate ? newEvent.updatedate + 'T00:00:00' : null,
+                        enddate: newEvent.enddate ? newEvent.enddate + 'T00:00:00' : null,
+                        p_id: Number(newEvent.pId)
+                })
                         .then(() => {
                                 alert('등록 완료');
                                 setEventModalOpen(false);
                                 setNewEvent({ subject: '', context: '', updatedate: '', enddate: '', pId: '' });
-                                axios.get('http://192.168.4.60:9991/event/all')
-                                .then(res => setEvents(res.data));
+                                axios.get('http://192.168.4.51:9989/event/all')
+                                        .then(res => setEvents(res.data));
                         })
                         .catch(err => console.log(err));
         };
 
         const handleToggle = (id) => {
-                setOpenId(prev => prev === id? null : id);
+                setOpenId(prev => prev === id ? null : id);
         }
 
         // 정산
@@ -694,7 +723,7 @@ function Manager() {
                                                         <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
                                                                 <input type="checkbox"
                                                                         checked={selectedEventIds.includes(item.e_id)}
-                                                                        onChange={()=>handleEventCheck(item.e_id)}
+                                                                        onChange={() => handleEventCheck(item.e_id)}
                                                                 />
                                                         </td>
                                                         <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
@@ -712,7 +741,7 @@ function Manager() {
                                                                         padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
                                                                         textAlign: 'center', verticalAlign: 'middle'
                                                                 }}>
-                                                                        {item.upload=="N"?'미공개':'공개'}
+                                                                        {item.upload == "N" ? '미공개' : '공개'}
                                                                 </span>
                                                         </td>
                                                         <td>
@@ -737,8 +766,10 @@ function Manager() {
         )
         const Event = () => (
                 <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                        <h4 style={{textAlign:'left', fontWeight:'600',
-                                marginTop: activeMenu === '-이벤트 관리' ? '0px' : '20px',}}
+                        <h4 style={{
+                                textAlign: 'left', fontWeight: '600',
+                                marginTop: activeMenu === '-이벤트 관리' ? '0px' : '20px',
+                        }}
                         >
                                 진행 중인 이벤트
                         </h4>
@@ -757,41 +788,41 @@ function Manager() {
                                         </tr>
                                 </thead>
                                 {events
-                                .filter((item) => item.upload=='Y')
-                                .map((item) => (
-                                        <tbody key={item.e_id}>
-                                                <tr>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                <input type="checkbox"
-                                                                        aria-label="항목 선택"
-                                                                        checked={selectedEventIds.includes(item.e_id)}
-                                                                        onChange={()=>handleEventCheck(item.e_id)}
-                                                                />
-                                                        </td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                                        {item.subject}
-                                                                </div></td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.enddate?.slice(0, 10)}</td>
-                                                        <td>
-                                                                <span style={{
-                                                                        background: item.upload == 'N' ? '#ffebee' : '#e3f2fd',
-                                                                        color: item.upload == 'N' ? '#c62828' : '#1976d2',
-                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
-                                                                        textAlign: 'center', verticalAlign: 'middle'
-                                                                }}>
-                                                                        {item.upload=='N'?'비공개':'공개'}
-                                                                </span>
-                                                        </td>
-                                                        <td>
-                                                                <button className='button2' style={{ marginRight: '10px' }}>수정</button>
-                                                                <button className='button2' onClick={() => handleEventDelete(item.e_id)}>삭제</button>
-                                                        </td>
-                                                </tr>
-                                        </tbody>
-                                ))}
+                                        .filter((item) => item.upload == 'Y')
+                                        .map((item) => (
+                                                <tbody key={item.e_id}>
+                                                        <tr>
+                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                        <input type="checkbox"
+                                                                                aria-label="항목 선택"
+                                                                                checked={selectedEventIds.includes(item.e_id)}
+                                                                                onChange={() => handleEventCheck(item.e_id)}
+                                                                        />
+                                                                </td>
+                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
+                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                        <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                                {item.subject}
+                                                                        </div></td>
+                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
+                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.enddate?.slice(0, 10)}</td>
+                                                                <td>
+                                                                        <span style={{
+                                                                                background: item.upload == 'N' ? '#ffebee' : '#e3f2fd',
+                                                                                color: item.upload == 'N' ? '#c62828' : '#1976d2',
+                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
+                                                                                textAlign: 'center', verticalAlign: 'middle'
+                                                                        }}>
+                                                                                {item.upload == 'N' ? '비공개' : '공개'}
+                                                                        </span>
+                                                                </td>
+                                                                <td>
+                                                                        <button className='button2' style={{ marginRight: '10px' }}>수정</button>
+                                                                        <button className='button2' onClick={() => handleEventDelete(item.e_id)}>삭제</button>
+                                                                </td>
+                                                        </tr>
+                                                </tbody>
+                                        ))}
                         </table>
                         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                                 <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
@@ -803,7 +834,7 @@ function Manager() {
                                         게시글등록
                                 </button>
                         </div>
-                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop:'20px' }}>마무리 된 이벤트</h4>
+                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '20px' }}>마무리 된 이벤트</h4>
                         <hr />
                         <button className='button' style={{
                                 border: '1px solid blue', backgroundColor: 'blue', marginLeft: '10px'
@@ -825,40 +856,40 @@ function Manager() {
                                         </tr>
                                 </thead>
                                 {endedEvents
-                                .map((item) => (
-                                        <tbody key={item}>
-                                                <tr>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                <input type="checkbox"
-                                                                        checked={selectedEventIds.includes(item.e_id)}
-                                                                        onChange={()=>handleEventCheck(item.e_id)}
-                                                                />
-                                                        </td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                                        {item.subject}
-                                                                </div>
-                                                        </td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.enddate?.slice(0, 10)}</td>
-                                                        <td>
-                                                                <span style={{
-                                                                        background: item.upload == 'N' ? '#ffebee' : '#e3f2fd',
-                                                                        color: item.upload == 'N' ? '#c62828' : '#1976d2',
-                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
-                                                                        textAlign: 'center', verticalAlign: 'middle'
-                                                                }}>
-                                                                        {item.upload=='N'?'비공개':'공개'}
-                                                                </span>
-                                                        </td>
-                                                        <td>
-                                                                <button className='button2' style={{ marginRight: '10px' }}>수정</button>
-                                                                <button className='button2' onClick={() => handleEventDelete(item.e_id)}>삭제</button>
-                                                        </td>
-                                                </tr>
-                                        </tbody>
-                                ))}
+                                        .map((item) => (
+                                                <tbody key={item}>
+                                                        <tr>
+                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                        <input type="checkbox"
+                                                                                checked={selectedEventIds.includes(item.e_id)}
+                                                                                onChange={() => handleEventCheck(item.e_id)}
+                                                                        />
+                                                                </td>
+                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
+                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                        <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                                {item.subject}
+                                                                        </div>
+                                                                </td>
+                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
+                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.enddate?.slice(0, 10)}</td>
+                                                                <td>
+                                                                        <span style={{
+                                                                                background: item.upload == 'N' ? '#ffebee' : '#e3f2fd',
+                                                                                color: item.upload == 'N' ? '#c62828' : '#1976d2',
+                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
+                                                                                textAlign: 'center', verticalAlign: 'middle'
+                                                                        }}>
+                                                                                {item.upload == 'N' ? '비공개' : '공개'}
+                                                                        </span>
+                                                                </td>
+                                                                <td>
+                                                                        <button className='button2' style={{ marginRight: '10px' }}>수정</button>
+                                                                        <button className='button2' onClick={() => handleEventDelete(item.e_id)}>삭제</button>
+                                                                </td>
+                                                        </tr>
+                                                </tbody>
+                                        ))}
                         </table>
                         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                                 <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
@@ -887,80 +918,80 @@ function Manager() {
                 };
 
                 return (
-                <div style={{
-                        position: 'fixed',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        backgroundColor: 'white',
-                        padding: '20px',
-                        zIndex: 1000,
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
-                }}>
-                        <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                {/* 선택된 상품명 + 최근날짜 표시 */}
-                                <div className='light-but'>
-                                        {selectedBuyItem?.latestDate} · {selectedBuyItem?.product?.name}
+                        <div style={{
+                                position: 'fixed',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                backgroundColor: 'white',
+                                padding: '20px',
+                                zIndex: 1000,
+                                borderRadius: '8px',
+                                boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                        }}>
+                                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                        {/* 선택된 상품명 + 최근날짜 표시 */}
+                                        <div className='light-but'>
+                                                {selectedBuyItem?.latestDate} · {selectedBuyItem?.product?.name}
+                                        </div>
+                                        <button style={{ background: "white", border: "1px solid white", color: "black" }} onClick={() => setModalOpen(false)}>X</button>
                                 </div>
-                                <button style={{ background: "white", border: "1px solid white", color: "black" }} onClick={() => setModalOpen(false)}>X</button>
-                        </div>
-                        <table className="table table-bordered" style={{ width: '600px', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
-                                <thead>
-                                        <tr>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>주문번호</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>상품명</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>회원아이디</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>회원명</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>결제금액</th>
-                                        </tr>
-                                </thead>
-                                <tbody>
-                                        {/* 해당 pId의 rawItems만 출력 */}
-                                        {items.map((buy) => (
-                                                <tr key={buy.bid}>
-                                                        <td>{buy.bid}</td>
-                                                        <td>{buy.product?.name}</td>
-                                                        <td>{buy.member?.userid}</td>
-                                                        <td>{buy.member?.username}</td>
-                                                        <td>{(parseInt(buy.price || 0) * buy.count).toLocaleString()}</td>
+                                <table className="table table-bordered" style={{ width: '600px', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
+                                        <thead>
+                                                <tr>
+                                                        <th style={{ backgroundColor: '#eeeeee' }}>주문번호</th>
+                                                        <th style={{ backgroundColor: '#eeeeee' }}>상품명</th>
+                                                        <th style={{ backgroundColor: '#eeeeee' }}>회원아이디</th>
+                                                        <th style={{ backgroundColor: '#eeeeee' }}>회원명</th>
+                                                        <th style={{ backgroundColor: '#eeeeee' }}>결제금액</th>
                                                 </tr>
-                                        ))}
-                                </tbody>
-                        </table>
-                        <nav>
-                                <ul className="pagination" style={{ marginTop: '20px' }}>
-                                        <li>
-                                                <a className='paging-text' href="#" onClick={(e) => paginate2(currentPage2 - 1, e)}
-                                                        style={{ textDecoration: 'none', color: currentPage2 === 1 ? '#ccc' : '#333' }}>
-                                                        ≪
-                                                </a>
-                                        </li>
-                                        {Array.from({ length: totalPages2 }, (_, i) => i + 1).map((num) => (
-                                                <li key={num}>
-                                                        <a
-                                                                href="#"
-                                                                onClick={(e) => paginate2(num, e)}
-                                                                className={currentPage2 === num ? 'paging-active-text' : 'paging-text'}
-                                                                style={{
-                                                                        textDecoration: 'none',
-                                                                        fontWeight: currentPage2 === num ? 'bold' : 'normal',
-                                                                        color: currentPage2 === num ? '#000' : '#888'
-                                                                }}
-                                                        >
-                                                                {num}
+                                        </thead>
+                                        <tbody>
+                                                {/* 해당 pId의 rawItems만 출력 */}
+                                                {items.map((buy) => (
+                                                        <tr key={buy.bid}>
+                                                                <td>{buy.bid}</td>
+                                                                <td>{buy.product?.name}</td>
+                                                                <td>{buy.member?.userid}</td>
+                                                                <td>{buy.member?.username}</td>
+                                                                <td>{(parseInt(buy.price || 0) * buy.count).toLocaleString()}</td>
+                                                        </tr>
+                                                ))}
+                                        </tbody>
+                                </table>
+                                <nav>
+                                        <ul className="pagination" style={{ marginTop: '20px' }}>
+                                                <li>
+                                                        <a className='paging-text' href="#" onClick={(e) => paginate2(currentPage2 - 1, e)}
+                                                                style={{ textDecoration: 'none', color: currentPage2 === 1 ? '#ccc' : '#333' }}>
+                                                                ≪
                                                         </a>
                                                 </li>
-                                        ))}
-                                        <li>
-                                                <a className='paging-text' href="#" onClick={(e) => paginate(currentPage2 + 1, e)}
-                                                        style={{ textDecoration: 'none', color: currentPage2 === totalPages2 ? '#ccc' : '#333' }}>
-                                                        ≫
-                                                </a>
-                                        </li>
-                                </ul>
-                        </nav>
-                </div>
+                                                {Array.from({ length: totalPages2 }, (_, i) => i + 1).map((num) => (
+                                                        <li key={num}>
+                                                                <a
+                                                                        href="#"
+                                                                        onClick={(e) => paginate2(num, e)}
+                                                                        className={currentPage2 === num ? 'paging-active-text' : 'paging-text'}
+                                                                        style={{
+                                                                                textDecoration: 'none',
+                                                                                fontWeight: currentPage2 === num ? 'bold' : 'normal',
+                                                                                color: currentPage2 === num ? '#000' : '#888'
+                                                                        }}
+                                                                >
+                                                                        {num}
+                                                                </a>
+                                                        </li>
+                                                ))}
+                                                <li>
+                                                        <a className='paging-text' href="#" onClick={(e) => paginate(currentPage2 + 1, e)}
+                                                                style={{ textDecoration: 'none', color: currentPage2 === totalPages2 ? '#ccc' : '#333' }}>
+                                                                ≫
+                                                        </a>
+                                                </li>
+                                        </ul>
+                                </nav>
+                        </div>
                 )
         }
         const data = {
@@ -994,24 +1025,24 @@ function Manager() {
         };
         const barData = {
                 labels: ['회원 수'],  // X축은 하나
-                        datasets: [
-                                {
+                datasets: [
+                        {
                                 label: '일반회원',   // 범례 1
-                                        data: [users.length],
-                                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                                        borderColor: 'rgb(255, 99, 132)',
-                                        borderWidth: 1
-                                },
-                                {
+                                data: [users.length],
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                borderColor: 'rgb(255, 99, 132)',
+                                borderWidth: 1
+                        },
+                        {
                                 label: '기업회원',   // 범례 2
-                                        data: [companys.length],
-                                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                                        borderColor: 'rgb(255, 159, 64)',
-                                        borderWidth: 1
-                                }
-                        ]
-                };
-        
+                                data: [companys.length],
+                                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                borderColor: 'rgb(255, 159, 64)',
+                                borderWidth: 1
+                        }
+                ]
+        };
+
         const COLORS = [
                 'rgb(255, 173, 191)',
                 'rgb(175, 223, 255)',
@@ -1044,7 +1075,7 @@ function Manager() {
                         hoverOffset: 4
                 }]
         };
-        
+
         const ChartData = {
                 type: 'doughnut',
                 data: data
@@ -1079,9 +1110,9 @@ function Manager() {
                 },
         };
         const ChartModel = () => {
-                const contextLine  = buildContextDailyLine();
-                const totalLine    = buildTotalDailyLine();
-                const hasContext   = salesStatContext.type && salesStatContext.value;
+                const contextLine = buildContextDailyLine();
+                const totalLine = buildTotalDailyLine();
+                const hasContext = salesStatContext.type && salesStatContext.value;
 
                 // ── 일별 라인 차트 데이터 ──────────────────────────────────
                 const lineChartData = {
@@ -1164,7 +1195,7 @@ function Manager() {
                                         <input type='date' className='calendar' value={salesChartEnd}
                                                 onChange={(e) => setSalesChartEnd(e.target.value)} />
                                         <button className='button2' onClick={() => { setSalesChartStart(''); setSalesChartEnd(''); }}
-                                                style={{ whiteSpace: 'nowrap', backgroundColor:'#85bdeb', color:'white' }}>초기화</button>
+                                                style={{ whiteSpace: 'nowrap', backgroundColor: '#85bdeb', color: 'white' }}>초기화</button>
                                         <span style={{ color: '#888', fontSize: '0.9em' }}>
                                                 ※ 미선택 시 오늘({todayStr}) 기준
                                         </span>
@@ -1281,11 +1312,11 @@ function Manager() {
                         {/* 대시보드 페이지 */}
                         {activeMenu == '대시보드' && (
                                 <div className='category-content'>
-                                        <h4 style={{ fontWeight: '600', textAlign:'center' }}>CANVAS 총 매출</h4>
+                                        <h4 style={{ fontWeight: '600', textAlign: 'center' }}>CANVAS 총 매출</h4>
                                         <hr />
-                                        <h5 style={{ textAlign:'center', marginTop:'60px' }}>오늘의 매출 : {(dailySalesMap[todayStr] || 0).toLocaleString()}원</h5>
-                                        <div style={{ fontSize:'0.8em', textAlign:'center', color:'#ccc' }}>수수료는 정산 시 10%씩 차감됩니다.</div>
-                                        <div className='dash-board' style={{width:'80%', scrollbarWidth: 'none', margin:'0 auto', height:'400px', margin:'50px auto 100px auto'}}>
+                                        <h5 style={{ textAlign: 'center', marginTop: '60px' }}>오늘의 매출 : {(dailySalesMap[todayStr] || 0).toLocaleString()}원</h5>
+                                        <div style={{ fontSize: '0.8em', textAlign: 'center', color: '#ccc' }}>수수료는 정산 시 10%씩 차감됩니다.</div>
+                                        <div className='dash-board' style={{ width: '80%', scrollbarWidth: 'none', margin: '0 auto', height: '400px', margin: '50px auto 100px auto' }}>
                                                 <Line
                                                         data={data2}
                                                         options={{
@@ -1295,53 +1326,53 @@ function Manager() {
                                                 />
                                         </div>
                                         <hr />
-                                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop:'50px', margin:'30px 0px 30px 50px' }}>유저수 현황</h4>
+                                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '50px', margin: '30px 0px 30px 50px' }}>유저수 현황</h4>
                                         <div style={{ display: 'flex', gap: '20px', justifyContent: 'space-evenly' }}>
                                                 <div className='dash-board' style={{ overflowX: 'auto' }}>
-                                                        <h6 style={{textAlign:'center'}}>일별 신규 가입자(기업/일반)</h6>
+                                                        <h6 style={{ textAlign: 'center' }}>일별 신규 가입자(기업/일반)</h6>
                                                         <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
                                                                 <thead>
-                                                                                <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
-                                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>날짜</th>
-                                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>일반가입자</th>
-                                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업가입자</th>
-                                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>합계</th>
-                                                                                </tr>
-                                                                        </thead>
+                                                                        <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
+                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>날짜</th>
+                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>일반가입자</th>
+                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업가입자</th>
+                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>합계</th>
+                                                                        </tr>
+                                                                </thead>
                                                                 <tbody>
                                                                         {memberDateList.map((row) => (
                                                                                 <tr key={row.date} style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
-                                                                                        {row.date}
-                                                                                </td>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
-                                                                                        {row.normalCount}
-                                                                                </td>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
-                                                                                        {row.companyCount}
-                                                                                </td>
-                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
-                                                                                        {row.normalCount + row.companyCount}
-                                                                                </td>
+                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
+                                                                                                {row.date}
+                                                                                        </td>
+                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
+                                                                                                {row.normalCount}
+                                                                                        </td>
+                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
+                                                                                                {row.companyCount}
+                                                                                        </td>
+                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
+                                                                                                {row.normalCount + row.companyCount}
+                                                                                        </td>
                                                                                 </tr>
                                                                         ))}
                                                                 </tbody>
                                                         </table>
                                                 </div>
-                                                <div className='dash-board' style={{ overflowX: 'auto', height: '400px', scrollbarWidth: 'none'}}>
-                                                        <h6 style={{textAlign:'center'}}>활동 사용자 비율(기업/일반)</h6>
+                                                <div className='dash-board' style={{ overflowX: 'auto', height: '400px', scrollbarWidth: 'none' }}>
+                                                        <h6 style={{ textAlign: 'center' }}>활동 사용자 비율(기업/일반)</h6>
                                                         <Bar
-                                                                style={{height:'350px', padding:'20px'}}
+                                                                style={{ height: '350px', padding: '20px' }}
                                                                 data={barData}
                                                                 options={{ maintainAspectRatio: false }}
                                                         />
                                                 </div>
                                         </div>
                                         <hr />
-                                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop:'50px', margin:'30px 0px 30px 50px' }}>기업별 상위 매출 정산</h4>
+                                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '50px', margin: '30px 0px 30px 50px' }}>기업별 상위 매출 정산</h4>
                                         <div style={{ display: 'flex', gap: '20px', justifyContent: 'space-evenly' }}>
                                                 <div className='dash-board' style={{ overflowX: 'auto' }}>
-                                                        <h6 style={{textAlign:'center'}}>상위 매출 기업 TOP5</h6>
+                                                        <h6 style={{ textAlign: 'center' }}>상위 매출 기업 TOP5</h6>
                                                         <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
                                                                 <thead>
                                                                         <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
@@ -1365,26 +1396,26 @@ function Manager() {
                                                                 </tbody>
                                                         </table>
                                                 </div>
-                                                <div className='dash-board' style={{ overflowX: 'auto', height: '400px', scrollbarWidth: 'none'}}>
-                                                        <h6 style={{textAlign:'center'}}>상위 매출 기업 TOP5</h6>
+                                                <div className='dash-board' style={{ overflowX: 'auto', height: '400px', scrollbarWidth: 'none' }}>
+                                                        <h6 style={{ textAlign: 'center' }}>상위 매출 기업 TOP5</h6>
                                                         <Doughnut
-                                                                style={{height:'350px', padding:'20px'}}
+                                                                style={{ height: '350px', padding: '20px' }}
                                                                 data={dounutData}
                                                                 options={{ maintainAspectRatio: false }}
                                                         />
                                                 </div>
                                         </div>
                                         <hr />
-                                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop:'50px', margin:'30px 0px 30px 50px'}}>카테고리별 매출 현황</h4>
+                                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '50px', margin: '30px 0px 30px 50px' }}>카테고리별 매출 현황</h4>
                                         <div style={{ display: 'flex', gap: '20px', justifyContent: 'space-evenly' }}>
                                                 <div className='dash-board' style={{ overflowX: 'auto' }}>
-                                                        <h6 style={{textAlign:'center'}}>카테고리 판매량 순위</h6>
+                                                        <h6 style={{ textAlign: 'center' }}>카테고리 판매량 순위</h6>
                                                         <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
                                                                 <thead>
                                                                         <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>카테고리</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>상품명</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>총 판매가</th>
+                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>카테고리</th>
+                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>상품명</th>
+                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>총 판매가</th>
                                                                         </tr>
                                                                 </thead>
                                                                 <tbody>
@@ -1398,10 +1429,10 @@ function Manager() {
                                                                 </tbody>
                                                         </table>
                                                 </div>
-                                                <div className='dash-board' style={{ overflowX: 'auto', height: '400px', scrollbarWidth: 'none'}}>
-                                                        <h6 style={{textAlign:'center'}}>카테고리 판매량 순위</h6>
+                                                <div className='dash-board' style={{ overflowX: 'auto', height: '400px', scrollbarWidth: 'none' }}>
+                                                        <h6 style={{ textAlign: 'center' }}>카테고리 판매량 순위</h6>
                                                         <Doughnut
-                                                                style={{height:'350px', padding:'20px'}}
+                                                                style={{ height: '350px', padding: '20px' }}
                                                                 data={doughnutData}
                                                                 options={{ maintainAspectRatio: false }}
                                                         />
@@ -1415,12 +1446,14 @@ function Manager() {
                                         <div className='category-content'>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>회원 검색</h4>
-                                                        <div style={{display:'flex', justifyContent:'center'}}>
-                                                                <select 
+                                                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                                                <select
                                                                         value={userSearchKey}
                                                                         onChange={(e) => setUserSearchKey(e.target.value)}
-                                                                        className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px',
-                                                                        fontSize: '0.8em', height: '30px', marginTop:'5PX' }}
+                                                                        className="cat1" style={{
+                                                                                width: '80px', padding: '3px', borderRadius: '10px',
+                                                                                fontSize: '0.8em', height: '30px', marginTop: '5PX'
+                                                                        }}
                                                                 >
                                                                         <option value="username">이름</option>
                                                                         <option value="userid">아이디</option>
@@ -1430,8 +1463,8 @@ function Manager() {
                                                                 <div className="search-bar">
                                                                         <input type="text" placeholder="검색어를 입력해주세요."
                                                                                 value={userSearchWord}
-                                                                                onChange={(e)=> setUserSearchWord(e.target.value)}
-                                                                                onKeyDown={(e)=>e.key === 'Enter'&&handleUserSearch()}
+                                                                                onChange={(e) => setUserSearchWord(e.target.value)}
+                                                                                onKeyDown={(e) => e.key === 'Enter' && handleUserSearch()}
                                                                         />
                                                                         <button className="search-icon" onClick={handleUserSearch}></button>
                                                                 </div>
@@ -1466,7 +1499,7 @@ function Manager() {
                                                                                 background: user.isOut == "Y" ? '#ffebee' : '#e3f2fd',
                                                                                 color: user.isOut == "Y" ? '#c62828' : '#1976d2',
                                                                                 padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                        }}>{user.isOut=="Y"?'탈퇴':'활동 중'}</div>
+                                                                        }}>{user.isOut == "Y" ? '탈퇴' : '활동 중'}</div>
                                                                 </div>
                                                         ))}
                                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1484,12 +1517,14 @@ function Manager() {
                                         <div className='category-content'>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>탈퇴회원 검색</h4>
-                                                        <div style={{display:'flex', justifyContent:'center'}}>
-                                                                <select 
+                                                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                                                <select
                                                                         value={userSearchKey}
                                                                         onChange={(e) => setUserOutSearchKey(e.target.value)}
-                                                                        className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px',
-                                                                        fontSize: '0.8em', height: '30px', marginTop:'5PX' }}
+                                                                        className="cat1" style={{
+                                                                                width: '80px', padding: '3px', borderRadius: '10px',
+                                                                                fontSize: '0.8em', height: '30px', marginTop: '5PX'
+                                                                        }}
                                                                 >
                                                                         <option value="username">이름</option>
                                                                         <option value="userid">아이디</option>
@@ -1499,8 +1534,8 @@ function Manager() {
                                                                 <div className="search-bar">
                                                                         <input type="text" placeholder="검색어를 입력해주세요."
                                                                                 value={userOutSearchWord}
-                                                                                onChange={(e)=> setUserOutSearchWord(e.target.value)}
-                                                                                onKeyDown={(e)=>e.key === 'Enter'&&handleUserSearch()}
+                                                                                onChange={(e) => setUserOutSearchWord(e.target.value)}
+                                                                                onKeyDown={(e) => e.key === 'Enter' && handleUserSearch()}
                                                                         />
                                                                         <button className="search-icon" onClick={handleUserSearch}></button>
                                                                 </div>
@@ -1530,7 +1565,7 @@ function Manager() {
                                                                                 background: user.isOut == "Y" ? '#ffebee' : '#e3f2fd',
                                                                                 color: user.isOut == "Y" ? '#c62828' : '#1976d2',
                                                                                 padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                        }}>{user.isOut=="Y"?'탈퇴':'활동 중'}</div>
+                                                                        }}>{user.isOut == "Y" ? '탈퇴' : '활동 중'}</div>
                                                                 </div>
                                                         ))}
                                                 <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }} onClick={() => setShowMoreOut(!showMoreOut)}>
@@ -1546,12 +1581,14 @@ function Manager() {
                                         <div className='category-content'>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>기업 검색</h4>
-                                                        <div style={{display:'flex', justifyContent:'center'}}>
-                                                                <select 
+                                                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                                                <select
                                                                         value={companySearchKey}
                                                                         onChange={(e) => setCompanySearchKey(e.target.value)}
-                                                                        className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px',
-                                                                        fontSize: '0.8em', height: '30px', marginTop:'5PX' }}
+                                                                        className="cat1" style={{
+                                                                                width: '80px', padding: '3px', borderRadius: '10px',
+                                                                                fontSize: '0.8em', height: '30px', marginTop: '5PX'
+                                                                        }}
                                                                 >
                                                                         <option value="businessName">이름</option>
                                                                         <option value="userid">아이디</option>
@@ -1561,8 +1598,8 @@ function Manager() {
                                                                 <div className="search-bar">
                                                                         <input type="text" placeholder="검색어를 입력해주세요."
                                                                                 value={companySearchWord}
-                                                                                onChange={(e)=> setCompanySearchWord(e.target.value)}
-                                                                                onKeyDown={(e)=>e.key === 'Enter'&&handleCompanySearch()}
+                                                                                onChange={(e) => setCompanySearchWord(e.target.value)}
+                                                                                onKeyDown={(e) => e.key === 'Enter' && handleCompanySearch()}
                                                                         />
                                                                         <button className="search-icon" onClick={handleCompanySearch}></button>
                                                                 </div>
@@ -1579,22 +1616,22 @@ function Manager() {
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
                                                 {visibleCompanys
-                                                                .map((company)=>(
-                                                                        <div key={company.cid} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                                <div className="col-1 border-start" style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
-                                                                                                <input type="checkbox" aria-label="항목 선택" />
-                                                                                </div>
-                                                                                <div className="col-2 border-start">{company.userid}</div>
-                                                                                <div className="col-2 border-start">{company.businessName}</div>
-                                                                                <div className="col-2 border-start">{company.email}</div>
-                                                                                <div className="col-2 border-start">{company.tel}</div>
-                                                                                <div className="col-2 border-start">{company.writedate.slice(0, 10)}</div>
-                                                                                <div className="col-1 border-start" style={{
-                                                                                        background: company.isOut == 'Y' ? '#ffebee' : '#e3f2fd',
-                                                                                        color: company.isOut == 'Y' ? '#c62828' : '#1976d2',
-                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                }}>{company.isOut=='Y'?'탈퇴':'활동 중'}</div>
+                                                        .map((company) => (
+                                                                <div key={company.cid} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
+                                                                        <div className="col-1 border-start" style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                                <input type="checkbox" aria-label="항목 선택" />
                                                                         </div>
+                                                                        <div className="col-2 border-start">{company.userid}</div>
+                                                                        <div className="col-2 border-start">{company.businessName}</div>
+                                                                        <div className="col-2 border-start">{company.email}</div>
+                                                                        <div className="col-2 border-start">{company.tel}</div>
+                                                                        <div className="col-2 border-start">{company.writedate.slice(0, 10)}</div>
+                                                                        <div className="col-1 border-start" style={{
+                                                                                background: company.isOut == 'Y' ? '#ffebee' : '#e3f2fd',
+                                                                                color: company.isOut == 'Y' ? '#c62828' : '#1976d2',
+                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                        }}>{company.isOut == 'Y' ? '탈퇴' : '활동 중'}</div>
+                                                                </div>
                                                         ))}
                                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                         <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }} onClick={() => setCShowMore(!cshowMore)}>
@@ -1617,12 +1654,14 @@ function Manager() {
                                         <div className='category-content'>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                                         <h4 style={{ textAlign: 'left', fontWeight: '600' }}>탈퇴기업 검색</h4>
-                                                        <div style={{display:'flex', justifyContent:'center'}}>
-                                                                <select 
+                                                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                                                <select
                                                                         value={companySearchKey}
                                                                         onChange={(e) => setCompanyOutSearchKey(e.target.value)}
-                                                                        className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px',
-                                                                        fontSize: '0.8em', height: '30px', marginTop:'5PX' }}
+                                                                        className="cat1" style={{
+                                                                                width: '80px', padding: '3px', borderRadius: '10px',
+                                                                                fontSize: '0.8em', height: '30px', marginTop: '5PX'
+                                                                        }}
                                                                 >
                                                                         <option value="businessName">이름</option>
                                                                         <option value="userid">아이디</option>
@@ -1632,8 +1671,8 @@ function Manager() {
                                                                 <div className="search-bar">
                                                                         <input type="text" placeholder="검색어를 입력해주세요."
                                                                                 value={companyOutSearchWord}
-                                                                                onChange={(e)=> setCompanyOutSearchWord(e.target.value)}
-                                                                                onKeyDown={(e)=>e.key === 'Enter'&&handleCompanySearch()}
+                                                                                onChange={(e) => setCompanyOutSearchWord(e.target.value)}
+                                                                                onKeyDown={(e) => e.key === 'Enter' && handleCompanySearch()}
                                                                         />
                                                                         <button className="search-icon" onClick={handleCompanySearch}></button>
                                                                 </div>
@@ -1650,21 +1689,21 @@ function Manager() {
                                                         <div className="col-1 border-start">관리</div>
                                                 </div>
                                                 {invisibleCompanys
-                                                        .filter(company=>company.isOut !=='N')
-                                                                .map((company)=>(
-                                                                        <div key={company.cid} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
-                                                                                <div className="col-1 border-start">{company.cid}</div>
-                                                                                <div className="col-2 border-start">{company.userid}</div>
-                                                                                <div className="col-2 border-start">{company.name}</div>
-                                                                                <div className="col-2 border-start">{company.email}</div>
-                                                                                <div className="col-2 border-start">{company.tel}</div>
-                                                                                <div className="col-2 border-start">{company.writedate.slice(0, 10)}</div>
-                                                                                <div className="col-1 border-start" style={{
-                                                                                        background: company.isOut == 'Y' ? '#ffebee' : '#e3f2fd',
-                                                                                        color: company.isOut == 'Y' ? '#c62828' : '#1976d2',
-                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                }}>{company.isOut=='Y'?'탈퇴':'활동 중'}</div>
-                                                                        </div>
+                                                        .filter(company => company.isOut !== 'N')
+                                                        .map((company) => (
+                                                                <div key={company.cid} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
+                                                                        <div className="col-1 border-start">{company.cid}</div>
+                                                                        <div className="col-2 border-start">{company.userid}</div>
+                                                                        <div className="col-2 border-start">{company.name}</div>
+                                                                        <div className="col-2 border-start">{company.email}</div>
+                                                                        <div className="col-2 border-start">{company.tel}</div>
+                                                                        <div className="col-2 border-start">{company.writedate.slice(0, 10)}</div>
+                                                                        <div className="col-1 border-start" style={{
+                                                                                background: company.isOut == 'Y' ? '#ffebee' : '#e3f2fd',
+                                                                                color: company.isOut == 'Y' ? '#c62828' : '#1976d2',
+                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                        }}>{company.isOut == 'Y' ? '탈퇴' : '활동 중'}</div>
+                                                                </div>
                                                         ))}
                                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                         <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }} onClick={() => setCShowMoreOut(!cshowMoreOut)}>
@@ -1708,8 +1747,10 @@ function Manager() {
                                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                                 <p>검색어 :</p>
                                                                 <select
-                                                                        className="cat1" style={{ width: '100px', padding: '3px', borderRadius: '10px',
-                                                                        fontSize: '0.8em', height: '30px' }}
+                                                                        className="cat1" style={{
+                                                                                width: '100px', padding: '3px', borderRadius: '10px',
+                                                                                fontSize: '0.8em', height: '30px'
+                                                                        }}
                                                                         value={productSearchKey} onChange={(e) => setProductSearchKey(e.target.value)}
                                                                 >
                                                                         <option value="null">전체</option>
@@ -1717,13 +1758,15 @@ function Manager() {
                                                                         <option value="businessName">기업명</option>
                                                                 </select>
                                                                 <input type='text' value={productSearchWord} onChange={(e) => setProductSearchWord(e.target.value)}
-                                                                        style={{ width: '320px', padding: '3px', borderRadius: '10px', fontSize: '0.8em',
-                                                                        height: '30px', border: '1px solid #333333' }} placeholder="검색어를 입력하세요."
+                                                                        style={{
+                                                                                width: '320px', padding: '3px', borderRadius: '10px', fontSize: '0.8em',
+                                                                                height: '30px', border: '1px solid #333333'
+                                                                        }} placeholder="검색어를 입력하세요."
                                                                 ></input>
                                                         </div>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                                 <p style={{ width: "80px d-inline-flex" }}>등록일자 :</p>
-                                                                <div className="row mx-0" style={{ cursor:'pointer', backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
+                                                                <div className="row mx-0" style={{ cursor: 'pointer', backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
                                                                         <div className="col p-1 text-center" onClick={() => handleDateProductPreset('day')}>당일</div>
                                                                         <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('week')}>일주일</div>
                                                                         <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('month', 1)}>1개월</div>
@@ -1791,24 +1834,54 @@ function Manager() {
                                                                         <tr>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
                                                                                         <input type="checkbox" checked={selectedProIds.includes(pd.pid)}
-                                                                                                onChange={()=>handleProCheck(pd.pid)}
+                                                                                                onChange={() => handleProCheck(pd.pid)}
                                                                                         />
                                                                                 </td>
+                                                                                {/* 기업명 */}
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.company?.businessName}</td>
+                                                                                {/* 카테고리 */}
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.b_category}〉{pd.scategory}</td>
+                                                                                {/* 상품명 - 수정 모드 */}
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                                        <div style={{
-                                                                                                maxWidth: '200px',
-                                                                                                overflow: 'hidden',
-                                                                                                textOverflow: 'ellipsis',
-                                                                                                whiteSpace: 'nowrap',
-                                                                                                margin: '0 auto'
-                                                                                        }}>
-                                                                                                {pd.name}
-                                                                                        </div>
-                                                                                </td>                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.price}</td>
+                                                                                        {proEditingId === pd.pid ? (
+                                                                                                <input
+                                                                                                        name="name"
+                                                                                                        value={proEditForm.name || ''}
+                                                                                                        onChange={handleProEditChange}
+                                                                                                        style={{ width: '160px', padding: '3px 6px', border: '1px solid #2d7df4', borderRadius: '4px', fontSize: '0.85em' }}
+                                                                                                />
+                                                                                        ) : (
+                                                                                                <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: '0 auto' }}>
+                                                                                                        {pd.name}
+                                                                                                </div>
+                                                                                        )}
+                                                                                </td>
+                                                                                {/* 판매가 - 수정 모드 */}
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                                        {proEditingId === pd.pid ? (
+                                                                                                <input
+                                                                                                        name="price"
+                                                                                                        value={proEditForm.price || ''}
+                                                                                                        onChange={handleProEditChange}
+                                                                                                        style={{ width: '90px', padding: '3px 6px', border: '1px solid #2d7df4', borderRadius: '4px', fontSize: '0.85em' }}
+                                                                                                />
+                                                                                        ) : pd.price}
+                                                                                </td>
+                                                                                {/* 등록일 */}
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.writedate?.slice(0, 10)}</td>
-                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.count}</td>
+                                                                                {/* 재고 - 수정 모드 */}
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                                        {proEditingId === pd.pid ? (
+                                                                                                <input
+                                                                                                        name="count"
+                                                                                                        type="number"
+                                                                                                        value={proEditForm.count ?? 0}
+                                                                                                        onChange={handleProEditChange}
+                                                                                                        style={{ width: '60px', padding: '3px 6px', border: '1px solid #2d7df4', borderRadius: '4px', fontSize: '0.85em' }}
+                                                                                                />
+                                                                                        ) : pd.count}
+                                                                                </td>
+                                                                                {/* 상태 */}
                                                                                 <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                                                                                         <div className="col-7" style={{
                                                                                                 display: 'inline-block', width: 'auto',
@@ -1816,12 +1889,24 @@ function Manager() {
                                                                                                 color: pd.count == 0 ? '#c62828' : '#1976d2',
                                                                                                 padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
                                                                                         }}>
-                                                                                                {pd.count == 0 ?'품절':'재고 있음'}  
+                                                                                                {pd.count == 0 ? '품절' : '재고 있음'}
                                                                                         </div>
                                                                                 </td>
-                                                                                <td>
-                                                                                        <button className='button2' style={{ marginRight: '10px' }}>수정</button>
-                                                                                        <button className='button2' onClick={()=> handleProDelete(pd.pid)}>삭제</button>
+                                                                                {/* 수정/삭제 버튼 */}
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                                        {proEditingId === pd.pid ? (
+                                                                                                <>
+                                                                                                        <button className='button2' style={{ marginRight: '6px', backgroundColor: '#2d7df4', border: '1px solid #2d7df4', color: '#fff' }}
+                                                                                                                onClick={handleProSaveClick}>저장</button>
+                                                                                                        <button className='button2' onClick={() => setProEditingId(null)}>취소</button>
+                                                                                                </>
+                                                                                        ) : (
+                                                                                                <>
+                                                                                                        <button className='button2' style={{ marginRight: '10px' }}
+                                                                                                                onClick={() => handleProEditClick(pd)}>수정</button>
+                                                                                                        <button className='button2' onClick={() => handleProDelete(pd.pid)}>삭제</button>
+                                                                                                </>
+                                                                                        )}
                                                                                 </td>
                                                                         </tr>
                                                                 </tbody>
@@ -1881,164 +1966,164 @@ function Manager() {
                         )}
                         {/* 문의관리 페이지 */}
                         {activeMenu === '문의 관리' && (
-                                        <div className="category-content">
-                                                <div style={{ padding: "30px", background: "#fff", borderRadius: "8px", minHeight: "600px" }}>
-                                                        <div style={{ marginBottom: "25px", textAlign: "left" }}>
-                                                                <h4 style={{ fontWeight: "bold", margin: 0, color: "#222" }}>1:1 고객 문의 관리</h4>
-                                                                <p style={{ color: "#777", fontSize: "13px", margin: "5px 0 0 0" }}>
-                                                                        목록 줄을 클릭하면 상세 내용이 열리고, [답변 작성/수정] 버튼을 클릭해야만 팝업 창이 뜹니다.
-                                                                </p>
-                                                        </div>
+                                <div className="category-content">
+                                        <div style={{ padding: "30px", background: "#fff", borderRadius: "8px", minHeight: "600px" }}>
+                                                <div style={{ marginBottom: "25px", textAlign: "left" }}>
+                                                        <h4 style={{ fontWeight: "bold", margin: 0, color: "#222" }}>1:1 고객 문의 관리</h4>
+                                                        <p style={{ color: "#777", fontSize: "13px", margin: "5px 0 0 0" }}>
+                                                                목록 줄을 클릭하면 상세 내용이 열리고, [답변 작성/수정] 버튼을 클릭해야만 팝업 창이 뜹니다.
+                                                        </p>
+                                                </div>
 
-                                                        <div className="inquiry-list-wrapper">
-                                                                <table className="management-table">
-                                                                        <thead>
+                                                <div className="inquiry-list-wrapper">
+                                                        <table className="management-table">
+                                                                <thead>
+                                                                        <tr>
+                                                                                <th style={{ width: '8%' }}>번호</th>
+                                                                                <th style={{ width: '12%' }}>카테고리</th>
+                                                                                <th>제목</th>
+                                                                                <th style={{ width: '12%' }}>작성자</th>
+                                                                                <th style={{ width: '15%' }}>작성일</th>
+                                                                                <th style={{ width: '15%', textAlign: 'center' }}>상태</th>
+                                                                        </tr>
+                                                                </thead>
+                                                                {asks.length === 0 ? (
+                                                                        <tbody>
                                                                                 <tr>
-                                                                                        <th style={{ width: '8%' }}>번호</th>
-                                                                                        <th style={{ width: '12%' }}>카테고리</th>
-                                                                                        <th>제목</th>
-                                                                                        <th style={{ width: '12%' }}>작성자</th>
-                                                                                        <th style={{ width: '15%' }}>작성일</th>
-                                                                                        <th style={{ width: '15%', textAlign: 'center' }}>상태</th>
+                                                                                        <td colSpan="6" className="empty-row" style={{ textAlign: 'center', padding: '40px 0' }}>
+                                                                                                접수된 고객 문의가 존재하지 않습니다.
+                                                                                        </td>
                                                                                 </tr>
-                                                                        </thead>
-                                                                        {asks.length === 0 ? (
-                                                                                <tbody>
-                                                                                        <tr>
-                                                                                                <td colSpan="6" className="empty-row" style={{ textAlign: 'center', padding: '40px 0' }}>
-                                                                                                        접수된 고객 문의가 존재하지 않습니다.
-                                                                                                </td>
-                                                                                        </tr>
-                                                                                </tbody>
-                                                                        ) : (
-                                                                                asks.map((q, index) => {
-                                                                                        const rawDate = q.writedate || "";
-                                                                                        const formattedDate = rawDate.length >= 10 ? rawDate.substring(0, 10) : "-";
-                                                                                        const isAnswered = q.answer !== null && q.answer !== undefined && q.answer.trim() !== "";
+                                                                        </tbody>
+                                                                ) : (
+                                                                        asks.map((q, index) => {
+                                                                                const rawDate = q.writedate || "";
+                                                                                const formattedDate = rawDate.length >= 10 ? rawDate.substring(0, 10) : "-";
+                                                                                const isAnswered = q.answer !== null && q.answer !== undefined && q.answer.trim() !== "";
 
-                                                                                        const isExpanded = selectedInquiry?.s_id === q.s_id;
+                                                                                const isExpanded = selectedInquiry?.s_id === q.s_id;
 
-                                                                                        return (
-                                                                                                <tbody key={q.s_id || index}>
-                                                                                                        <tr
-                                                                                                                onClick={() => {
-                                                                                                                        setSelectedInquiry(selectedInquiry?.s_id === q.s_id ? null : q);
-                                                                                                                }}
-                                                                                                                style={{ cursor: 'pointer' }}
-                                                                                                        >
-                                                                                                                <td>{asks.length - index}</td>
-                                                                                                                <td><span className="category-tag">{q.category}</span></td>
-                                                                                                                <td className="inquiry-title-cell" style={{ textAlign: 'left' }}>{q.subject}</td>
-                                                                                                                <td>{q.writer || "회원"}</td>
-                                                                                                                <td>{formattedDate}</td>
-                                                                                                                <td style={{ textAlign: 'center' }}>
-                                                                                                                        <span className={`status-badge ${isAnswered ? 'complete' : 'waiting'}`}>
-                                                                                                                                {isAnswered ? "답변완료" : "답변대기"}
-                                                                                                                        </span>
+                                                                                return (
+                                                                                        <tbody key={q.s_id || index}>
+                                                                                                <tr
+                                                                                                        onClick={() => {
+                                                                                                                setSelectedInquiry(selectedInquiry?.s_id === q.s_id ? null : q);
+                                                                                                        }}
+                                                                                                        style={{ cursor: 'pointer' }}
+                                                                                                >
+                                                                                                        <td>{asks.length - index}</td>
+                                                                                                        <td><span className="category-tag">{q.category}</span></td>
+                                                                                                        <td className="inquiry-title-cell" style={{ textAlign: 'left' }}>{q.subject}</td>
+                                                                                                        <td>{q.writer || "회원"}</td>
+                                                                                                        <td>{formattedDate}</td>
+                                                                                                        <td style={{ textAlign: 'center' }}>
+                                                                                                                <span className={`status-badge ${isAnswered ? 'complete' : 'waiting'}`}>
+                                                                                                                        {isAnswered ? "답변완료" : "답변대기"}
+                                                                                                                </span>
+                                                                                                        </td>
+                                                                                                </tr>
+
+                                                                                                {isExpanded && (
+                                                                                                        <tr className="inquiry-detail-row" onClick={(e) => e.stopPropagation()}>
+                                                                                                                <td colSpan="6" style={{ background: '#fafafa', padding: '20px' }}>
+                                                                                                                        <div className="my-detail-content" style={{ textAlign: 'left' }}>
+
+                                                                                                                                {/* Q. 고객 문의 내용 */}
+                                                                                                                                <div className="question-box" style={{ marginBottom: '15px' }}>
+                                                                                                                                        <strong>Q. 문의 내용</strong>
+                                                                                                                                        <p style={{ whiteSpace: 'pre-wrap', marginTop: '8px', color: '#333' }}>{q.context}</p>
+                                                                                                                                </div>
+
+                                                                                                                                {/* A. 관리자 기존 답변 내역 */}
+                                                                                                                                {isAnswered ? (
+                                                                                                                                        <div className="answer-box">
+                                                                                                                                                <strong>A. 답변 내용</strong>
+                                                                                                                                                <p style={{ whiteSpace: 'pre-wrap', marginTop: '8px', color: '#333' }}>{q.answer}</p>
+                                                                                                                                        </div>
+                                                                                                                                ) : (
+                                                                                                                                        <div className="waiting-box" style={{ padding: '10px 0', color: '#999' }}>
+                                                                                                                                                <small>아직 등록된 답변이 없습니다. 아래 버튼을 눌러 답변을 작성해 주세요.</small>
+                                                                                                                                        </div>
+                                                                                                                                )}
+
+                                                                                                                                <div style={{ textAlign: 'right', marginTop: '15px' }}>
+                                                                                                                                        <button
+                                                                                                                                                type="button"
+                                                                                                                                                style={{
+                                                                                                                                                        padding: "6px 16px",
+                                                                                                                                                        background: isAnswered ? "#4caf50" : "#ff9800",
+                                                                                                                                                        color: "#fff",
+                                                                                                                                                        border: "none",
+                                                                                                                                                        borderRadius: "4px",
+                                                                                                                                                        cursor: "pointer",
+                                                                                                                                                        fontSize: "13px",
+                                                                                                                                                        fontWeight: "bold"
+                                                                                                                                                }}
+                                                                                                                                                onClick={(e) => {
+                                                                                                                                                        e.stopPropagation();
+
+                                                                                                                                                        setReplyText(q.answer || "");
+
+                                                                                                                                                        // 별도의 state 선언 없이, 선택된 객체에 임시 플래그 속성을 심어 모달을 띄웁니다!
+                                                                                                                                                        setSelectedInquiry({ ...q, showModal: true });
+                                                                                                                                                }}
+                                                                                                                                        >
+                                                                                                                                                {isAnswered ? "답변 수정하기" : "답변 작성하기"}
+                                                                                                                                        </button>
+                                                                                                                                </div>
+
+                                                                                                                        </div>
                                                                                                                 </td>
                                                                                                         </tr>
+                                                                                                )}
+                                                                                        </tbody>
+                                                                                );
+                                                                        })
+                                                                )}
+                                                        </table>
+                                                </div>
 
-                                                                                                        {isExpanded && (
-                                                                                                                <tr className="inquiry-detail-row" onClick={(e) => e.stopPropagation()}>
-                                                                                                                        <td colSpan="6" style={{ background: '#fafafa', padding: '20px' }}>
-                                                                                                                                <div className="my-detail-content" style={{ textAlign: 'left' }}>
+                                                {/* 관리자 답변 작성 및 수정 팝업 모달창 (showModal 플래그가 들어있을 때만 정확히 팝업) */}
+                                                {selectedInquiry && selectedInquiry.showModal === true && (
+                                                        <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.4)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 10000 }}>
+                                                                <div style={{ background: "#fff", padding: "30px", borderRadius: "12px", width: "520px", position: "relative", boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}>
+                                                                        <button type="button" style={{ position: "absolute", top: "15px", right: "15px", background: "none", border: "none", fontSize: "22px", cursor: "pointer", color: '#aaa' }} onClick={() => { setSelectedInquiry(null); setReplyText(""); }}>&times;</button>
 
-                                                                                                                                        {/* Q. 고객 문의 내용 */}
-                                                                                                                                        <div className="question-box" style={{ marginBottom: '15px' }}>
-                                                                                                                                                <strong>Q. 문의 내용</strong>
-                                                                                                                                                <p style={{ whiteSpace: 'pre-wrap', marginTop: '8px', color: '#333' }}>{q.context}</p>
-                                                                                                                                        </div>
+                                                                        <h4 style={{ marginBottom: "20px", fontWeight: "bold", textAlign: 'left', borderBottom: "1px solid #eee", paddingBottom: "10px" }}>
+                                                                                고객 문의 답변 {selectedInquiry.answer ? "수정" : "등록"}
+                                                                        </h4>
 
-                                                                                                                                        {/* A. 관리자 기존 답변 내역 */}
-                                                                                                                                        {isAnswered ? (
-                                                                                                                                                <div className="answer-box">
-                                                                                                                                                        <strong>A. 답변 내용</strong>
-                                                                                                                                                        <p style={{ whiteSpace: 'pre-wrap', marginTop: '8px', color: '#333' }}>{q.answer}</p>
-                                                                                                                                                </div>
-                                                                                                                                        ) : (
-                                                                                                                                                <div className="waiting-box" style={{ padding: '10px 0', color: '#999' }}>
-                                                                                                                                                        <small>아직 등록된 답변이 없습니다. 아래 버튼을 눌러 답변을 작성해 주세요.</small>
-                                                                                                                                                </div>
-                                                                                                                                        )}
+                                                                        <div style={{ background: "#f8f9fa", padding: "15px", borderRadius: "6px", marginBottom: "20px", textAlign: "left", fontSize: "14px", border: "1px solid #f1f3f5" }}>
+                                                                                <div style={{ marginBottom: "6px" }}><strong>제목:</strong> {selectedInquiry.subject}</div>
+                                                                                <div style={{ whiteSpace: "pre-wrap", color: "#555" }}><strong>내용:</strong> {selectedInquiry.context}</div>
+                                                                        </div>
 
-                                                                                                                                        <div style={{ textAlign: 'right', marginTop: '15px' }}>
-                                                                                                                                                <button
-                                                                                                                                                        type="button"
-                                                                                                                                                        style={{
-                                                                                                                                                                padding: "6px 16px",
-                                                                                                                                                                background: isAnswered ? "#4caf50" : "#ff9800",
-                                                                                                                                                                color: "#fff",
-                                                                                                                                                                border: "none",
-                                                                                                                                                                borderRadius: "4px",
-                                                                                                                                                                cursor: "pointer",
-                                                                                                                                                                fontSize: "13px",
-                                                                                                                                                                fontWeight: "bold"
-                                                                                                                                                        }}
-                                                                                                                                                        onClick={(e) => {
-                                                                                                                                                                e.stopPropagation();
+                                                                        <div style={{ marginBottom: "25px", textAlign: "left" }}>
+                                                                                <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold", fontSize: '14px', color: '#222' }}>공식 관리자 답변 입력</label>
+                                                                                <textarea
+                                                                                        style={{ width: "100%", height: "140px", padding: "12px", border: "1px solid #ddd", borderRadius: "6px", resize: "none", boxSizing: 'border-box', lineHeight: '1.5', fontSize: "14px" }}
+                                                                                        value={replyText}
+                                                                                        onChange={(e) => setReplyText(e.target.value)}
+                                                                                        placeholder="여기에 적은 답변은 실시간으로 사용자 마이페이지에 연동됩니다."
+                                                                                />
+                                                                        </div>
 
-                                                                                                                                                                setReplyText(q.answer || "");
-
-                                                                                                                                                                // 별도의 state 선언 없이, 선택된 객체에 임시 플래그 속성을 심어 모달을 띄웁니다!
-                                                                                                                                                                setSelectedInquiry({ ...q, showModal: true });
-                                                                                                                                                        }}
-                                                                                                                                                >
-                                                                                                                                                        {isAnswered ? "답변 수정하기" : "답변 작성하기"}
-                                                                                                                                                </button>
-                                                                                                                                        </div>
-
-                                                                                                                                </div>
-                                                                                                                        </td>
-                                                                                                                </tr>
-                                                                                                        )}
-                                                                                                </tbody>
-                                                                                        );
-                                                                                })
-                                                                        )}
-                                                                </table>
-                                                        </div>
-
-                                                        {/* 관리자 답변 작성 및 수정 팝업 모달창 (showModal 플래그가 들어있을 때만 정확히 팝업) */}
-                                                        {selectedInquiry && selectedInquiry.showModal === true && (
-                                                                <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.4)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 10000 }}>
-                                                                        <div style={{ background: "#fff", padding: "30px", borderRadius: "12px", width: "520px", position: "relative", boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}>
-                                                                                <button type="button" style={{ position: "absolute", top: "15px", right: "15px", background: "none", border: "none", fontSize: "22px", cursor: "pointer", color: '#aaa' }} onClick={() => { setSelectedInquiry(null); setReplyText(""); }}>&times;</button>
-
-                                                                                <h4 style={{ marginBottom: "20px", fontWeight: "bold", textAlign: 'left', borderBottom: "1px solid #eee", paddingBottom: "10px" }}>
-                                                                                        고객 문의 답변 {selectedInquiry.answer ? "수정" : "등록"}
-                                                                                </h4>
-
-                                                                                <div style={{ background: "#f8f9fa", padding: "15px", borderRadius: "6px", marginBottom: "20px", textAlign: "left", fontSize: "14px", border: "1px solid #f1f3f5" }}>
-                                                                                        <div style={{ marginBottom: "6px" }}><strong>제목:</strong> {selectedInquiry.subject}</div>
-                                                                                        <div style={{ whiteSpace: "pre-wrap", color: "#555" }}><strong>내용:</strong> {selectedInquiry.context}</div>
-                                                                                </div>
-
-                                                                                <div style={{ marginBottom: "25px", textAlign: "left" }}>
-                                                                                        <label style={{ display: "block", marginBottom: "8px", fontWeight: "bold", fontSize: '14px', color: '#222' }}>공식 관리자 답변 입력</label>
-                                                                                        <textarea
-                                                                                                style={{ width: "100%", height: "140px", padding: "12px", border: "1px solid #ddd", borderRadius: "6px", resize: "none", boxSizing: 'border-box', lineHeight: '1.5', fontSize: "14px" }}
-                                                                                                value={replyText}
-                                                                                                onChange={(e) => setReplyText(e.target.value)}
-                                                                                                placeholder="여기에 적은 답변은 실시간으로 사용자 마이페이지에 연동됩니다."
-                                                                                        />
-                                                                                </div>
-
-                                                                                <div style={{ display: "flex", gap: "10px" }}>
-                                                                                        <button type="button" style={{ flex: 1, padding: "12px", background: "#eee", color: "#333", border: "none", borderRadius: "6px", fontSize: "14px", cursor: "pointer" }} onClick={() => { setSelectedInquiry(null); setReplyText(""); }}>닫기</button>
-                                                                                        <button
-                                                                                                type="button"
-                                                                                                style={{ flex: 1, padding: "12px", background: selectedInquiry.answer ? "#4caf50" : "#ff9800", color: "#fff", border: "none", borderRadius: "6px", fontSize: "14px", cursor: "pointer", fontWeight: 'bold' }}
-                                                                                                onClick={() => handleAdminReplySubmit(selectedInquiry.s_id)}
-                                                                                        >
-                                                                                                답변 완료
-                                                                                        </button>
-                                                                                </div>
+                                                                        <div style={{ display: "flex", gap: "10px" }}>
+                                                                                <button type="button" style={{ flex: 1, padding: "12px", background: "#eee", color: "#333", border: "none", borderRadius: "6px", fontSize: "14px", cursor: "pointer" }} onClick={() => { setSelectedInquiry(null); setReplyText(""); }}>닫기</button>
+                                                                                <button
+                                                                                        type="button"
+                                                                                        style={{ flex: 1, padding: "12px", background: selectedInquiry.answer ? "#4caf50" : "#ff9800", color: "#fff", border: "none", borderRadius: "6px", fontSize: "14px", cursor: "pointer", fontWeight: 'bold' }}
+                                                                                        onClick={() => handleAdminReplySubmit(selectedInquiry.s_id)}
+                                                                                >
+                                                                                        답변 완료
+                                                                                </button>
                                                                         </div>
                                                                 </div>
-                                                        )}
-                                                </div>
+                                                        </div>
+                                                )}
                                         </div>
-                                )
+                                </div>
+                        )
                         }
                         {/* 통계 페이지 */}
                         {activeMenu == '통계' && (
@@ -2049,8 +2134,10 @@ function Manager() {
                                                 <div style={{ textAlign: 'left', width: '500px' }}>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                                 <p>기업명 :</p>
-                                                                <select className="cat1" style={{ width: '100px', padding: '3px', borderRadius: '10px',
-                                                                        fontSize: '0.8em', height: '30px' }}
+                                                                <select className="cat1" style={{
+                                                                        width: '100px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px'
+                                                                }}
                                                                         value={buySearchKey}
                                                                         onChange={(e) => setBuySearchKey(e.target.value)}
                                                                 >
@@ -2058,16 +2145,18 @@ function Manager() {
                                                                         <option value="name">상품명</option>
                                                                         <option value="businessName">기업명</option>
                                                                 </select>
-                                                                <input type='text' style={{ width: '320px', padding: '3px',
+                                                                <input type='text' style={{
+                                                                        width: '320px', padding: '3px',
                                                                         borderRadius: '10px', fontSize: '0.8em', height: '30px',
-                                                                        border: '1px solid #333333' }} placeholder="검색어를 입력하세요."
+                                                                        border: '1px solid #333333'
+                                                                }} placeholder="검색어를 입력하세요."
                                                                         value={buySearchWord}
                                                                         onChange={(e) => setBuySearchWord(e.target.value)}
                                                                 />
                                                         </div>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                                 <p style={{ width: "80px d-inline-flex" }}>등록일자 :</p>
-                                                                <div className="row mx-0" style={{ cursor:'pointer', backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
+                                                                <div className="row mx-0" style={{ cursor: 'pointer', backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
                                                                         <div className="col p-1 text-center" onClick={() => handleDateStatsPreset('day')}>당일</div>
                                                                         <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateStatsPreset('week')}>일주일</div>
                                                                         <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateStatsPreset('month', 1)}>1개월</div>
@@ -2078,12 +2167,12 @@ function Manager() {
                                                         <div style={{ marginLeft: "85px" }}>
                                                                 <div style={{ display: "flex", gap: "10px", fontSize: "0.8em", padding: "10px" }}>
                                                                         <input type='date' className='calendar'
-                                                                        value={statsStartDate}
-                                                                        onChange={(e) => setStatsStartDate(e.target.value)}
+                                                                                value={statsStartDate}
+                                                                                onChange={(e) => setStatsStartDate(e.target.value)}
                                                                         />
                                                                         <b>~</b>
                                                                         <input type='date' className='calendar' value={statsEndDate}
-                                                                        onChange={(e) => setStatsEndDate(e.target.value)} />
+                                                                                onChange={(e) => setStatsEndDate(e.target.value)} />
                                                                 </div>
                                                         </div>
                                                 </div>
@@ -2124,11 +2213,11 @@ function Manager() {
                                                                                 <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                                                                                         {(item.totalPrice - item.totalDiscount).toLocaleString()}원
                                                                                 </td>
-                                                                                <td style={{textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                                                                                         {Math.floor(item.totalPrice * 0.1).toLocaleString()}원
                                                                                 </td>
                                                                                 <td>
-                                                                                        <button className='button2' onClick={() => { setSelectedBuyItem(item); setModalOpen(true); }} style={{width:'80px'}}>상세보기</button>
+                                                                                        <button className='button2' onClick={() => { setSelectedBuyItem(item); setModalOpen(true); }} style={{ width: '80px' }}>상세보기</button>
                                                                                 </td>
                                                                         </tr>
                                                                 </tbody>
@@ -2162,82 +2251,83 @@ function Manager() {
                                                 padding: '30px', borderRadius: '14px',
                                                 boxShadow: '0 6px 18px rgba(0,0,0,0.2)'
                                         }}>
-                                                <div style={{display:'flex', justifyContent:'space-between'}}>
-                                                        <h4 style={{ marginBottom: '20px', fontWeight:'600' }}>게시글 등록</h4>
-                                                        <button style={{backgroundColor:'white', border:'1px solid white',
-                                                                textAlign:'center', alignItems:'center', marginBottom:'30px'
+                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                        <h4 style={{ marginBottom: '20px', fontWeight: '600' }}>게시글 등록</h4>
+                                                        <button style={{
+                                                                backgroundColor: 'white', border: '1px solid white',
+                                                                textAlign: 'center', alignItems: 'center', marginBottom: '30px'
                                                         }}
-                                                        onClick={() => setEventModalOpen(false)}
+                                                                onClick={() => setEventModalOpen(false)}
                                                         >
                                                                 X
                                                         </button>
                                                 </div>
                                                 {/* 상품 선택 */}
                                                 <div style={{ marginBottom: '12px' }}>
-                                                        <div style={{display:'flex'}}>
-                                                                <div style={{fontWeight:'600', color:'red'}}>*</div>
+                                                        <div style={{ display: 'flex' }}>
+                                                                <div style={{ fontWeight: '600', color: 'red' }}>*</div>
                                                                 <label style={{ fontSize: '0.9em' }}>상품 선택</label>
                                                         </div>
                                                         <select style={{ width: '100%', padding: '6px', marginTop: '4px' }}
-                                                        value={newEvent.pId}
-                                                        onChange={(e) => setNewEvent({ ...newEvent, pId: e.target.value })}>
-                                                        <option value=''>상품을 선택하세요</option>
-                                                        {products.map(pd => (
-                                                                <option key={pd.pid} value={pd.pid}>
-                                                                [{pd.pid}] {pd.name} ({pd.company?.businessName})
-                                                                </option>
-                                                        ))}
+                                                                value={newEvent.pId}
+                                                                onChange={(e) => setNewEvent({ ...newEvent, pId: e.target.value })}>
+                                                                <option value=''>상품을 선택하세요</option>
+                                                                {products.map(pd => (
+                                                                        <option key={pd.pid} value={pd.pid}>
+                                                                                [{pd.pid}] {pd.name} ({pd.company?.businessName})
+                                                                        </option>
+                                                                ))}
                                                         </select>
                                                 </div>
 
                                                 {/* 제목 */}
                                                 <div style={{ marginBottom: '12px' }}>
-                                                        <div style={{display:'flex'}}>
-                                                                <div style={{fontWeight:'600', color:'red'}}>*</div>
+                                                        <div style={{ display: 'flex' }}>
+                                                                <div style={{ fontWeight: '600', color: 'red' }}>*</div>
                                                                 <label style={{ fontSize: '0.9em' }}>제목</label>
                                                         </div>
                                                         <input type='text' style={{ width: '100%', padding: '6px', marginTop: '4px' }}
-                                                        value={newEvent.subject}
-                                                        onChange={(e) => setNewEvent({ ...newEvent, subject: e.target.value })}
-                                                        placeholder='제목을 입력하세요' />
+                                                                value={newEvent.subject}
+                                                                onChange={(e) => setNewEvent({ ...newEvent, subject: e.target.value })}
+                                                                placeholder='제목을 입력하세요' />
                                                 </div>
                                                 {/* 내용 */}
                                                 <div style={{ marginBottom: '12px' }}>
-                                                        <div style={{display:'flex'}}>
-                                                                <div style={{fontWeight:'600', color:'red'}}>*</div>
+                                                        <div style={{ display: 'flex' }}>
+                                                                <div style={{ fontWeight: '600', color: 'red' }}>*</div>
                                                                 <label style={{ fontSize: '0.9em' }}>내용</label>
                                                         </div>
                                                         <textarea style={{ width: '100%', padding: '6px', marginTop: '4px', height: '100px' }}
-                                                        value={newEvent.context}
-                                                        onChange={(e) => setNewEvent({ ...newEvent, context: e.target.value })}
-                                                        placeholder='내용을 입력하세요' />
+                                                                value={newEvent.context}
+                                                                onChange={(e) => setNewEvent({ ...newEvent, context: e.target.value })}
+                                                                placeholder='내용을 입력하세요' />
                                                 </div>
 
                                                 {/* 시작 날짜 */}
                                                 <div style={{ marginBottom: '12px' }}>
-                                                        <div style={{display:'flex'}}>
-                                                                <div style={{fontWeight:'600', color:'red'}}>*</div>
+                                                        <div style={{ display: 'flex' }}>
+                                                                <div style={{ fontWeight: '600', color: 'red' }}>*</div>
                                                                 <label style={{ fontSize: '0.9em' }}>시작 날짜</label>
                                                         </div>
                                                         <input type='date' style={{ width: '100%', padding: '6px', marginTop: '4px' }}
-                                                        value={newEvent.updatedate}
-                                                        onChange={(e) => setNewEvent({ ...newEvent, updatedate: e.target.value })} />
+                                                                value={newEvent.updatedate}
+                                                                onChange={(e) => setNewEvent({ ...newEvent, updatedate: e.target.value })} />
                                                 </div>
 
                                                 {/* 종료 날짜 */}
                                                 <div style={{ marginBottom: '20px' }}>
-                                                        <div style={{display:'flex'}}>
-                                                                <div style={{fontWeight:'600', color:'red'}}>*</div>
+                                                        <div style={{ display: 'flex' }}>
+                                                                <div style={{ fontWeight: '600', color: 'red' }}>*</div>
                                                                 <label style={{ fontSize: '0.9em' }}>종료 날짜</label>
                                                         </div>
                                                         <input type='date' style={{ width: '100%', padding: '6px', marginTop: '4px' }}
-                                                        value={newEvent.enddate}
-                                                        onChange={(e) => setNewEvent({ ...newEvent, enddate: e.target.value })} />
+                                                                value={newEvent.enddate}
+                                                                onChange={(e) => setNewEvent({ ...newEvent, enddate: e.target.value })} />
                                                 </div>
 
                                                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                                                         <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}
-                                                        onClick={handleEventSubmit}>등록</button>
+                                                                onClick={handleEventSubmit}>등록</button>
                                                 </div>
                                         </div>
                                 </div>
@@ -2254,203 +2344,95 @@ function Manager() {
                                                 <h4 style={{ textAlign: 'left', fontWeight: '600' }}>정산</h4>
                                                 <hr />
 
-                                                {/* 정산 요약 박스 영역 */}
-                                                <div style={{
-                                                        display: 'flex',
-                                                        gap: '20px',
-                                                        margin: '45px 0'
-                                                }}>
-
-                                                        {/* 정산 예정 금액 */}
-                                                        <div style={{
-                                                                flex: 1,
-                                                                border: '1px solid #dcdcdc',
-                                                                borderRadius: '12px',
-                                                                padding: '25px 20px',
-                                                                textAlign: 'center'
-
-                                                        }}>
-                                                                <h4 style={{ margin: 0, marginBottom: '10px', fontSize: '16px', color: '#555' }}>
-                                                                        정산 예정금액
-                                                                </h4>
-
-                                                                <div style={{ fontSize: '24px', fontWeight: '700', color: '#2d7df4' }}>
-                                                                        ₩ 1,200,000
+                                                {/* 정산 요약 박스 - buys 기반 실시간 계산 */}
+                                                {(() => {
+                                                        const totalWaiting = buys
+                                                                .filter(b => b.settleStatus !== 'COMPLETE')
+                                                                .reduce((sum, b) => {
+                                                                        const p = Number((b.price || '0').toString().replace(/[^0-9]/g, ''));
+                                                                        const t = p * (b.count || 1);
+                                                                        return sum + (t - Math.floor(t * 0.1));
+                                                                }, 0);
+                                                        const totalComplete = buys
+                                                                .filter(b => b.settleStatus === 'COMPLETE')
+                                                                .reduce((sum, b) => {
+                                                                        const p = Number((b.price || '0').toString().replace(/[^0-9]/g, ''));
+                                                                        const t = p * (b.count || 1);
+                                                                        return sum + (t - Math.floor(t * 0.1));
+                                                                }, 0);
+                                                        const totalFee = buys.reduce((sum, b) => {
+                                                                const p = Number((b.price || '0').toString().replace(/[^0-9]/g, ''));
+                                                                const t = p * (b.count || 1);
+                                                                return sum + Math.floor(t * 0.1);
+                                                        }, 0);
+                                                        return (
+                                                                <div style={{ display: 'flex', gap: '20px', margin: '45px 0' }}>
+                                                                        <div style={{ flex: 1, border: '1px solid #dcdcdc', borderRadius: '12px', padding: '25px 20px', textAlign: 'center' }}>
+                                                                                <h4 style={{ margin: 0, marginBottom: '10px', fontSize: '16px', color: '#555' }}>정산 예정금액</h4>
+                                                                                <div style={{ fontSize: '24px', fontWeight: '700', color: '#2d7df4' }}>₩ {totalWaiting.toLocaleString()}</div>
+                                                                        </div>
+                                                                        <div style={{ flex: 1, border: '1px solid #dcdcdc', borderRadius: '12px', padding: '25px 20px', textAlign: 'center' }}>
+                                                                                <h4 style={{ margin: 0, marginBottom: '10px', fontSize: '16px', color: '#555' }}>정산 완료금액</h4>
+                                                                                <div style={{ fontSize: '24px', fontWeight: '700', color: '#4CAF50' }}>₩ {totalComplete.toLocaleString()}</div>
+                                                                        </div>
+                                                                        <div style={{ flex: 1, border: '1px solid #dcdcdc', borderRadius: '12px', padding: '25px 20px', textAlign: 'center' }}>
+                                                                                <h4 style={{ margin: 0, marginBottom: '10px', fontSize: '16px', color: '#555' }}>판매 수수료</h4>
+                                                                                <div style={{ fontSize: '24px', fontWeight: '700', color: '#e74c3c' }}>₩ {totalFee.toLocaleString()}</div>
+                                                                        </div>
                                                                 </div>
-                                                        </div>
+                                                        );
+                                                })()}
 
-                                                        {/* 이번달 판매 총액 */}
-                                                        <div style={{
-                                                                flex: 1,
-                                                                border: '1px solid #dcdcdc',
-                                                                borderRadius: '12px',
-                                                                padding: '25px 20px',
-                                                                textAlign: 'center'
-
-                                                        }}>
-                                                                <h4 style={{ margin: 0, marginBottom: '10px', fontSize: '16px', color: '#555' }}>
-                                                                        이번달 판매 총액
-                                                                </h4>
-
-                                                                <div style={{ fontSize: '24px', fontWeight: '700', color: '#2d7df4' }}>
-                                                                        ₩ 3,540,000
-                                                                </div>
-                                                        </div>
-
-                                                        {/* 판매 수수료 */}
-                                                        <div style={{
-                                                                flex: 1,
-                                                                border: '1px solid #dcdcdc',
-                                                                borderRadius: '12px',
-                                                                padding: '25px 20px',
-                                                                textAlign: 'center'
-                                                        }}>
-                                                                <h4 style={{ margin: 0, marginBottom: '10px', fontSize: '16px', color: '#555' }}>
-                                                                        판매 수수료
-                                                                </h4>
-
-                                                                <div style={{ fontSize: '24px', fontWeight: '700', color: '#e74c3c' }}>
-                                                                        ₩ 354,000
-                                                                </div>
-                                                        </div>
-
-                                                </div>
-                                                {/* 정산 목록 테이블 */}
+                                                {/* 정산 목록 테이블 - buys 기반 */}
                                                 <table className="management-table">
                                                         <thead>
                                                                 <tr>
-                                                                        <th>거래 일시/번호</th>
+                                                                        <th>거래 일시</th>
                                                                         <th>업체명</th>
                                                                         <th>카테고리</th>
-                                                                        <th>상품 정보</th>
+                                                                        <th>상품명</th>
                                                                         <th>판매가</th>
                                                                         <th>수수료</th>
                                                                         <th>정산액</th>
                                                                         <th className="text-center">상태</th>
-                                                                        <th className="text-center">관리</th>
                                                                 </tr>
                                                         </thead>
-
                                                         <tbody>
-                                                                {products.length > 0 ? (
-                                                                        products.map((pd) => {
-                                                                                const price = pd.cost
-                                                                                        ? (typeof pd.cost === "string"
-                                                                                                ? Number(pd.cost.replace(/[^0-9]/g, ""))
-                                                                                                : Number(pd.cost))
-                                                                                        : 0;
-
-                                                                                const fee = Math.floor((price || 0) * 0.1);
-
+                                                                {buys.length > 0 ? (
+                                                                        buys.map((buy, index) => {
+                                                                                const price = Number((buy.price || '0').toString().replace(/[^0-9]/g, ''));
+                                                                                const buyCount = buy.count || 1;
+                                                                                const totalPrice = price * buyCount;
+                                                                                const fee = Math.floor(totalPrice * 0.1);
+                                                                                const settlePrice = totalPrice - fee;
+                                                                                const isPaid = buy.settleStatus === 'COMPLETE';
                                                                                 return (
-                                                                                        <tr key={pd.id}>
-                                                                                                {/* 거래 일시/번호 */}
+                                                                                        <tr key={buy.bid || index}>
                                                                                                 <td className="order-date">
-                                                                                                        <span className="id-text">NO.{pd.id}2026</span><br />
-                                                                                                        <small>{pd.writedate}</small>
+                                                                                                        <span className="id-text">NO.{buy.bid}</span><br />
+                                                                                                        <small>{buy.writedate?.split('T')[0]}</small>
                                                                                                 </td>
-
-                                                                                                {/* 업체명 */}
-                                                                                                <td>{pd.comname}</td>
-
-                                                                                                {/* 카테고리 */}
-                                                                                                <td>{pd.category}</td>
-
-                                                                                                {/* 상품명 */}
-                                                                                                <td><strong>{pd.title}</strong></td>
-
-                                                                                                {/* 판매가 */}
-                                                                                                <td className="text-right">{price.toLocaleString()}원</td>
-
-                                                                                                {/* 수수료 */}
+                                                                                                <td>{buy.product?.company?.businessName}</td>
+                                                                                                <td>{buy.product?.b_category}</td>
+                                                                                                <td><strong>{buy.product?.name}</strong></td>
+                                                                                                <td className="text-right">{totalPrice.toLocaleString()}원</td>
                                                                                                 <td className="fee-text">-{fee.toLocaleString()}원</td>
-
-                                                                                                {/* 정산액 */}
-                                                                                                <td className="settle-price">
-                                                                                                        {(price - fee).toLocaleString()}원
-                                                                                                </td>
-
-                                                                                                {/* 상태 */}
+                                                                                                <td className="settle-price">{settlePrice.toLocaleString()}원</td>
                                                                                                 <td className="text-center">
-                                                                                                        <span
-                                                                                                                className={
-                                                                                                                        pd.state === "정산완료"
-                                                                                                                                ? "corp-status-badge done"
-                                                                                                                                : "corp-status-badge"
-                                                                                                                }
-                                                                                                        >
-                                                                                                                {pd.state}
+                                                                                                        <span className={isPaid ? "corp-status-badge done" : "corp-status-badge"}>
+                                                                                                                {isPaid ? '정산완료' : '정산예정'}
                                                                                                         </span>
                                                                                                 </td>
-
-                                                                                                {/* 수정/삭제 */}
-                                                                                                <td className="text-center">
-                                                                                                        <button className="button2"
-                                                                                                                onClick={() => {
-                                                                                                                        setSelectedItem(pd);      // 선택된 상품 저장
-                                                                                                                        setOpenSettleModal(true); // 모달 열기
-                                                                                                                }}
-                                                                                                        >
-                                                                                                                정산
-                                                                                                        </button>
-                                                                                                </td>
-
                                                                                         </tr>
-
                                                                                 );
                                                                         })
-
                                                                 ) : (
                                                                         <tr>
-                                                                                <td colSpan="9" className="empty-row">
-                                                                                        데이터가 존재하지 않습니다.
-                                                                                </td>
+                                                                                <td colSpan="8" className="empty-row">데이터가 존재하지 않습니다.</td>
                                                                         </tr>
                                                                 )}
                                                         </tbody>
                                                 </table>
-                                                {/* 정산 버튼 눌렀을때 상세화면 */}
-                                                {openSettleModal && (
-                                                        <div style={{
-                                                                position: "fixed",
-                                                                top: 0, left: 0,
-                                                                width: "100%", height: "100%",
-                                                                backgroundColor: "rgba(0,0,0,0.4)",
-                                                                display: "flex",
-                                                                justifyContent: "center",
-                                                                alignItems: "center",
-                                                                zIndex: 999
-                                                        }}>
-                                                                <div style={{
-                                                                        width: "420px",
-                                                                        background: "#fff",
-                                                                        padding: "30px 25px",
-                                                                        borderRadius: "14px",
-                                                                        boxShadow: "0 6px 18px rgba(0,0,0,0.2)"
-                                                                }}>
-                                                                        <h3 style={{ marginTop: 0, marginBottom: "15px" }}>
-                                                                                정산 상세
-                                                                        </h3>
-
-                                                                        <p><strong>상품명:</strong> {selectedItem?.title}</p>
-
-                                                                        <p><strong>판매가:</strong> {parsePrice(selectedItem?.cost).toLocaleString()}원</p>
-
-                                                                        <p><strong>수수료(10%):</strong> {(parsePrice(selectedItem?.cost) * 0.1).toLocaleString()}원</p>
-
-                                                                        <p><strong>정산액:</strong> {(parsePrice(selectedItem?.cost) * 0.9).toLocaleString()}원</p>
-
-                                                                        <div style={{ textAlign: "right", marginTop: "20px" }}>
-                                                                                <button
-                                                                                        className="button2"
-                                                                                        onClick={() => setOpenSettleModal(false)}
-                                                                                >
-                                                                                        닫기
-                                                                                </button>
-                                                                        </div>
-                                                                </div>
-                                                        </div>
-                                                )}
                                         </div>
                                 </div>
                         )}
