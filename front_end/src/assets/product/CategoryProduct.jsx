@@ -68,6 +68,7 @@ function CategoryProduct() {
                 }
 
                 axios.post("http://localhost:9990/like/toggle", {
+
                         memberId: mId,
                         productId: productId
                 })
@@ -91,6 +92,7 @@ function CategoryProduct() {
 
                 data.forEach(product => {
                         axios.get(`http://localhost:9990/review/avg/${product.pid}`)
+
                                 .then(res => {
                                         setStarMap(prev => ({
                                                 ...prev,

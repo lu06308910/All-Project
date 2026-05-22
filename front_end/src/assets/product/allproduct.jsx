@@ -287,7 +287,7 @@ function AllProduct() {
                                 <div className="product-info">
 
                                     <div style={{ fontWeight: "bold" }}>
-                                        canvas
+                                        {item.company?.businessName || "brand"}
                                     </div>
 
                                     <div className="title">

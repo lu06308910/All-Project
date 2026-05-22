@@ -20,4 +20,8 @@ public interface EventRepository extends JpaRepository<EventEntity, Integer> {
 
     @Query("SELECT e FROM EventEntity e WHERE e.updatedate <= :now AND e.enddate >= :now")
     List<EventEntity> findActiveEvents(@Param("now") LocalDateTime now);
+
+    // 할인상품 리스트 불러오기 , 이슬추가
+    @Query("SELECT e FROM EventEntity e JOIN FETCH e.product WHERE e.discountPercent > 0 AND e.upload = com.finalproject.canvas.entity.OutStatus.Y")
+    List<EventEntity> findSaleProducts();
 }

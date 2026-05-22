@@ -138,6 +138,10 @@ public class DataController {
             result.put("userid", biz.getUserid());
             result.put("usertype", "BUSINESS");
 
+            // 이슬 기업 로그인 아이디추가
+            result.put("cId", biz.getCId());
+
+
         }
 
         result.put("status", "OK");

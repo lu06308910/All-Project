@@ -168,6 +168,14 @@
   margin-top: 10px;
 }
 
+.brand,
+.title {
+  /* 텍스트 길 경우 ... 생략*/
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .price {
   margin-top: 5px;
 }
@@ -601,3 +609,31 @@
   font-size: 18px;
 }
 
+.price-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 할인페이지 */
+
+/* 정가 */
+.origin-price {
+    font-size: 16px;
+    color: #b5b5b5;
+    text-decoration: line-through;
+}
+
+/* 할인율 */
+.discount-percent {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ff3b30;
+}
+
+/* 할인 가격 (메인 강조) */
+.sale-price {
+    font-size: 22px;
+    font-weight: 800;
+    color: #111;
+}
