@@ -26,7 +26,7 @@ function Home() {
 
                 if (!loginUserId) return;
 
-                axios.get(`http://192.168.4.60:9991/like/list/${mId}`)
+                axios.get(`http://192.168.4.51:9989/like/list/${mId}`)
                         .then(res => setLikedItems(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -60,7 +60,7 @@ function Home() {
         // springboot 서버에서 비동기식으로 정보를 가져올 함수
         function getDataList(page) {
                 
-                axios.get(`http://192.168.4.60:9991/home`)
+                axios.get(`http://192.168.4.51:9989/home`)
                         .then((response) => {
 
                                 console.log(response.data);
@@ -72,7 +72,7 @@ function Home() {
                                                 title: record.name,
                                                 price: record.price,
                                                 img: record.fileList?.[0]
-                                                        ? `http://192.168.4.60:9991/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
+                                                        ? `http://192.168.4.51:9989/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
                                                         : "/no-image.png"
                                         };
                                 });
@@ -90,7 +90,7 @@ function Home() {
                 if (!list || list.length === 0) return;
 
                 list.forEach(product => {
-                        axios.get(`http://192.168.4.60:9991/review/avg/${product.id}`)
+                        axios.get(`http://192.168.4.51:9989/review/avg/${product.id}`)
                                 .then(res => {
 
                                         setStarMap(prev => ({
@@ -125,7 +125,7 @@ function Home() {
                         return;
                 }
 
-                axios.post("http://192.168.4.60:9991/like/toggle", {
+                axios.post("http://192.168.4.51:9989/like/toggle", {
                         memberId: mId,
                         productId: productId
                 })
