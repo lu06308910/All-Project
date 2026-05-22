@@ -42,12 +42,12 @@ function Manager() {
         today.setHours(0, 0, 0, 0); //자정 기준
 
         //예약
-        const reservedEvents = events.filter((item) => {
-                const updatedate = item.updatedate ? new Date(item.updatedate) : null;
-                return updatedate && updatedate > today;
+        const reservedEvents = events.filter((item)=>{
+                const updatedate = item.updatedate ? new Date(item.updatedate):null;
+                return updatedate && updatedate>today;
         })
         //기간 후 종료 전환
-        const endedEvents = events.filter((item) => {
+        const endedEvents = events.filter((item)=>{
                 const enddate = item.enddate ? new Date(item.enddate) : null;
                 return enddate && enddate < today && item.upload == 'N';
         })
@@ -59,8 +59,8 @@ function Manager() {
                         .then(res => setUsers(res.data))
                         .catch(err => console.log(err));
         }, []);
-
-
+        
+       
         //상품관리
         const [products, setProducts] = useState([]);
         useEffect(() => {
@@ -68,8 +68,8 @@ function Manager() {
                         .then(res => setProducts(res.data))
                         .catch(err => console.log(err));
         }, []);
-
-        //문의 대호 수정
+        
+        //문의
         const [asks, setAsks] = useState([]);
         const [selectedInquiry, setSelectedInquiry] = useState(null); // 답변 작성용 선택된 문의
         const [replyText, setReplyText] = useState("");              // 관리자가 작성하는 답변 내용
@@ -123,28 +123,27 @@ function Manager() {
         const [buySearchKey, setBuySearchKey] = useState('name');
         const [buySearchWord, setBuySearchWord] = useState('');
         const [selectedBuyItem, setSelectedBuyItem] = useState(null);
-
-        // 통계 내용 분석 및 가져오기
+        // 통계 내용 분석 및 가져오기 (pId 별로만 묶기)
         const dateGrouped = buys.reduce((acc, item) => {
                 const resolvedPId = item.pid ?? item.pId ?? item.p_id; // pid 우선
                 const key = resolvedPId;
                 const date = item.writedate?.slice(0, 10) || '';
                 if (!acc[key]) {
                         acc[key] = {
-                                pId: resolvedPId,
-                                product: item.product,
-                                writedate: date,
-                                latestDate: date,
-                                totalCount: 0,
-                                totalPrice: 0,
-                                totalDiscount: 0,
-                                rawItems: [],
+                        pId: resolvedPId,
+                        product: item.product,
+                        writedate: date,
+                        latestDate: date,
+                        totalCount: 0,
+                        totalPrice: 0,
+                        totalDiscount: 0,
+                        rawItems: [],
                         };
                 }
                 // 가장 최근 날짜로 갱신
                 if (date > acc[key].latestDate) acc[key].latestDate = date;
-                acc[key].totalCount += item.count || 0;
-                acc[key].totalPrice += parseInt(item.price || 0) * (item.count || 0);
+                acc[key].totalCount    += item.count || 0;
+                acc[key].totalPrice    += parseInt(item.price || 0) * (item.count || 0);
                 acc[key].totalDiscount += item.discount || 0;
                 acc[key].rawItems.push(item);
                 return acc;
@@ -156,11 +155,12 @@ function Manager() {
         const [chartOpen, setChartOpen] = useState(false);
         const [currentPage, setCurrentPage] = useState(1);
         const [currentPage2, setCurrentPage2] = useState(1);
+        const [currentPage3, setCurrentPage3] = useState(1);
         const [openId, setOpenId] = useState(null); // 현재 열려있는 게시글의 ID 저장
         //선택 변수 저장
         const [selectedItems, setSelectedItems] = useState({});
         const [selectedProIds, setSelectedProIds] = useState([]);
-
+        
         const [companys, setCompanys] = useState([]);
         useEffect(() => {
                 axios.get('http://192.168.4.60:9991/member/all/business')
@@ -184,28 +184,8 @@ function Manager() {
         const memberDateList = Object.values(memberDateGrouped)
                 .sort((a, b) => b.date.localeCompare(a.date));
 
-        const safeAsks = asks || [];
-        const postsPerPage = 10;
-        const totalPages = Math.ceil(asks.length / postsPerPage);
 
-        const postsPerPage2 = 5;
-        const totalPosts2 = 10;
-        const totalPages2 = Math.ceil(totalPosts2 / postsPerPage2);
-
-        // 페이지 이동 함수
-        const paginate = (pageNumber, e) => {
-                e.preventDefault(); // 클릭 시 페이지 새로고침 방지
-                if (pageNumber >= 1 && pageNumber <= totalPages) {
-                        setCurrentPage(pageNumber);
-                }
-        };
-
-        const paginate2 = (pageNumber2, e) => {
-                e.preventDefault(); // 클릭 시 페이지 새로고침 방지
-                if (pageNumber2 >= 1 && pageNumber2 <= totalPages2) {
-                        setCurrentPage2(pageNumber2);
-                }
-        };
+        
 
         //체크박스 변경 핸들러
         const handleCheck = (menu, id) => {
@@ -217,22 +197,22 @@ function Manager() {
                 });
         };
 
-        const handleProCheck = (pid) => {
+        const handleProCheck = (pid)=>{
                 setSelectedProIds(prev =>
-                        prev.includes(pid) ? prev.filter(id => id !== pid) : [...prev, pid]
+                        prev.includes(pid) ? prev.filter(id=>id!==pid):[...prev, pid]
                 );
         };
-
+        
         //날짜 변수
         const [startDate, setStartDate] = useState('');
         const [endDate, setEndDate] = useState('');
         const [productStartDate, setProductStartDate] = useState('');
         const [productEndDate, setProductEndDate] = useState('');
         const [statsStartDate, setStatsStartDate] = useState('');
-        const [statsEndDate, setStatsEndDate] = useState('');
+        const [statsEndDate, setStatsEndDate] = useState(''); 
 
         //통계 날짜 선택 프리셋
-        const handleDateStatsPreset = (period, value) => {
+        const handleDateStatsPreset = (period, value) =>{
                 const today = new Date();
                 const start = new Date();
                 setStatsEndDate(formatDate(today));
@@ -256,7 +236,7 @@ function Manager() {
                                 const hasMatch = item.rawItems.some(buy => {
                                         const d = buy.writedate?.slice(0, 10) || '';
                                         if (statsStartDate && d < statsStartDate) return false;
-                                        if (statsEndDate && d > statsEndDate) return false;
+                                        if (statsEndDate   && d > statsEndDate)   return false;
                                         return true;
                                 });
                                 if (!hasMatch) return false;
@@ -296,7 +276,7 @@ function Manager() {
                 return item.rawItems.filter(buy => {
                         const d = buy.writedate?.slice(0, 10) || '';
                         if (statsStartDate && d < statsStartDate) return false;
-                        if (statsEndDate && d > statsEndDate) return false;
+                        if (statsEndDate   && d > statsEndDate)   return false;
                         return true;
                 });
         };
@@ -304,78 +284,174 @@ function Manager() {
         // 기업별 총매출 TOP5 (buys 기반)
         const top5Companies = Object.values(
                 buys.reduce((acc, item) => {
-                        const cid = item.product?.company?.cid ?? item.product?.company?.c_id;
-                        const bizName = item.product?.company?.businessName;
-                        if (!cid) return acc;
+                const cid = item.product?.company?.cid ?? item.product?.company?.c_id;
+                const bizName = item.product?.company?.businessName;
+                if (!cid) return acc;
 
-                        if (!acc[cid]) {
-                                acc[cid] = { cid, businessName: bizName, totalPrice: 0, totalCount: 0 };
-                        }
+                if (!acc[cid]) {
+                        acc[cid] = { cid, businessName: bizName, totalPrice: 0, totalCount: 0 };
+                }
                         acc[cid].totalPrice += parseInt(item.price || 0) * (item.count || 0);
                         acc[cid].totalCount += item.count || 0;
-                        return acc;
+                return acc;
                 }, {})
         )
-                .sort((a, b) => b.totalPrice - a.totalPrice)
-                .slice(0, 5);
+        .sort((a, b) => b.totalPrice - a.totalPrice)
+        .slice(0, 5);
         //카테고리 별 판매량 집계
         const top5Categories = Object.values(
-                buys.reduce((acc, item) => {
+                buys.reduce((acc, item)=>{
                         const bCat = item.product?.b_category;
                         const sCat = item.product?.scategory;
-                        if (!bCat) return acc;
+                        if(!bCat) return acc;
 
                         const key = `${bCat}〉${sCat}`;
                         if (!acc[key]) {
                                 acc[key] = { key, bCat, sCat, totalCount: 0, totalPrice: 0 };
-                        } const cleanPrice = parseInt((item.price || '0').toString().replace(/,/g, ''));
-                        acc[key].totalCount += item.count || 0;
-                        acc[key].totalPrice += cleanPrice * (item.count || 0);
+                        }const cleanPrice = parseInt((item.price || '0').toString().replace(/,/g, ''));
+                                acc[key].totalCount += item.count || 0;
+                                acc[key].totalPrice += cleanPrice * (item.count || 0);
                         return acc;
                 }, {})
         )
-                .sort((a, b) => b.totalCount - a.totalCount)
-                .slice(0, 5);
+        .sort((a, b) => b.totalCount - a.totalCount)
+        .slice(0, 5);
+                
+        // ────────────────────────────────────────────────────────────────
+        // [매출 통계 연결] 다른 메뉴에서 검색 후 "매출 통계" 버튼을 눌렀을 때
+        // 어떤 컨텍스트(기업명 / 상품명)로 넘어왔는지 저장하는 상태
+        // type: 'company' | 'product' | null
+        // value: 실제 검색어 문자열
+        // ────────────────────────────────────────────────────────────────
+        const [salesStatContext, setSalesStatContext] = useState({ type: null, value: '' });
+
+        // 매출 통계 모달의 일별 검색 날짜 범위 (없으면 오늘 기준)
+        const [salesChartStart, setSalesChartStart] = useState('');
+        const [salesChartEnd,   setSalesChartEnd]   = useState('');
+
+        // 오늘 날짜 문자열 (YYYY-MM-DD)
+        const todayStr = new Date().toISOString().slice(0, 10);
+
+        // ── 매출 통계 모달에서 사용할 "유효 날짜 범위" ──────────────────
+        // 날짜를 선택하지 않으면 오늘 하루만 보여줌
+        const salesEffectiveStart = salesChartStart || todayStr;
+        const salesEffectiveEnd   = salesChartEnd   || todayStr;
+
+        // ── 날짜 범위 안에 해당하는 buy 항목만 필터 ─────────────────────
+        const buysInRange = buys.filter(item => {
+                const d = item.writedate?.slice(0, 10) || '';
+                return d >= salesEffectiveStart && d <= salesEffectiveEnd;
+        });
+
+        // ── 기업별 집계 (날짜 범위 기준) ─────────────────────────────────
+        const companyDailySales = Object.values(
+                buysInRange.reduce((acc, item) => {
+                        const bizName = item.product?.company?.businessName || '(미상)';
+                        const cid     = item.product?.company?.cid ?? item.product?.company?.c_id ?? bizName;
+                        if (!acc[cid]) {
+                                acc[cid] = { cid, businessName: bizName, totalPrice: 0, totalCount: 0 };
+                        }
+                        const cleanPrice = parseInt((item.price || '0').toString().replace(/,/g, ''));
+                        acc[cid].totalPrice += cleanPrice * (item.count || 0);
+                        acc[cid].totalCount += item.count || 0;
+                        return acc;
+                }, {})
+        ).sort((a, b) => b.totalPrice - a.totalPrice);
+
+        // ── 컨텍스트 필터가 있을 때: 해당 기업 or 상품의 일별 매출 라인 ──
+        // 날짜별 합산 (컨텍스트 기업 또는 상품명 기준)
+        const buildContextDailyLine = () => {
+                if (!salesStatContext.type || !salesStatContext.value) return { labels: [], data: [] };
+
+                // 범위 내 날짜 목록 생성
+                const labels = [];
+                const cur = new Date(salesEffectiveStart);
+                const end = new Date(salesEffectiveEnd);
+                while (cur <= end) {
+                        labels.push(cur.toISOString().slice(0, 10));
+                        cur.setDate(cur.getDate() + 1);
+                }
+
+                const dataMap = buysInRange.reduce((acc, item) => {
+                        const d = item.writedate?.slice(0, 10) || '';
+                        let match = false;
+                        if (salesStatContext.type === 'company') {
+                                match = item.product?.company?.businessName?.includes(salesStatContext.value);
+                        } else if (salesStatContext.type === 'product') {
+                                match = item.product?.name?.includes(salesStatContext.value);
+                        }
+                        if (!match) return acc;
+                        const cleanPrice = parseInt((item.price || '0').toString().replace(/,/g, ''));
+                        acc[d] = (acc[d] || 0) + cleanPrice * (item.count || 0);
+                        return acc;
+                }, {});
+
+                return { labels, data: labels.map(d => dataMap[d] || 0) };
+        };
+
+        // 전체 일별 매출 라인 (컨텍스트 비교용)
+        const buildTotalDailyLine = () => {
+                const labels = [];
+                const cur = new Date(salesEffectiveStart);
+                const end = new Date(salesEffectiveEnd);
+                while (cur <= end) {
+                        labels.push(cur.toISOString().slice(0, 10));
+                        cur.setDate(cur.getDate() + 1);
+                }
+                const dataMap = buysInRange.reduce((acc, item) => {
+                        const d = item.writedate?.slice(0, 10) || '';
+                        const cleanPrice = parseInt((item.price || '0').toString().replace(/,/g, ''));
+                        acc[d] = (acc[d] || 0) + cleanPrice * (item.count || 0);
+                        return acc;
+                }, {});
+                return { labels, data: labels.map(d => dataMap[d] || 0) };
+        };
+
+        // ── 매출 통계 버튼 핸들러 (기업 관리 / 상품 관리 검색 컨텍스트 전달) ──
+        const handleOpenSalesChart = (type, value) => {
+                setSalesStatContext({ type: type || null, value: value || '' });
+                setChartOpen(true);
+        };
 
         //회원 삭제 명령어
         const handleBulkUnregister = () => {
-                const targets = selectedItems['회원관리'] || [];
+        const targets = selectedItems['회원관리'] || [];
                 if (targets.length === 0) return alert("탈퇴처리할 회원을 선택해주세요.");
                 if (!window.confirm(`선택한 ${targets.length}명을 탈퇴처리 하시겠습니까?`)) return;
 
-                Promise.all(
-                        targets.map(mid =>
-                                axios.patch(`http://192.168.4.60:9991/member/unregister/${mid}`)
-                        )
+        Promise.all(
+                targets.map(mid =>
+                axios.patch(`http://192.168.4.60:9991/member/unregister/${mid}`)
                 )
-                        .then(() => {
-                                alert("탈퇴처리 완료");
-                                axios.get('http://192.168.4.60:9991/member/all')
-                                        .then(res => setUsers(res.data));
-                                setSelectedItems(prev => ({ ...prev, '회원관리': [] }));
-                        })
-                        .catch(err => console.log(err));
+        )
+        .then(() => {
+                alert("탈퇴처리 완료");
+                axios.get('http://192.168.4.60:9991/member/all')
+                .then(res => setUsers(res.data));
+                setSelectedItems(prev => ({ ...prev, '회원관리': [] }));
+        })
+        .catch(err => console.log(err));
         }
 
-        const handleProDelete = (pid) => {
-                if (!window.confirm('상품을 삭제하시겠습니까?')) return;
+        const handleProDelete = (pid) =>{
+                if(!window.confirm('상품을 삭제하시겠습니까?')) return;
                 axios.delete(`http://192.168.4.60:9991/product/${pid}`)
-                        .then(() => {
-                                alert('삭제 완료');
-                                axios.get('http://192.168.4.60:9991/all/product').then(res => setProducts(res.data));
-                        })
-                        .catch(err => console.log(err));
+                .then(()=>{
+                        alert('삭제 완료');
+                        axios.get('http://192.168.4.60:9991/all/product').then(res=>setProducts(res.data));
+                })
+                .catch(err=>console.log(err));
         };
 
-        const handleBulkProDelete = () => {
-                if (selectedProIds.length == 0) return alert('삭제할 제품을 선택해 주세요.');
+        const handleBulkProDelete = () =>{
+                if (selectedProIds.length==0) return alert('삭제할 제품을 선택해 주세요.');
                 if (!window.confirm(`선택한 ${selectedProIds.length}개의 글을 삭제하시겠습니까?`)) return;
-                Promise.all(selectedProIds.map(id => axios.delete(`http://192.168.4.60:9991/product/${id}`)))
-                        .then(() => {
-                                setSelectedProIds([]);
-                                axios.get('http://192.168.4.60:9991/all/product').then(res => setProducts(res.data));
-                        })
-                        .catch(err => console.log(err));
+                Promise.all(selectedProIds.map(id=>axios.delete(`http://192.168.4.60:9991/product/${id}`)))
+                       .then(()=>{
+                        setSelectedProIds([]);
+                        axios.get('http://192.168.4.60:9991/all/product').then(res=>setProducts(res.data));
+                       })
+                       .catch(err=>console.log(err));
         };
 
         const [selectedEventIds, setSelectedEventIds] = useState([]);
@@ -427,8 +503,8 @@ function Manager() {
                         searchKey: userSearchKey,
                         searchWord: userSearchWord
                 })
-                        .then(res => setUsers(res.data))
-                        .catch(err => console.log(err));
+                .then(res => setUsers(res.data))
+                .catch(err => console.log(err));
         }
 
         const handleCompanySearch = () => {
@@ -436,8 +512,8 @@ function Manager() {
                         searchKey: companySearchKey,
                         searchWord: companySearchWord
                 })
-                        .then(res => setCompanys(res.data))
-                        .catch(err => console.log(err));
+                .then(res => setCompanys(res.data))
+                .catch(err => console.log(err));
         }
 
         const handleProductSearch = () => {
@@ -445,8 +521,8 @@ function Manager() {
                         searchKey: productSearchKey,
                         searchWord: productSearchWord
                 })
-                        .then(res => setProducts(res.data))
-                        .catch(err => console.log(err));
+                .then(res => setProducts(res.data))
+                .catch(err => console.log(err));
         }
 
         // 더보기
@@ -481,8 +557,6 @@ function Manager() {
         const menus = ['대시보드', '회원 관리', '기업 관리', '상품 관리', '세일 관리', '문의 관리', '통계', '정산'];
         const submenus = ['-예약', '-이벤트 관리']
 
-
-
         const handleDateProductPreset = (period, value) => {
                 const today = new Date();
                 const start = new Date();
@@ -505,8 +579,8 @@ function Manager() {
                 .filter(pd => {
                         // 1. 카테고리 필터
                         if (productBCategory && pd.b_category !== productBCategory) return false;
-                        if (productSCategory && pd.s_category !== productSCategory) return false;
-                        return true;
+                        if (productSCategory && pd.scategory !== productSCategory) return false;
+                return true;
                 })
                 .filter(pd => {
                         // 2. 날짜 필터
@@ -514,7 +588,7 @@ function Manager() {
                         const writedate = pd.writedate?.split('T')[0];
                         if (productStartDate && writedate < productStartDate) return false;
                         if (productEndDate && writedate > productEndDate) return false;
-                        return true;
+                return true;
                 })
                 .filter(pd => {
                         // 3. 검색어 필터
@@ -523,6 +597,29 @@ function Manager() {
                         if (productSearchKey === 'businessName') return pd.company?.businessName?.includes(productSearchWord);
                         return true;
                 });
+
+        //페이징 함수
+        const postsPerPage = 10;
+        const totalPages = Math.ceil(asks.length / postsPerPage);
+
+        const postsPerPage3 = 10;
+        const totalPages3 = Math.ceil(filteredProducts.length / postsPerPage3);
+        
+        // 페이지 이동 함수
+        const paginate = (pageNumber, e) => {
+                e.preventDefault(); // 클릭 시 페이지 새로고침 방지
+                if (pageNumber >= 1 && pageNumber <= totalPages) {
+                        setCurrentPage(pageNumber);
+                }
+        };
+
+        //상품관리 페이지네이션
+        const paginate3 = (pageNumber3, e) => {
+                e.preventDefault(); // 클릭 시 페이지 새로고침 방지
+                if (pageNumber3 >= 1 && pageNumber3 <= totalPages3) {
+                        setCurrentPage3(pageNumber3);
+                }
+        };
 
         // 날짜를 YYYY-MM-DD 형식으로 변환하는 보조 함수
         const formatDate = (date) => {
@@ -546,24 +643,24 @@ function Manager() {
 
                 console.log('보내는테이터:', newEvent);
                 axios.post('http://192.168.4.60:9991/event/add', {
-                        subject: newEvent.subject,
-                        context: newEvent.context,
-                        updatedate: newEvent.updatedate ? newEvent.updatedate + 'T00:00:00' : null,
-                        enddate: newEvent.enddate ? newEvent.enddate + 'T00:00:00' : null,
-                        product: { pid: Number(newEvent.pId) }
-                })
+                                subject: newEvent.subject,
+                                context: newEvent.context,
+                                updatedate: newEvent.updatedate ? newEvent.updatedate + 'T00:00:00' : null,
+                                enddate: newEvent.enddate ? newEvent.enddate + 'T00:00:00' : null,
+                                p_id: Number(newEvent.pId)
+                        })
                         .then(() => {
                                 alert('등록 완료');
                                 setEventModalOpen(false);
                                 setNewEvent({ subject: '', context: '', updatedate: '', enddate: '', pId: '' });
                                 axios.get('http://192.168.4.60:9991/event/all')
-                                        .then(res => setEvents(res.data));
+                                .then(res => setEvents(res.data));
                         })
                         .catch(err => console.log(err));
         };
 
         const handleToggle = (id) => {
-                setOpenId(prev => prev === id ? null : id);
+                setOpenId(prev => prev === id? null : id);
         }
 
         // 정산
@@ -597,7 +694,7 @@ function Manager() {
                                                         <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
                                                                 <input type="checkbox"
                                                                         checked={selectedEventIds.includes(item.e_id)}
-                                                                        onChange={() => handleEventCheck(item.e_id)}
+                                                                        onChange={()=>handleEventCheck(item.e_id)}
                                                                 />
                                                         </td>
                                                         <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
@@ -615,7 +712,7 @@ function Manager() {
                                                                         padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
                                                                         textAlign: 'center', verticalAlign: 'middle'
                                                                 }}>
-                                                                        {item.upload == "N" ? '미공개' : '공개'}
+                                                                        {item.upload=="N"?'미공개':'공개'}
                                                                 </span>
                                                         </td>
                                                         <td>
@@ -640,10 +737,8 @@ function Manager() {
         )
         const Event = () => (
                 <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                        <h4 style={{
-                                textAlign: 'left', fontWeight: '600',
-                                marginTop: activeMenu === '-이벤트 관리' ? '0px' : '20px',
-                        }}
+                        <h4 style={{textAlign:'left', fontWeight:'600',
+                                marginTop: activeMenu === '-이벤트 관리' ? '0px' : '20px',}}
                         >
                                 진행 중인 이벤트
                         </h4>
@@ -662,41 +757,41 @@ function Manager() {
                                         </tr>
                                 </thead>
                                 {events
-                                        .filter((item) => item.upload == 'Y')
-                                        .map((item) => (
-                                                <tbody key={item.e_id}>
-                                                        <tr>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                        <input type="checkbox"
-                                                                                aria-label="항목 선택"
-                                                                                checked={selectedEventIds.includes(item.e_id)}
-                                                                                onChange={() => handleEventCheck(item.e_id)}
-                                                                        />
-                                                                </td>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                        <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                                                {item.subject}
-                                                                        </div></td>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.enddate?.slice(0, 10)}</td>
-                                                                <td>
-                                                                        <span style={{
-                                                                                background: item.upload == 'N' ? '#ffebee' : '#e3f2fd',
-                                                                                color: item.upload == 'N' ? '#c62828' : '#1976d2',
-                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
-                                                                                textAlign: 'center', verticalAlign: 'middle'
-                                                                        }}>
-                                                                                {item.upload == 'N' ? '비공개' : '공개'}
-                                                                        </span>
-                                                                </td>
-                                                                <td>
-                                                                        <button className='button2' style={{ marginRight: '10px' }}>수정</button>
-                                                                        <button className='button2' onClick={() => handleEventDelete(item.e_id)}>삭제</button>
-                                                                </td>
-                                                        </tr>
-                                                </tbody>
-                                        ))}
+                                .filter((item) => item.upload=='Y')
+                                .map((item) => (
+                                        <tbody key={item.e_id}>
+                                                <tr>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                <input type="checkbox"
+                                                                        aria-label="항목 선택"
+                                                                        checked={selectedEventIds.includes(item.e_id)}
+                                                                        onChange={()=>handleEventCheck(item.e_id)}
+                                                                />
+                                                        </td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                        {item.subject}
+                                                                </div></td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.enddate?.slice(0, 10)}</td>
+                                                        <td>
+                                                                <span style={{
+                                                                        background: item.upload == 'N' ? '#ffebee' : '#e3f2fd',
+                                                                        color: item.upload == 'N' ? '#c62828' : '#1976d2',
+                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
+                                                                        textAlign: 'center', verticalAlign: 'middle'
+                                                                }}>
+                                                                        {item.upload=='N'?'비공개':'공개'}
+                                                                </span>
+                                                        </td>
+                                                        <td>
+                                                                <button className='button2' style={{ marginRight: '10px' }}>수정</button>
+                                                                <button className='button2' onClick={() => handleEventDelete(item.e_id)}>삭제</button>
+                                                        </td>
+                                                </tr>
+                                        </tbody>
+                                ))}
                         </table>
                         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                                 <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
@@ -708,7 +803,7 @@ function Manager() {
                                         게시글등록
                                 </button>
                         </div>
-                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '20px' }}>마무리 된 이벤트</h4>
+                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop:'20px' }}>마무리 된 이벤트</h4>
                         <hr />
                         <button className='button' style={{
                                 border: '1px solid blue', backgroundColor: 'blue', marginLeft: '10px'
@@ -730,40 +825,40 @@ function Manager() {
                                         </tr>
                                 </thead>
                                 {endedEvents
-                                        .map((item) => (
-                                                <tbody key={item}>
-                                                        <tr>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                        <input type="checkbox"
-                                                                                checked={selectedEventIds.includes(item.e_id)}
-                                                                                onChange={() => handleEventCheck(item.e_id)}
-                                                                        />
-                                                                </td>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                        <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                                                {item.subject}
-                                                                        </div>
-                                                                </td>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.enddate?.slice(0, 10)}</td>
-                                                                <td>
-                                                                        <span style={{
-                                                                                background: item.upload == 'N' ? '#ffebee' : '#e3f2fd',
-                                                                                color: item.upload == 'N' ? '#c62828' : '#1976d2',
-                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
-                                                                                textAlign: 'center', verticalAlign: 'middle'
-                                                                        }}>
-                                                                                {item.upload == 'N' ? '비공개' : '공개'}
-                                                                        </span>
-                                                                </td>
-                                                                <td>
-                                                                        <button className='button2' style={{ marginRight: '10px' }}>수정</button>
-                                                                        <button className='button2' onClick={() => handleEventDelete(item.e_id)}>삭제</button>
-                                                                </td>
-                                                        </tr>
-                                                </tbody>
-                                        ))}
+                                .map((item) => (
+                                        <tbody key={item}>
+                                                <tr>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                <input type="checkbox"
+                                                                        checked={selectedEventIds.includes(item.e_id)}
+                                                                        onChange={()=>handleEventCheck(item.e_id)}
+                                                                />
+                                                        </td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                        {item.subject}
+                                                                </div>
+                                                        </td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.enddate?.slice(0, 10)}</td>
+                                                        <td>
+                                                                <span style={{
+                                                                        background: item.upload == 'N' ? '#ffebee' : '#e3f2fd',
+                                                                        color: item.upload == 'N' ? '#c62828' : '#1976d2',
+                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
+                                                                        textAlign: 'center', verticalAlign: 'middle'
+                                                                }}>
+                                                                        {item.upload=='N'?'비공개':'공개'}
+                                                                </span>
+                                                        </td>
+                                                        <td>
+                                                                <button className='button2' style={{ marginRight: '10px' }}>수정</button>
+                                                                <button className='button2' onClick={() => handleEventDelete(item.e_id)}>삭제</button>
+                                                        </td>
+                                                </tr>
+                                        </tbody>
+                                ))}
                         </table>
                         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                                 <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
@@ -780,81 +875,92 @@ function Manager() {
         const BuyTag = () => {
                 // 날짜 범위 있으면 그 범위만, 없으면 해당 pId 전체 주문
                 const items = filteredRawItems(selectedBuyItem);
+
+                const postsPerPage2 = 5;
+                const totalPages2 = Math.ceil(items.length / postsPerPage2);
+
+                const paginate2 = (pageNumber2, e) => {
+                        e.preventDefault(); // 클릭 시 페이지 새로고침 방지
+                        if (pageNumber2 >= 1 && pageNumber2 <= totalPages2) {
+                                setCurrentPage2(pageNumber2);
+                        }
+                };
+
                 return (
-                        <div style={{
-                                position: 'fixed',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                backgroundColor: 'white',
-                                padding: '20px',
-                                zIndex: 1000,
-                                borderRadius: '8px',
-                                boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
-                        }}>
-                                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                        {/* 선택된 상품명 + 최근날짜 표시 */}
-                                        <div className='light-but'>
-                                                {selectedBuyItem?.latestDate} · {selectedBuyItem?.product?.name}
-                                        </div>
-                                        <button style={{ background: "white", border: "1px solid white", color: "black" }} onClick={() => setModalOpen(false)}>X</button>
+                <div style={{
+                        position: 'fixed',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        backgroundColor: 'white',
+                        padding: '20px',
+                        zIndex: 1000,
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                }}>
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                {/* 선택된 상품명 + 최근날짜 표시 */}
+                                <div className='light-but'>
+                                        {selectedBuyItem?.latestDate} · {selectedBuyItem?.product?.name}
                                 </div>
-                                <table className="table table-bordered" style={{ width: '600px', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
-                                        <thead>
-                                                <tr>
-                                                        <th style={{ backgroundColor: '#eeeeee' }}>주문번호</th>
-                                                        <th style={{ backgroundColor: '#eeeeee' }}>상품명</th>
-                                                        <th style={{ backgroundColor: '#eeeeee' }}>회원아이디</th>
-                                                        <th style={{ backgroundColor: '#eeeeee' }}>회원명</th>
-                                                        <th style={{ backgroundColor: '#eeeeee' }}>결제금액</th>
-                                                </tr>
-                                        </thead>
-                                        <tbody>
-                                                {/* 해당 pId의 rawItems만 출력 */}
-                                                {items.map((buy) => (
-                                                        <tr key={buy.bid}>
-                                                                <td>{buy.bid}</td>
-                                                                <td>{buy.product?.name}</td>
-                                                                <td>{buy.member?.userid}</td>
-                                                                <td>{buy.member?.username}</td>
-                                                                <td>{(parseInt(buy.price || 0) * buy.count).toLocaleString()}</td>
-                                                        </tr>
-                                                ))}
-                                        </tbody>
-                                </table>
-                                <nav>
-                                        <ul className="pagination" style={{ marginTop: '20px' }}>
-                                                <li>
-                                                        <a className='paging-text' href="#" onClick={(e) => paginate2(currentPage2 - 1, e)}
-                                                                style={{ textDecoration: 'none', color: currentPage2 === 1 ? '#ccc' : '#333' }}>
-                                                                ≪
-                                                        </a>
-                                                </li>
-                                                {Array.from({ length: totalPages2 }, (_, i) => i + 1).map((num) => (
-                                                        <li key={num}>
-                                                                <a
-                                                                        href="#"
-                                                                        onClick={(e) => paginate2(num, e)}
-                                                                        className={currentPage2 === num ? 'paging-active-text' : 'paging-text'}
-                                                                        style={{
-                                                                                textDecoration: 'none',
-                                                                                fontWeight: currentPage2 === num ? 'bold' : 'normal',
-                                                                                color: currentPage2 === num ? '#000' : '#888'
-                                                                        }}
-                                                                >
-                                                                        {num}
-                                                                </a>
-                                                        </li>
-                                                ))}
-                                                <li>
-                                                        <a className='paging-text' href="#" onClick={(e) => paginate(currentPage2 + 1, e)}
-                                                                style={{ textDecoration: 'none', color: currentPage2 === totalPages2 ? '#ccc' : '#333' }}>
-                                                                ≫
-                                                        </a>
-                                                </li>
-                                        </ul>
-                                </nav>
+                                <button style={{ background: "white", border: "1px solid white", color: "black" }} onClick={() => setModalOpen(false)}>X</button>
                         </div>
+                        <table className="table table-bordered" style={{ width: '600px', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
+                                <thead>
+                                        <tr>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>주문번호</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>상품명</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>회원아이디</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>회원명</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>결제금액</th>
+                                        </tr>
+                                </thead>
+                                <tbody>
+                                        {/* 해당 pId의 rawItems만 출력 */}
+                                        {items.map((buy) => (
+                                                <tr key={buy.bid}>
+                                                        <td>{buy.bid}</td>
+                                                        <td>{buy.product?.name}</td>
+                                                        <td>{buy.member?.userid}</td>
+                                                        <td>{buy.member?.username}</td>
+                                                        <td>{(parseInt(buy.price || 0) * buy.count).toLocaleString()}</td>
+                                                </tr>
+                                        ))}
+                                </tbody>
+                        </table>
+                        <nav>
+                                <ul className="pagination" style={{ marginTop: '20px' }}>
+                                        <li>
+                                                <a className='paging-text' href="#" onClick={(e) => paginate2(currentPage2 - 1, e)}
+                                                        style={{ textDecoration: 'none', color: currentPage2 === 1 ? '#ccc' : '#333' }}>
+                                                        ≪
+                                                </a>
+                                        </li>
+                                        {Array.from({ length: totalPages2 }, (_, i) => i + 1).map((num) => (
+                                                <li key={num}>
+                                                        <a
+                                                                href="#"
+                                                                onClick={(e) => paginate2(num, e)}
+                                                                className={currentPage2 === num ? 'paging-active-text' : 'paging-text'}
+                                                                style={{
+                                                                        textDecoration: 'none',
+                                                                        fontWeight: currentPage2 === num ? 'bold' : 'normal',
+                                                                        color: currentPage2 === num ? '#000' : '#888'
+                                                                }}
+                                                        >
+                                                                {num}
+                                                        </a>
+                                                </li>
+                                        ))}
+                                        <li>
+                                                <a className='paging-text' href="#" onClick={(e) => paginate(currentPage2 + 1, e)}
+                                                        style={{ textDecoration: 'none', color: currentPage2 === totalPages2 ? '#ccc' : '#333' }}>
+                                                        ≫
+                                                </a>
+                                        </li>
+                                </ul>
+                        </nav>
+                </div>
                 )
         }
         const data = {
@@ -888,24 +994,24 @@ function Manager() {
         };
         const barData = {
                 labels: ['회원 수'],  // X축은 하나
-                datasets: [
-                        {
+                        datasets: [
+                                {
                                 label: '일반회원',   // 범례 1
-                                data: [users.length],
-                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                                borderColor: 'rgb(255, 99, 132)',
-                                borderWidth: 1
-                        },
-                        {
+                                        data: [users.length],
+                                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                        borderColor: 'rgb(255, 99, 132)',
+                                        borderWidth: 1
+                                },
+                                {
                                 label: '기업회원',   // 범례 2
-                                data: [companys.length],
-                                backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                                borderColor: 'rgb(255, 159, 64)',
-                                borderWidth: 1
-                        }
-                ]
-        };
-
+                                        data: [companys.length],
+                                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                        borderColor: 'rgb(255, 159, 64)',
+                                        borderWidth: 1
+                                }
+                        ]
+                };
+        
         const COLORS = [
                 'rgb(255, 173, 191)',
                 'rgb(175, 223, 255)',
@@ -938,7 +1044,7 @@ function Manager() {
                         hoverOffset: 4
                 }]
         };
-
+        
         const ChartData = {
                 type: 'doughnut',
                 data: data
@@ -972,29 +1078,157 @@ function Manager() {
                         }
                 },
         };
-        const ChartModel = () => (
-                <div style={{
-                        position: 'fixed',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        backgroundColor: 'white',
-                        padding: '20px',
-                        zIndex: 1000,
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
-                        width: '600px'
-                }}>
-                        <div style={{ display: "flex", justifyContent: "space-between" }}>
-                                <div className='light-but'>2025-02-14 매출</div>
-                                <button style={{ background: "white", border: "1px solid white", color: "black" }} onClick={() => setChartOpen(false)}>X</button>
+        const ChartModel = () => {
+                const contextLine  = buildContextDailyLine();
+                const totalLine    = buildTotalDailyLine();
+                const hasContext   = salesStatContext.type && salesStatContext.value;
+
+                // ── 일별 라인 차트 데이터 ──────────────────────────────────
+                const lineChartData = {
+                        labels: totalLine.labels,
+                        datasets: [
+                                {
+                                        label: '전체 일별 매출',
+                                        data: totalLine.data,
+                                        borderColor: 'rgb(54, 162, 235)',
+                                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                        tension: 0.3,
+                                        yAxisID: 'y',
+                                },
+                                ...(hasContext ? [{
+                                        label: salesStatContext.type === 'company'
+                                                ? `[기업] ${salesStatContext.value}`
+                                                : `[상품] ${salesStatContext.value}`,
+                                        data: contextLine.data,
+                                        borderColor: 'rgb(255, 99, 132)',
+                                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                        tension: 0.3,
+                                        yAxisID: 'y',
+                                }] : []),
+                        ],
+                };
+
+                const lineOptions = {
+                        responsive: true,
+                        plugins: { legend: { position: 'top' } },
+                        scales: { y: { beginAtZero: true } },
+                };
+
+                // ── 기업별 바 차트 데이터 ──────────────────────────────────
+                const barChartData = {
+                        labels: companyDailySales.map(c => c.businessName),
+                        datasets: [{
+                                label: `기간 내 기업별 총 매출 (${salesEffectiveStart} ~ ${salesEffectiveEnd})`,
+                                data: companyDailySales.map(c => c.totalPrice),
+                                backgroundColor: COLORS.concat([
+                                        'rgb(150, 220, 180)', 'rgb(200, 160, 255)',
+                                        'rgb(255, 210, 120)', 'rgb(130, 200, 255)',
+                                ]),
+                                borderWidth: 1,
+                        }],
+                };
+                const barOptions = {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } },
+                };
+
+                return (
+                        <div style={{
+                                position: 'fixed', top: '50%', left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                backgroundColor: 'white', padding: '28px',
+                                zIndex: 1000, borderRadius: '12px',
+                                boxShadow: '0 6px 24px rgba(0,0,0,0.25)',
+                                width: '820px', maxHeight: '90vh', overflowY: 'auto',
+                        }}>
+                                {/* 헤더 */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                        <h4 style={{ margin: 0, fontWeight: '700' }}>
+                                                매출 통계
+                                                {hasContext && (
+                                                        <span style={{ fontSize: '0.75em', marginLeft: '10px', color: '#555', fontWeight: '400' }}>
+                                                                ({salesStatContext.type === 'company' ? '기업' : '상품'}: {salesStatContext.value})
+                                                        </span>
+                                                )}
+                                        </h4>
+                                        <button style={{ background: 'white', border: '1px solid #ddd', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer' }} onClick={() => setChartOpen(false)}>✕</button>
+                                </div>
+
+                                {/* 날짜 범위 선택 */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', padding: '12px', backgroundColor: '#f5f7ff', borderRadius: '8px', fontSize: '0.85em' }}>
+                                        <span style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>일별 조회</span>
+                                        <input type='date' className='calendar' value={salesChartStart}
+                                                onChange={(e) => setSalesChartStart(e.target.value)} />
+                                        <b>~</b>
+                                        <input type='date' className='calendar' value={salesChartEnd}
+                                                onChange={(e) => setSalesChartEnd(e.target.value)} />
+                                        <button className='button2' onClick={() => { setSalesChartStart(''); setSalesChartEnd(''); }}
+                                                style={{ whiteSpace: 'nowrap', backgroundColor:'#85bdeb', color:'white' }}>초기화</button>
+                                        <span style={{ color: '#888', fontSize: '0.9em' }}>
+                                                ※ 미선택 시 오늘({todayStr}) 기준
+                                        </span>
+                                </div>
+
+                                {/* 기업별 총 매출 테이블 */}
+                                <h5 style={{ fontWeight: '600', marginBottom: '8px' }}>
+                                        기업별 판매 현황 ({salesEffectiveStart} ~ {salesEffectiveEnd})
+                                </h5>
+                                <table className="table table-bordered" style={{ width: '100%', fontSize: '0.83em', textAlign: 'center', marginBottom: '24px' }}>
+                                        <thead>
+                                                <tr style={{ backgroundColor: '#eeeeee' }}>
+                                                        <th>순위</th>
+                                                        <th>기업명</th>
+                                                        <th>주문건수</th>
+                                                        <th>총 판매금액</th>
+                                                        <th>수수료(10%)</th>
+                                                        {hasContext && salesStatContext.type === 'company' && <th>검색 기업 여부</th>}
+                                                </tr>
+                                        </thead>
+                                        <tbody>
+                                                {companyDailySales.length === 0 ? (
+                                                        <tr><td colSpan="6" style={{ color: '#aaa', padding: '16px' }}>해당 기간에 판매 데이터가 없습니다.</td></tr>
+                                                ) : (
+                                                        companyDailySales.map((c, idx) => {
+                                                                const isHighlight = hasContext && salesStatContext.type === 'company'
+                                                                        && c.businessName?.includes(salesStatContext.value);
+                                                                return (
+                                                                        <tr key={c.cid} style={{ backgroundColor: isHighlight ? '#fff8e1' : 'white' }}>
+                                                                                <td>{idx + 1}</td>
+                                                                                <td style={{ fontWeight: isHighlight ? '700' : 'normal' }}>{c.businessName}</td>
+                                                                                <td>{c.totalCount.toLocaleString()}</td>
+                                                                                <td style={{ color: '#2d7df4', fontWeight: '600' }}>{c.totalPrice.toLocaleString()}원</td>
+                                                                                <td style={{ color: '#e74c3c' }}>{Math.floor(c.totalPrice * 0.1).toLocaleString()}원</td>
+                                                                                {hasContext && salesStatContext.type === 'company' && (
+                                                                                        <td>{isHighlight ? <span style={{ color: '#e74c3c', fontWeight: '700' }}>★ 검색 기업</span> : '-'}</td>
+                                                                                )}
+                                                                        </tr>
+                                                                );
+                                                        })
+                                                )}
+                                        </tbody>
+                                </table>
+
+                                {/* 기업별 바 차트 */}
+                                <h5 style={{ fontWeight: '600', marginBottom: '8px' }}>기업별 매출 비교 차트</h5>
+                                <div style={{ marginBottom: '28px' }}>
+                                        <Bar data={barChartData} options={barOptions} />
+                                </div>
+
+                                {/* 일별 라인 차트 */}
+                                <h5 style={{ fontWeight: '600', marginBottom: '8px' }}>
+                                        일별 매출 추이
+                                        {hasContext && <span style={{ fontSize: '0.8em', color: '#888', marginLeft: '8px' }}>
+                                                (전체 vs {salesStatContext.type === 'company' ? '기업' : '상품'}: {salesStatContext.value})
+                                        </span>}
+                                </h5>
+                                <Line data={lineChartData} options={lineOptions} />
                         </div>
-                        <Doughnut data={data} options={ChartData.options} />
-                </div>
-        )
+                );
+        }
 
         return (
-                <div className="manager-container">
+                <div className='manager-container'>
                         <div className='category-mana'>
                                 <Link to="/" style={{ textDecoration: "none" }}>
                                         <h1 className="canvas">CANVAS</h1>
@@ -1047,9 +1281,11 @@ function Manager() {
                         {/* 대시보드 페이지 */}
                         {activeMenu == '대시보드' && (
                                 <div className='category-content'>
-                                        <h4 style={{ textAlign: 'left', fontWeight: '600', textAlign: 'center' }}>CANVAS 총 매출</h4>
+                                        <h4 style={{ fontWeight: '600', textAlign:'center' }}>CANVAS 총 매출</h4>
                                         <hr />
-                                        <div className='dash-board' style={{ width: '80%', scrollbarWidth: 'none', margin: '0 auto', height: '400px', margin: '50px auto 100px auto' }}>
+                                        <h5 style={{ textAlign:'center', marginTop:'60px' }}>오늘의 매출 : {(dailySalesMap[todayStr] || 0).toLocaleString()}원</h5>
+                                        <div style={{ fontSize:'0.8em', textAlign:'center', color:'#ccc' }}>수수료는 정산 시 10%씩 차감됩니다.</div>
+                                        <div className='dash-board' style={{width:'80%', scrollbarWidth: 'none', margin:'0 auto', height:'400px', margin:'50px auto 100px auto'}}>
                                                 <Line
                                                         data={data2}
                                                         options={{
@@ -1059,53 +1295,53 @@ function Manager() {
                                                 />
                                         </div>
                                         <hr />
-                                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '50px', margin: '30px 0px 30px 50px' }}>유저수 현황</h4>
+                                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop:'50px', margin:'30px 0px 30px 50px' }}>유저수 현황</h4>
                                         <div style={{ display: 'flex', gap: '20px', justifyContent: 'space-evenly' }}>
                                                 <div className='dash-board' style={{ overflowX: 'auto' }}>
-                                                        <h6 style={{ textAlign: 'center' }}>사용자 비율(기업/일반)</h6>
+                                                        <h6 style={{textAlign:'center'}}>일별 신규 가입자(기업/일반)</h6>
                                                         <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
                                                                 <thead>
-                                                                        <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
-                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>날짜</th>
-                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>일반가입자</th>
-                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업가입자</th>
-                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>합계</th>
-                                                                        </tr>
-                                                                </thead>
+                                                                                <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
+                                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>날짜</th>
+                                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>일반가입자</th>
+                                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업가입자</th>
+                                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>합계</th>
+                                                                                </tr>
+                                                                        </thead>
                                                                 <tbody>
                                                                         {memberDateList.map((row) => (
                                                                                 <tr key={row.date} style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
-                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
-                                                                                                {row.date}
-                                                                                        </td>
-                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
-                                                                                                {row.normalCount}
-                                                                                        </td>
-                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
-                                                                                                {row.companyCount}
-                                                                                        </td>
-                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
-                                                                                                {row.normalCount + row.companyCount}
-                                                                                        </td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
+                                                                                        {row.date}
+                                                                                </td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
+                                                                                        {row.normalCount}
+                                                                                </td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
+                                                                                        {row.companyCount}
+                                                                                </td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>
+                                                                                        {row.normalCount + row.companyCount}
+                                                                                </td>
                                                                                 </tr>
                                                                         ))}
                                                                 </tbody>
                                                         </table>
                                                 </div>
-                                                <div className='dash-board' style={{ overflowX: 'auto', height: '400px', scrollbarWidth: 'none' }}>
-                                                        <h6 style={{ textAlign: 'center' }}>사용자 비율(기업/일반)</h6>
+                                                <div className='dash-board' style={{ overflowX: 'auto', height: '400px', scrollbarWidth: 'none'}}>
+                                                        <h6 style={{textAlign:'center'}}>활동 사용자 비율(기업/일반)</h6>
                                                         <Bar
-                                                                style={{ height: '350px', padding: '20px' }}
+                                                                style={{height:'350px', padding:'20px'}}
                                                                 data={barData}
                                                                 options={{ maintainAspectRatio: false }}
                                                         />
                                                 </div>
                                         </div>
                                         <hr />
-                                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '50px', margin: '30px 0px 30px 50px' }}>기업별 상위 매출 정산</h4>
+                                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop:'50px', margin:'30px 0px 30px 50px' }}>기업별 상위 매출 정산</h4>
                                         <div style={{ display: 'flex', gap: '20px', justifyContent: 'space-evenly' }}>
                                                 <div className='dash-board' style={{ overflowX: 'auto' }}>
-                                                        <h6 style={{ textAlign: 'center' }}>상위 매출 기업 TOP5</h6>
+                                                        <h6 style={{textAlign:'center'}}>상위 매출 기업 TOP5</h6>
                                                         <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
                                                                 <thead>
                                                                         <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
@@ -1113,8 +1349,8 @@ function Manager() {
                                                                                 <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>기업명</th>
                                                                                 <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>판매수량</th>
                                                                                 <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>판매가</th>
-                                                                        </tr >
-                                                                </thead >
+                                                                        </tr>
+                                                                </thead>
                                                                 <tbody>
                                                                         {top5Companies.map((company, index) => (
                                                                                 <tr key={company.cid} style={{ borderBottom: '1px solid #eeeeee', fontSize: '0.8em' }}>
@@ -1127,28 +1363,28 @@ function Manager() {
                                                                                 </tr>
                                                                         ))}
                                                                 </tbody>
-                                                        </table >
-                                                </div >
-                                                <div className='dash-board' style={{ overflowX: 'auto', height: '400px', scrollbarWidth: 'none' }}>
-                                                        <h6 style={{ textAlign: 'center' }}>상위 매출 기업 TOP5</h6>
+                                                        </table>
+                                                </div>
+                                                <div className='dash-board' style={{ overflowX: 'auto', height: '400px', scrollbarWidth: 'none'}}>
+                                                        <h6 style={{textAlign:'center'}}>상위 매출 기업 TOP5</h6>
                                                         <Doughnut
-                                                                style={{ height: '350px', padding: '20px' }}
+                                                                style={{height:'350px', padding:'20px'}}
                                                                 data={dounutData}
                                                                 options={{ maintainAspectRatio: false }}
                                                         />
                                                 </div>
-                                        </div >
+                                        </div>
                                         <hr />
-                                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '50px', margin: '30px 0px 30px 50px' }}>카테고리별 매출 현황</h4>
+                                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop:'50px', margin:'30px 0px 30px 50px'}}>카테고리별 매출 현황</h4>
                                         <div style={{ display: 'flex', gap: '20px', justifyContent: 'space-evenly' }}>
                                                 <div className='dash-board' style={{ overflowX: 'auto' }}>
-                                                        <h6 style={{ textAlign: 'center' }}>카테고리 판매량 순위</h6>
+                                                        <h6 style={{textAlign:'center'}}>카테고리 판매량 순위</h6>
                                                         <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
                                                                 <thead>
                                                                         <tr style={{ fontSize: '0.8em', borderBottom: '2px solid #333333' }}>
-                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>카테고리</th>
-                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>상품명</th>
-                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>총 판매가</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>카테고리</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>상품명</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', padding: '8px' }}>총 판매가</th>
                                                                         </tr>
                                                                 </thead>
                                                                 <tbody>
@@ -1160,203 +1396,193 @@ function Manager() {
                                                                                 </tr>
                                                                         ))}
                                                                 </tbody>
-                                                        </table >
-                                                </div >
-                                                <div className='dash-board' style={{ overflowX: 'auto', height: '400px', scrollbarWidth: 'none' }}>
-                                                        <h6 style={{ textAlign: 'center' }}>카테고리 판매량 순위</h6>
+                                                        </table>
+                                                </div>
+                                                <div className='dash-board' style={{ overflowX: 'auto', height: '400px', scrollbarWidth: 'none'}}>
+                                                        <h6 style={{textAlign:'center'}}>카테고리 판매량 순위</h6>
                                                         <Doughnut
-                                                                style={{ height: '350px', padding: '20px' }}
+                                                                style={{height:'350px', padding:'20px'}}
                                                                 data={doughnutData}
                                                                 options={{ maintainAspectRatio: false }}
                                                         />
                                                 </div>
-                                        </div >
-                                </div >
-                        )
-                        }
+                                        </div>
+                                </div>
+                        )}
                         {/* 회원관리 페이지 */}
-                        {
-                                activeMenu == '회원 관리' && (
+                        {activeMenu == '회원 관리' && (
+                                <div style={{ display: 'flex', flexDirection: 'column', width: '80%' }}>
                                         <div className='category-content'>
-                                                <div>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                                                <h4 style={{ textAlign: 'left', fontWeight: '600' }}>회원 검색</h4>
-                                                                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                                                        <select
-                                                                                value={userSearchKey}
-                                                                                onChange={(e) => setUserSearchKey(e.target.value)}
-                                                                                className="cat1" style={{
-                                                                                        width: '80px', padding: '3px', borderRadius: '10px',
-                                                                                        fontSize: '0.8em', height: '30px', marginTop: '5PX'
-                                                                                }}
-                                                                        >
-                                                                                <option value="username">이름</option>
-                                                                                <option value="userid">아이디</option>
-                                                                                <option value="email">이메일</option>
-                                                                                <option value="tel">전화번호</option>
-                                                                        </select>
-                                                                        <div className="search-bar">
-                                                                                <input type="text" placeholder="검색어를 입력해주세요."
-                                                                                        value={userSearchWord}
-                                                                                        onChange={(e) => setUserSearchWord(e.target.value)}
-                                                                                        onKeyDown={(e) => e.key === 'Enter' && handleUserSearch()}
-                                                                                />
-                                                                                <button className="search-icon" onClick={handleUserSearch}></button>
-                                                                        </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>회원 검색</h4>
+                                                        <div style={{display:'flex', justifyContent:'center'}}>
+                                                                <select 
+                                                                        value={userSearchKey}
+                                                                        onChange={(e) => setUserSearchKey(e.target.value)}
+                                                                        className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px', marginTop:'5PX' }}
+                                                                >
+                                                                        <option value="username">이름</option>
+                                                                        <option value="userid">아이디</option>
+                                                                        <option value="email">이메일</option>
+                                                                        <option value="tel">전화번호</option>
+                                                                </select>
+                                                                <div className="search-bar">
+                                                                        <input type="text" placeholder="검색어를 입력해주세요."
+                                                                                value={userSearchWord}
+                                                                                onChange={(e)=> setUserSearchWord(e.target.value)}
+                                                                                onKeyDown={(e)=>e.key === 'Enter'&&handleUserSearch()}
+                                                                        />
+                                                                        <button className="search-icon" onClick={handleUserSearch}></button>
                                                                 </div>
-                                                        </div>
-                                                        <hr />
-                                                        <div className="row border real-dark-border mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
-                                                                <div className="col-1 border-start">일괄탈퇴</div>
-                                                                <div className="col-2 border-start">아이디</div>
-                                                                <div className="col-2 border-start">성명</div>
-                                                                <div className="col-2 border-start">이메일</div>
-                                                                <div className="col-2 border-start">연락처</div>
-                                                                <div className="col-2 border-start">가입일</div>
-                                                                <div className="col-1 border-start">관리</div>
-                                                        </div>
-                                                        {visibleUsers
-                                                                .map((user) => (
-                                                                        <div key={user.mid} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
-                                                                                <div className="col-1 border-start" style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                                        <input
-                                                                                                type="checkbox"
-                                                                                                checked={selectedItems['회원관리']?.includes(user.mid) || false}
-                                                                                                onChange={() => handleCheck('회원관리', user.mid)}
-                                                                                        />
-                                                                                </div>
-                                                                                <div className="col-2 border-start">{user.userid}</div>
-                                                                                <div className="col-2 border-start">{user.username}</div>
-                                                                                <div className="col-2 border-start">{user.email}</div>
-                                                                                <div className="col-2 border-start">{user.tel}</div>
-                                                                                <div className="col-2 border-start">{user.writedate.slice(0, 10)}</div>
-                                                                                <div className="col-1 border-start" style={{
-                                                                                        background: user.isOut == "Y" ? '#ffebee' : '#e3f2fd',
-                                                                                        color: user.isOut == "Y" ? '#c62828' : '#1976d2',
-                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                }}>{user.isOut == "Y" ? '탈퇴' : '활동 중'}</div>
-                                                                        </div>
-                                                                ))}
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }} onClick={() => setShowMore(!showMore)}>
-                                                                        {showMore ? "접기" : "더보기"}
-                                                                </button>
-                                                                <button
-                                                                        className='button'
-                                                                        style={{ marginTop: '20px', border: '1px solid blue', backgroundColor: 'blue' }}
-                                                                        onClick={handleBulkUnregister}>
-                                                                        탈퇴처리
-                                                                </button>
                                                         </div>
                                                 </div>
-                                                <div className='category-content'>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                                                <h4 style={{ textAlign: 'left', fontWeight: '600' }}>탈퇴회원 검색</h4>
-                                                                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                                                        <select
-                                                                                value={userSearchKey}
-                                                                                onChange={(e) => setUserOutSearchKey(e.target.value)}
-                                                                                className="cat1" style={{
-                                                                                        width: '80px', padding: '3px', borderRadius: '10px',
-                                                                                        fontSize: '0.8em', height: '30px', marginTop: '5PX'
-                                                                                }}
-                                                                        >
-                                                                                <option value="username">이름</option>
-                                                                                <option value="userid">아이디</option>
-                                                                                <option value="email">이메일</option>
-                                                                                <option value="tel">전화번호</option>
-                                                                        </select>
-                                                                        <div className="search-bar">
-                                                                                <input type="text" placeholder="검색어를 입력해주세요."
-                                                                                        value={userOutSearchWord}
-                                                                                        onChange={(e) => setUserOutSearchWord(e.target.value)}
-                                                                                        onKeyDown={(e) => e.key === 'Enter' && handleUserSearch()}
+                                                <hr />
+                                                <div className="row border real-dark-border mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
+                                                        <div className="col-1 border-start">일괄탈퇴</div>
+                                                        <div className="col-2 border-start">아이디</div>
+                                                        <div className="col-2 border-start">성명</div>
+                                                        <div className="col-2 border-start">이메일</div>
+                                                        <div className="col-2 border-start">연락처</div>
+                                                        <div className="col-2 border-start">가입일</div>
+                                                        <div className="col-1 border-start">관리</div>
+                                                </div>
+                                                {visibleUsers
+                                                        .map((user) => (
+                                                                <div key={user.mid} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
+                                                                        <div className="col-1 border-start" style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                                <input
+                                                                                        type="checkbox"
+                                                                                        checked={selectedItems['회원관리']?.includes(user.mid) || false}
+                                                                                        onChange={() => handleCheck('회원관리', user.mid)}
                                                                                 />
-                                                                                <button className="search-icon" onClick={handleUserSearch}></button>
                                                                         </div>
+                                                                        <div className="col-2 border-start">{user.userid}</div>
+                                                                        <div className="col-2 border-start">{user.username}</div>
+                                                                        <div className="col-2 border-start">{user.email}</div>
+                                                                        <div className="col-2 border-start">{user.tel}</div>
+                                                                        <div className="col-2 border-start">{user.writedate.slice(0, 10)}</div>
+                                                                        <div className="col-1 border-start" style={{
+                                                                                background: user.isOut == "Y" ? '#ffebee' : '#e3f2fd',
+                                                                                color: user.isOut == "Y" ? '#c62828' : '#1976d2',
+                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                        }}>{user.isOut=="Y"?'탈퇴':'활동 중'}</div>
                                                                 </div>
-                                                        </div>
-                                                        <hr />
-                                                        <div className="row border real-dark-border mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
-                                                                <div className="col-1 border-start">번호</div>
-                                                                <div className="col-2 border-start">아이디</div>
-                                                                <div className="col-2 border-start">성명</div>
-                                                                <div className="col-2 border-start">이메일</div>
-                                                                <div className="col-2 border-start">연락처</div>
-                                                                <div className="col-2 border-start">가입일</div>
-                                                                <div className="col-1 border-start">관리</div>
-                                                        </div>
-                                                        {invisibleUsers
-                                                                .filter(user => user.isOut !== "N")
-                                                                .map((user) => (
-                                                                        <div key={user.mid} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
-                                                                                <div className="col-1 border-start">{user.mid}</div>
-                                                                                <div className="col-2 border-start">{user.userid}</div>
-                                                                                <div className="col-2 border-start">{user.username}</div>
-                                                                                <div className="col-2 border-start">{user.email}</div>
-                                                                                <div className="col-2 border-start">{user.tel}</div>
-                                                                                <div className="col-2 border-start">{user.writedate.slice(0, 10)}</div>
-                                                                                <div className="col-1 border-start" style={{
-                                                                                        background: user.isOut == "Y" ? '#ffebee' : '#e3f2fd',
-                                                                                        color: user.isOut == "Y" ? '#c62828' : '#1976d2',
-                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                }}>{user.isOut == "Y" ? '탈퇴' : '활동 중'}</div>
-                                                                        </div>
-                                                                ))}
-                                                        <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }} onClick={() => setShowMoreOut(!showMoreOut)}>
-                                                                {showMoreOut ? "접기" : "더보기"}
+                                                        ))}
+                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                        <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }} onClick={() => setShowMore(!showMore)}>
+                                                                {showMore ? "접기" : "더보기"}
+                                                        </button>
+                                                        <button
+                                                                className='button'
+                                                                style={{ marginTop: '20px', border: '1px solid blue', backgroundColor: 'blue' }}
+                                                                onClick={handleBulkUnregister}>
+                                                                탈퇴처리
                                                         </button>
                                                 </div>
                                         </div>
-                                )
-                        }
-
-                        {/* 기업관리 페이지 */}
-                        {
-                                activeMenu == '기업 관리' && (
                                         <div className='category-content'>
-                                                <div>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                                                <h4 style={{ textAlign: 'left', fontWeight: '600' }}>기업 검색</h4>
-                                                                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                                                        <select
-                                                                                value={companySearchKey}
-                                                                                onChange={(e) => setCompanySearchKey(e.target.value)}
-                                                                                className="cat1" style={{
-                                                                                        width: '80px', padding: '3px', borderRadius: '10px',
-                                                                                        fontSize: '0.8em', height: '30px', marginTop: '5PX'
-                                                                                }}
-                                                                        >
-                                                                                <option value="businessName">이름</option>
-                                                                                <option value="userid">아이디</option>
-                                                                                <option value="email">이메일</option>
-                                                                                <option value="tel">전화번호</option>
-                                                                        </select>
-                                                                        <div className="search-bar">
-                                                                                <input type="text" placeholder="검색어를 입력해주세요."
-                                                                                        value={companySearchWord}
-                                                                                        onChange={(e) => setCompanySearchWord(e.target.value)}
-                                                                                        onKeyDown={(e) => e.key === 'Enter' && handleCompanySearch()}
-                                                                                />
-                                                                                <button className="search-icon" onClick={handleCompanySearch}></button>
-                                                                        </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>탈퇴회원 검색</h4>
+                                                        <div style={{display:'flex', justifyContent:'center'}}>
+                                                                <select 
+                                                                        value={userSearchKey}
+                                                                        onChange={(e) => setUserOutSearchKey(e.target.value)}
+                                                                        className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px', marginTop:'5PX' }}
+                                                                >
+                                                                        <option value="username">이름</option>
+                                                                        <option value="userid">아이디</option>
+                                                                        <option value="email">이메일</option>
+                                                                        <option value="tel">전화번호</option>
+                                                                </select>
+                                                                <div className="search-bar">
+                                                                        <input type="text" placeholder="검색어를 입력해주세요."
+                                                                                value={userOutSearchWord}
+                                                                                onChange={(e)=> setUserOutSearchWord(e.target.value)}
+                                                                                onKeyDown={(e)=>e.key === 'Enter'&&handleUserSearch()}
+                                                                        />
+                                                                        <button className="search-icon" onClick={handleUserSearch}></button>
                                                                 </div>
                                                         </div>
-                                                        <hr />
-                                                        <div className="row border real-dark-border mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
-                                                                <div className="col-1 border-start">번호</div>
-                                                                <div className="col-2 border-start">아이디</div>
-                                                                <div className="col-2 border-start">성명</div>
-                                                                <div className="col-2 border-start">이메일</div>
-                                                                <div className="col-2 border-start">연락처</div>
-                                                                <div className="col-2 border-start">가입일</div>
-                                                                <div className="col-1 border-start">관리</div>
+                                                </div>
+                                                <hr />
+                                                <div className="row border real-dark-border mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
+                                                        <div className="col-1 border-start">번호</div>
+                                                        <div className="col-2 border-start">아이디</div>
+                                                        <div className="col-2 border-start">성명</div>
+                                                        <div className="col-2 border-start">이메일</div>
+                                                        <div className="col-2 border-start">연락처</div>
+                                                        <div className="col-2 border-start">가입일</div>
+                                                        <div className="col-1 border-start">관리</div>
+                                                </div>
+                                                {invisibleUsers
+                                                        .filter(user => user.isOut !== "N")
+                                                        .map((user) => (
+                                                                <div key={user.mid} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
+                                                                        <div className="col-1 border-start">{user.mid}</div>
+                                                                        <div className="col-2 border-start">{user.userid}</div>
+                                                                        <div className="col-2 border-start">{user.username}</div>
+                                                                        <div className="col-2 border-start">{user.email}</div>
+                                                                        <div className="col-2 border-start">{user.tel}</div>
+                                                                        <div className="col-2 border-start">{user.writedate.slice(0, 10)}</div>
+                                                                        <div className="col-1 border-start" style={{
+                                                                                background: user.isOut == "Y" ? '#ffebee' : '#e3f2fd',
+                                                                                color: user.isOut == "Y" ? '#c62828' : '#1976d2',
+                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                        }}>{user.isOut=="Y"?'탈퇴':'활동 중'}</div>
+                                                                </div>
+                                                        ))}
+                                                <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }} onClick={() => setShowMoreOut(!showMoreOut)}>
+                                                        {showMoreOut ? "접기" : "더보기"}
+                                                </button>
+                                        </div>
+                                </div>
+                        )}
+
+                        {/* 기업관리 페이지 */}
+                        {activeMenu == '기업 관리' && (
+                                <div style={{ display: 'flex', flexDirection: 'column', width: '80%' }}>
+                                        <div className='category-content'>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>기업 검색</h4>
+                                                        <div style={{display:'flex', justifyContent:'center'}}>
+                                                                <select 
+                                                                        value={companySearchKey}
+                                                                        onChange={(e) => setCompanySearchKey(e.target.value)}
+                                                                        className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px', marginTop:'5PX' }}
+                                                                >
+                                                                        <option value="businessName">이름</option>
+                                                                        <option value="userid">아이디</option>
+                                                                        <option value="email">이메일</option>
+                                                                        <option value="tel">전화번호</option>
+                                                                </select>
+                                                                <div className="search-bar">
+                                                                        <input type="text" placeholder="검색어를 입력해주세요."
+                                                                                value={companySearchWord}
+                                                                                onChange={(e)=> setCompanySearchWord(e.target.value)}
+                                                                                onKeyDown={(e)=>e.key === 'Enter'&&handleCompanySearch()}
+                                                                        />
+                                                                        <button className="search-icon" onClick={handleCompanySearch}></button>
+                                                                </div>
                                                         </div>
-                                                        {visibleCompanys
-                                                                .map((company) => (
-                                                                        <div key={company.cid} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
-                                                                                <div className="col-1 border-start" style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                                        <input type="checkbox" aria-label="항목 선택" />
+                                                </div>
+                                                <hr />
+                                                <div className="row border real-dark-border mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
+                                                        <div className="col-1 border-start">번호</div>
+                                                        <div className="col-2 border-start">아이디</div>
+                                                        <div className="col-2 border-start">성명</div>
+                                                        <div className="col-2 border-start">이메일</div>
+                                                        <div className="col-2 border-start">연락처</div>
+                                                        <div className="col-2 border-start">가입일</div>
+                                                        <div className="col-1 border-start">관리</div>
+                                                </div>
+                                                {visibleCompanys
+                                                                .map((company)=>(
+                                                                        <div key={company.cid} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
+                                                                                <div className="col-1 border-start" style={{fontSize:'0.8em', textAlign: 'center', verticalAlign: 'middle'}}>
+                                                                                                <input type="checkbox" aria-label="항목 선택" />
                                                                                 </div>
                                                                                 <div className="col-2 border-start">{company.userid}</div>
                                                                                 <div className="col-2 border-start">{company.businessName}</div>
@@ -1367,57 +1593,66 @@ function Manager() {
                                                                                         background: company.isOut == 'Y' ? '#ffebee' : '#e3f2fd',
                                                                                         color: company.isOut == 'Y' ? '#c62828' : '#1976d2',
                                                                                         padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                }}>{company.isOut == 'Y' ? '탈퇴' : '활동 중'}</div>
+                                                                                }}>{company.isOut=='Y'?'탈퇴':'활동 중'}</div>
                                                                         </div>
-                                                                ))}
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }} onClick={() => setCShowMore(!cshowMore)}>
-                                                                        {cshowMore ? "접기" : "더보기"}
-                                                                </button>
-                                                                <button className='button' style={{ marginTop: '20px', border: '1px solid blue', backgroundColor: 'blue' }}>탈퇴처리</button>
+                                                        ))}
+                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                        <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }} onClick={() => setCShowMore(!cshowMore)}>
+                                                                {cshowMore ? "접기" : "더보기"}
+                                                        </button>
+                                                        <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
+                                                                {/* 기업명 검색 상태이면 해당 기업 컨텍스트로 통계 열기 */}
+                                                                {companySearchKey === 'businessName' && companySearchWord && (
+                                                                        <button className='button'
+                                                                                style={{ border: '1px solid #2d7df4', backgroundColor: '#2d7df4' }}
+                                                                                onClick={() => handleOpenSalesChart('company', companySearchWord)}
+                                                                        >
+                                                                                📊 "{companySearchWord}" 매출 통계
+                                                                        </button>
+                                                                )}
+                                                                <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}>탈퇴처리</button>
                                                         </div>
                                                 </div>
-                                                <div className='category-content'>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                                                <h4 style={{ textAlign: 'left', fontWeight: '600' }}>탈퇴기업 검색</h4>
-                                                                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                                                        <select
-                                                                                value={companySearchKey}
-                                                                                onChange={(e) => setCompanyOutSearchKey(e.target.value)}
-                                                                                className="cat1" style={{
-                                                                                        width: '80px', padding: '3px', borderRadius: '10px',
-                                                                                        fontSize: '0.8em', height: '30px', marginTop: '5PX'
-                                                                                }}
-                                                                        >
-                                                                                <option value="businessName">이름</option>
-                                                                                <option value="userid">아이디</option>
-                                                                                <option value="email">이메일</option>
-                                                                                <option value="tel">전화번호</option>
-                                                                        </select>
-                                                                        <div className="search-bar">
-                                                                                <input type="text" placeholder="검색어를 입력해주세요."
-                                                                                        value={companyOutSearchWord}
-                                                                                        onChange={(e) => setCompanyOutSearchWord(e.target.value)}
-                                                                                        onKeyDown={(e) => e.key === 'Enter' && handleCompanySearch()}
-                                                                                />
-                                                                                <button className="search-icon" onClick={handleCompanySearch}></button>
-                                                                        </div>
+                                        </div>
+                                        <div className='category-content'>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>탈퇴기업 검색</h4>
+                                                        <div style={{display:'flex', justifyContent:'center'}}>
+                                                                <select 
+                                                                        value={companySearchKey}
+                                                                        onChange={(e) => setCompanyOutSearchKey(e.target.value)}
+                                                                        className="cat1" style={{ width: '80px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px', marginTop:'5PX' }}
+                                                                >
+                                                                        <option value="businessName">이름</option>
+                                                                        <option value="userid">아이디</option>
+                                                                        <option value="email">이메일</option>
+                                                                        <option value="tel">전화번호</option>
+                                                                </select>
+                                                                <div className="search-bar">
+                                                                        <input type="text" placeholder="검색어를 입력해주세요."
+                                                                                value={companyOutSearchWord}
+                                                                                onChange={(e)=> setCompanyOutSearchWord(e.target.value)}
+                                                                                onKeyDown={(e)=>e.key === 'Enter'&&handleCompanySearch()}
+                                                                        />
+                                                                        <button className="search-icon" onClick={handleCompanySearch}></button>
                                                                 </div>
                                                         </div>
-                                                        <hr />
-                                                        <div className="row border real-dark-border mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
-                                                                <div className="col-1 border-start">번호</div>
-                                                                <div className="col-2 border-start">아이디</div>
-                                                                <div className="col-2 border-start">성명</div>
-                                                                <div className="col-2 border-start">이메일</div>
-                                                                <div className="col-2 border-start">연락처</div>
-                                                                <div className="col-2 border-start">가입일</div>
-                                                                <div className="col-1 border-start">관리</div>
-                                                        </div>
-                                                        {invisibleCompanys
-                                                                .filter(company => company.isOut !== 'N')
-                                                                .map((company) => (
-                                                                        <div key={company.cid} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
+                                                </div>
+                                                <hr />
+                                                <div className="row border real-dark-border mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
+                                                        <div className="col-1 border-start">번호</div>
+                                                        <div className="col-2 border-start">아이디</div>
+                                                        <div className="col-2 border-start">성명</div>
+                                                        <div className="col-2 border-start">이메일</div>
+                                                        <div className="col-2 border-start">연락처</div>
+                                                        <div className="col-2 border-start">가입일</div>
+                                                        <div className="col-1 border-start">관리</div>
+                                                </div>
+                                                {invisibleCompanys
+                                                        .filter(company=>company.isOut !=='N')
+                                                                .map((company)=>(
+                                                                        <div key={company.cid} className="row border real-dark-border mx-0" style={{fontSize:'0.8em', textAlign:'center', padding:'5px'}}>
                                                                                 <div className="col-1 border-start">{company.cid}</div>
                                                                                 <div className="col-2 border-start">{company.userid}</div>
                                                                                 <div className="col-2 border-start">{company.name}</div>
@@ -1428,193 +1663,224 @@ function Manager() {
                                                                                         background: company.isOut == 'Y' ? '#ffebee' : '#e3f2fd',
                                                                                         color: company.isOut == 'Y' ? '#c62828' : '#1976d2',
                                                                                         padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                }}>{company.isOut == 'Y' ? '탈퇴' : '활동 중'}</div>
+                                                                                }}>{company.isOut=='Y'?'탈퇴':'활동 중'}</div>
                                                                         </div>
-                                                                ))}
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }} onClick={() => setCShowMoreOut(!cshowMoreOut)}>
-                                                                        {cshowMoreOut ? "접기" : "더보기"}
-                                                                </button>
-                                                        </div>
+                                                        ))}
+                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                        <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }} onClick={() => setCShowMoreOut(!cshowMoreOut)}>
+                                                                {cshowMoreOut ? "접기" : "더보기"}
+                                                        </button>
                                                 </div>
                                         </div>
-                                )
-                        }
+                                </div>
+                        )}
                         {/* 상품관리 페이지 */}
-                        {
-                                activeMenu == '상품 관리' && (
+                        {activeMenu == '상품 관리' && (
+                                <div style={{ display: 'flex', flexDirection: 'column', width: '80%' }}>
                                         <div className='category-content'>
-                                                <div >
-                                                        {/* 상품검색 */}
-                                                        <h4 style={{ textAlign: 'left', fontWeight: '600px' }}>상품 검색</h4>
-                                                        <hr />
-                                                        <div style={{ textAlign: 'left', width: '500px' }}>
-                                                                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
-                                                                        <p>카테고리 :</p>
-                                                                        <select className="cat1"
-                                                                                value={productBCategory}
-                                                                                onChange={(e) => setProductBCategory(e.target.value)}
-                                                                                style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}
-                                                                        >
-                                                                                <option value="">대분류</option>
-                                                                                {[...new Set(products.map(pd => pd.b_category))].map((cat) => (
-                                                                                        <option key={cat} value={cat}>{cat}</option>
-                                                                                ))}
-                                                                        </select>
-                                                                        <select className="cat1"
-                                                                                value={productSCategory}
-                                                                                onChange={(e) => setProductSCategory(e.target.value)}
-                                                                                style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}
-                                                                        >
-                                                                                <option value="">소분류</option>
-                                                                                {[...new Set(products.map(pd => pd.scategory))].map((cat) => (
-                                                                                        <option key={cat} value={cat}>{cat}</option>
-                                                                                ))}
-                                                                        </select>
+                                                {/* 상품검색 */}
+                                                <h4 style={{ textAlign: 'left', fontWeight: '600px' }}>상품 검색</h4>
+                                                <hr />
+                                                <div style={{ textAlign: 'left', width: '500px' }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
+                                                                <p>카테고리 :</p>
+                                                                <select className="cat1"
+                                                                        value={productBCategory}
+                                                                        onChange={(e) => setProductBCategory(e.target.value)}
+                                                                        style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}
+                                                                >
+                                                                        <option value="">대분류</option>
+                                                                        {[...new Set(products.map(pd => pd.b_category))].map((cat) => (
+                                                                                <option key={cat} value={cat}>{cat}</option>
+                                                                        ))}
+                                                                </select>
+                                                                <select className="cat1"
+                                                                        value={productSCategory}
+                                                                        onChange={(e) => setProductSCategory(e.target.value)}
+                                                                        style={{ width: '200px', padding: '3px', borderRadius: '10px', fontSize: '0.8em', height: '30px' }}
+                                                                >
+                                                                        <option value="">소분류</option>
+                                                                        {[...new Set(products.map(pd => pd.scategory))].map((cat) => (
+                                                                                <option key={cat} value={cat}>{cat}</option>
+                                                                        ))}
+                                                                </select>
+                                                        </div>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                                <p>검색어 :</p>
+                                                                <select
+                                                                        className="cat1" style={{ width: '100px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px' }}
+                                                                        value={productSearchKey} onChange={(e) => setProductSearchKey(e.target.value)}
+                                                                >
+                                                                        <option value="null">전체</option>
+                                                                        <option value="name">상품명</option>
+                                                                        <option value="businessName">기업명</option>
+                                                                </select>
+                                                                <input type='text' value={productSearchWord} onChange={(e) => setProductSearchWord(e.target.value)}
+                                                                        style={{ width: '320px', padding: '3px', borderRadius: '10px', fontSize: '0.8em',
+                                                                        height: '30px', border: '1px solid #333333' }} placeholder="검색어를 입력하세요."
+                                                                ></input>
+                                                        </div>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                                                                <p style={{ width: "80px d-inline-flex" }}>등록일자 :</p>
+                                                                <div className="row mx-0" style={{ cursor:'pointer', backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
+                                                                        <div className="col p-1 text-center" onClick={() => handleDateProductPreset('day')}>당일</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('week')}>일주일</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('month', 1)}>1개월</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('month', 3)}>3개월</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('year')}>1년</div>
                                                                 </div>
-                                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                        <p>검색어 :</p>
-                                                                        <select
-                                                                                className="cat1" style={{
-                                                                                        width: '100px', padding: '3px', borderRadius: '10px',
-                                                                                        fontSize: '0.8em', height: '30px'
-                                                                                }}
-                                                                                value={productSearchKey} onChange={(e) => setProductSearchKey(e.target.value)}
-                                                                        >
-                                                                                <option value="null">전체</option>
-                                                                                <option value="name">상품명</option>
-                                                                                <option value="businessName">기업명</option>
-                                                                        </select>
-                                                                        <input type='text' value={productSearchWord} onChange={(e) => setProductSearchWord(e.target.value)}
-                                                                                style={{
-                                                                                        width: '320px', padding: '3px', borderRadius: '10px', fontSize: '0.8em',
-                                                                                        height: '30px', border: '1px solid #333333'
-                                                                                }} placeholder="검색어를 입력하세요."
-                                                                        ></input>
+                                                        </div>
+                                                        <div style={{ marginLeft: "85px" }}>
+                                                                <div style={{ display: "flex", gap: "10px", fontSize: "0.8em", padding: "10px" }}>
+                                                                        <input type='date' className='calendar' value={productStartDate} onChange={(e) => setProductStartDate(e.target.value)} />
+                                                                        <b>~</b>
+                                                                        <input type='date' className='calendar' value={productEndDate} onChange={(e) => setProductEndDate(e.target.value)} />
                                                                 </div>
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                                                        <p style={{ width: "80px d-inline-flex" }}>등록일자 :</p>
-                                                                        <div className="row mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
-                                                                                <div className="col p-1 text-center" onClick={() => handleDateProductPreset('day')}>당일</div>
-                                                                                <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('week')}>일주일</div>
-                                                                                <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('month', 1)}>1개월</div>
-                                                                                <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('month', 3)}>3개월</div>
-                                                                                <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('year')}>1년</div>
-                                                                        </div>
-                                                                </div>
-                                                                <div style={{ marginLeft: "85px" }}>
-                                                                        <div style={{ display: "flex", gap: "10px", fontSize: "0.8em", padding: "10px" }}>
-                                                                                <input type='date' className='calendar' value={productStartDate} onChange={(e) => setProductStartDate(e.target.value)} />
-                                                                                <b>~</b>
-                                                                                <input type='date' className='calendar' value={productEndDate} onChange={(e) => setProductEndDate(e.target.value)} />
-                                                                        </div>
-                                                                </div>
-                                                                {/* <button
+                                                        </div>
+                                                        {/* <button
                                                                 onClick={() => {}}
                                                                 className='button2'
                                                                 style={{marginLeft: 'auto', display: 'block'}}
                                                         >
                                                                 검색
                                                         </button> */}
-                                                        </div>
-                                                        {/* 상품 목록 */}
-                                                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '20px' }}>상품 목록</h4>
-                                                        <hr />
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                                                                <button onClick={handleBulkProDelete} className='button' style={{ border: '1px solid blue', backgroundColor: 'blue', marginLeft: '10px' }}>선택삭제</button>
+                                                </div>
+                                                {/* 상품 목록 */}
+                                                <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '20px' }}>상품 목록</h4>
+                                                <hr />
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                                        <button onClick={handleBulkProDelete} className='button' style={{ border: '1px solid blue', backgroundColor: 'blue', marginLeft: '10px' }}>선택삭제</button>
+                                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                                                {/* 상품명 또는 기업명 검색 상태이면 해당 컨텍스트로 통계 열기 */}
+                                                                {productSearchWord && (productSearchKey === 'name' || productSearchKey === 'businessName') && (
+                                                                        <button className='button'
+                                                                                style={{ border: '1px solid #2d7df4', backgroundColor: '#2d7df4' }}
+                                                                                onClick={() => handleOpenSalesChart(
+                                                                                        productSearchKey === 'businessName' ? 'company' : 'product',
+                                                                                        productSearchWord
+                                                                                )}
+                                                                        >
+                                                                                📊 "{productSearchWord}" 매출 통계
+                                                                        </button>
+                                                                )}
                                                                 <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}
                                                                         onClick={() => { location.href = "/mypage/addproduct" }}
                                                                 >
                                                                         상품등록
                                                                 </button>
                                                         </div>
-
-                                                        <table className="table table-bordered" style={{ width: '100%', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
-                                                                <thead>
-                                                                        <tr style={{ fontSize: '0.8em' }}>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>일괄삭제</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>기업명</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>카테고리</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>상품명</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>판매가</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>등록일</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>재고</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>상태</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>목록 수정/삭제</th>
-                                                                        </tr>
-                                                                </thead>
-                                                                {filteredProducts.map((pd) => (
-                                                                        <tbody key={pd.pid}>
-                                                                                <tr>
-                                                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                                                <input type="checkbox" checked={selectedProIds.includes(pd.pid)}
-                                                                                                        onChange={() => handleProCheck(pd.pid)}
-                                                                                                />
-                                                                                        </td>
-                                                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.company?.businessName}</td>
-                                                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.b_category}〉{pd.scategory}</td>
-                                                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                                                <div style={{
-                                                                                                        maxWidth: '200px',
-                                                                                                        overflow: 'hidden',
-                                                                                                        textOverflow: 'ellipsis',
-                                                                                                        whiteSpace: 'nowrap',
-                                                                                                        margin: '0 auto'
-                                                                                                }}>
-                                                                                                        {pd.name}
-                                                                                                </div>
-                                                                                        </td>                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.price}</td>
-                                                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.writedate?.slice(0, 10)}</td>
-                                                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.count}</td>
-                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                                                <div className="col-7" style={{
-                                                                                                        display: 'inline-block', width: 'auto',
-                                                                                                        background: pd.count == 0 ? '#ffebee' : '#e3f2fd',
-                                                                                                        color: pd.count == 0 ? '#c62828' : '#1976d2',
-                                                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                                                                                                }}>
-                                                                                                        {pd.count == 0 ? '품절' : '재고 있음'}
-                                                                                                </div>
-                                                                                        </td>
-                                                                                        <td>
-                                                                                                <button className='button2' style={{ marginRight: '10px' }}>수정</button>
-                                                                                                <button className='button2' onClick={() => handleProDelete(pd.pid)}>삭제</button>
-                                                                                        </td>
-                                                                                </tr>
-                                                                        </tbody>
-                                                                ))}
-                                                        </table>
                                                 </div>
-                                        </div>
-                                )
-                        }
-                        {/* 세일관리 페이지 */}
-                        {
-                                activeMenu == '세일 관리' && (
-                                        <div className='category-content'>
-                                                <Reservation />
-                                                <Event />
-                                        </div>
-                                )
-                        }
-                        {
-                                activeMenu == '-예약' && (
-                                        <div className='category-content'>
-                                                <Reservation />
-                                        </div>
-                                )
-                        }
-                        {
-                                activeMenu == '-이벤트 관리' && (
-                                        <div className='category-content'>
-                                                <Event />
-                                        </div>
-                                )
-                        }
 
+                                                <table className="table table-bordered" style={{ width: '100%', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
+                                                        <thead>
+                                                                <tr style={{ fontSize: '0.8em' }}>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>일괄삭제</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>기업명</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>카테고리</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>상품명</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>판매가</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>등록일</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>재고</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>상태</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>목록 수정/삭제</th>
+                                                                </tr>
+                                                        </thead>
+                                                        {filteredProducts.slice((currentPage3 - 1) * postsPerPage3, currentPage3 * postsPerPage3).map((pd) => (
+                                                                <tbody key={pd.pid}>
+                                                                        <tr>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                                        <input type="checkbox" checked={selectedProIds.includes(pd.pid)}
+                                                                                                onChange={()=>handleProCheck(pd.pid)}
+                                                                                        />
+                                                                                </td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.company?.businessName}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.b_category}〉{pd.scategory}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                                        <div style={{
+                                                                                                maxWidth: '200px',
+                                                                                                overflow: 'hidden',
+                                                                                                textOverflow: 'ellipsis',
+                                                                                                whiteSpace: 'nowrap',
+                                                                                                margin: '0 auto'
+                                                                                        }}>
+                                                                                                {pd.name}
+                                                                                        </div>
+                                                                                </td>                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.price}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.writedate?.slice(0, 10)}</td>
+                                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{pd.count}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                                        <div className="col-7" style={{
+                                                                                                display: 'inline-block', width: 'auto',
+                                                                                                background: pd.count == 0 ? '#ffebee' : '#e3f2fd',
+                                                                                                color: pd.count == 0 ? '#c62828' : '#1976d2',
+                                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                                                                                        }}>
+                                                                                                {pd.count == 0 ?'품절':'재고 있음'}  
+                                                                                        </div>
+                                                                                </td>
+                                                                                <td>
+                                                                                        <button className='button2' style={{ marginRight: '10px' }}>수정</button>
+                                                                                        <button className='button2' onClick={()=> handleProDelete(pd.pid)}>삭제</button>
+                                                                                </td>
+                                                                        </tr>
+                                                                </tbody>
+                                                        ))}
+                                                </table>
+                                                <nav>
+                                                        <ul className="pagination" style={{ marginTop: '20px' }}>
+                                                                <li>
+                                                                        <a className='paging-text' href="#" onClick={(e) => paginate3(currentPage3 - 1, e)}
+                                                                                style={{ textDecoration: 'none', color: currentPage3 === 1 ? '#ccc' : '#333' }}>
+                                                                                ≪
+                                                                        </a>
+                                                                </li>
+                                                                {Array.from({ length: totalPages3 }, (_, i) => i + 1).map((num) => (
+                                                                        <li key={num}>
+                                                                                <a
+                                                                                        href="#"
+                                                                                        onClick={(e) => paginate3(num, e)}
+                                                                                        className={currentPage3 === num ? 'paging-active-text' : 'paging-text'}
+                                                                                        style={{
+                                                                                                textDecoration: 'none',
+                                                                                                fontWeight: currentPage3 === num ? 'bold' : 'normal',
+                                                                                                color: currentPage3 === num ? '#000' : '#888'
+                                                                                        }}
+                                                                                >
+                                                                                        {num}
+                                                                                </a>
+                                                                        </li>
+                                                                ))}
+                                                                <li>
+                                                                        <a className='paging-text' href="#" onClick={(e) => paginate3(currentPage3 + 1, e)}
+                                                                                style={{ textDecoration: 'none', color: currentPage3 === totalPages3 ? '#ccc' : '#333' }}>
+                                                                                ≫
+                                                                        </a>
+                                                                </li>
+                                                        </ul>
+                                                </nav>
+                                        </div>
+                                </div>
+                        )}
+                        {/* 세일관리 페이지 */}
+                        {activeMenu == '세일 관리' && (
+                                <div className='category-content'>
+                                        <Reservation />
+                                        <Event />
+                                </div>
+                        )}
+                        {activeMenu == '-예약' && (
+                                <div className='category-content'>
+                                        <Reservation />
+                                </div>
+                        )}
+                        {activeMenu == '-이벤트 관리' && (
+                                <div className='category-content'>
+                                        <Event />
+                                </div>
+                        )}
                         {/* 문의관리 페이지 */}
-                        {
-                                activeMenu === '문의 관리' && (
+                        {activeMenu === '문의 관리' && (
                                         <div className="category-content">
                                                 <div style={{ padding: "30px", background: "#fff", borderRadius: "8px", minHeight: "600px" }}>
                                                         <div style={{ marginBottom: "25px", textAlign: "left" }}>
@@ -1774,431 +2040,421 @@ function Manager() {
                                         </div>
                                 )
                         }
-
                         {/* 통계 페이지 */}
-                        {
-                                activeMenu == '통계' && (
-                                        <div style={{ display: 'flex', flexDirection: 'column', width: '80%' }}>
-                                                <div className='category-content'>
-                                                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>통계 정보 검색</h4>
-                                                        <hr />
-                                                        <div style={{ textAlign: 'left', width: '500px' }}>
-                                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                        <p>기업명 :</p>
-                                                                        <select className="cat1" style={{
-                                                                                width: '100px', padding: '3px', borderRadius: '10px',
-                                                                                fontSize: '0.8em', height: '30px'
-                                                                        }}
-                                                                                value={buySearchKey}
-                                                                                onChange={(e) => setBuySearchKey(e.target.value)}
-                                                                        >
-                                                                                <option value="">전체</option>
-                                                                                <option value="name">상품명</option>
-                                                                                <option value="businessName">기업명</option>
-                                                                        </select>
-                                                                        <input type='text' style={{
-                                                                                width: '320px', padding: '3px',
-                                                                                borderRadius: '10px', fontSize: '0.8em', height: '30px',
-                                                                                border: '1px solid #333333'
-                                                                        }} placeholder="검색어를 입력하세요."
-                                                                                value={buySearchWord}
-                                                                                onChange={(e) => setBuySearchWord(e.target.value)}
-                                                                        />
-                                                                </div>
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                                                        <p style={{ width: "80px d-inline-flex" }}>등록일자 :</p>
-                                                                        <div className="row mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
-                                                                                <div className="col p-1 text-center" onClick={() => handleDateStatsPreset('day')}>당일</div>
-                                                                                <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateStatsPreset('week')}>일주일</div>
-                                                                                <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateStatsPreset('month', 1)}>1개월</div>
-                                                                                <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateStatsPreset('month', 3)}>3개월</div>
-                                                                                <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateStatsPreset('year')}>1년</div>
-                                                                        </div>
-                                                                </div>
-                                                                <div style={{ marginLeft: "85px" }}>
-                                                                        <div style={{ display: "flex", gap: "10px", fontSize: "0.8em", padding: "10px" }}>
-                                                                                <input type='date' className='calendar'
-                                                                                        value={statsStartDate}
-                                                                                        onChange={(e) => setStatsStartDate(e.target.value)}
-                                                                                />
-                                                                                <b>~</b>
-                                                                                <input type='date' className='calendar' value={statsEndDate}
-                                                                                        onChange={(e) => setStatsEndDate(e.target.value)} />
-                                                                        </div>
-                                                                </div>
-                                                        </div>
-                                                        {/* 상품 목록 */}
-                                                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '20px' }}>상품 목록</h4>
-                                                        <hr />
-                                                        <button className='button' style={{ marginLeft: '90%', border: '1px solid blue', backgroundColor: 'blue' }} onClick={() => setChartOpen(true)}>매출 통계</button>
-                                                        <table className="table table-bordered" style={{ width: '100%', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
-                                                                <thead>
-                                                                        <tr style={{ fontSize: '0.8em' }}>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>날짜</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>상품코드</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>카테고리</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>상품명</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>기업명</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>판매가</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>주문건수</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>구매비</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>수수료</th>
-                                                                                <th style={{ backgroundColor: '#eeeeee' }}>상세보기</th>
-                                                                        </tr>
-                                                                </thead>
-                                                                {filteredGroupedList.map((item) => (
-                                                                        <tbody key={item.pId}>
-                                                                                <tr style={{ fontSize: '0.8em' }}>
-                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.latestDate}</td>
-                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.pId}</td>
-                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
-                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.name}</td>
-                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.company?.businessName}</td>
-                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.price}원</td>
-                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.totalCount}</td>
-                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                                                {(item.totalPrice - item.totalDiscount).toLocaleString()}원
-                                                                                        </td>
-                                                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                                                {Math.floor(item.totalPrice * 0.1).toLocaleString()}원
-                                                                                        </td>
-                                                                                        <td>
-                                                                                                <button className='button2' onClick={() => { setSelectedBuyItem(item); setModalOpen(true); }} style={{ width: '80px' }}>상세보기</button>
-                                                                                        </td>
-                                                                                </tr>
-                                                                        </tbody>
-                                                                ))}
-                                                        </table>
-                                                </div>
-                                        </div>
-                                )
-                        }
-                        {
-                                modalOpen && (
-                                        <>
-                                                <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999 }} onClick={() => setModalOpen(false)} />
-                                                <BuyTag />
-                                        </>
-                                )
-                        }
-                        {
-                                chartOpen && (
-                                        <>
-                                                <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999 }} onClick={() => setChartOpen(false)} />
-                                                <ChartModel />
-                                        </>
-                                )
-                        }
-                        {
-                                eventModalOpen && (
-                                        <div style={{
-                                                position: 'fixed', top: 0, left: 0,
-                                                width: '100%', height: '100%',
-                                                backgroundColor: 'rgba(0,0,0,0.4)',
-                                                display: 'flex', justifyContent: 'center', alignItems: 'center',
-                                                zIndex: 999
-                                        }}>
-                                                <div style={{
-                                                        width: '800px', background: '#fff',
-                                                        padding: '30px', borderRadius: '14px',
-                                                        boxShadow: '0 6px 18px rgba(0,0,0,0.2)'
-                                                }}>
+                        {activeMenu == '통계' && (
+                                <div style={{ display: 'flex', flexDirection: 'column', width: '80%' }}>
+                                        <div className='category-content'>
+                                                <h4 style={{ textAlign: 'left', fontWeight: '600' }}>통계 정보 검색</h4>
+                                                <hr />
+                                                <div style={{ textAlign: 'left', width: '500px' }}>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                <h4 style={{ marginBottom: '20px', fontWeight: '600' }}>게시글 등록</h4>
-                                                                <button style={{
-                                                                        backgroundColor: 'white', border: '1px solid white',
-                                                                        textAlign: 'center', alignItems: 'center', marginBottom: '30px'
-                                                                }}
-                                                                        onClick={() => setEventModalOpen(false)}
+                                                                <p>기업명 :</p>
+                                                                <select className="cat1" style={{ width: '100px', padding: '3px', borderRadius: '10px',
+                                                                        fontSize: '0.8em', height: '30px' }}
+                                                                        value={buySearchKey}
+                                                                        onChange={(e) => setBuySearchKey(e.target.value)}
                                                                 >
-                                                                        X
-                                                                </button>
-                                                        </div>
-                                                        {/* 상품 선택 */}
-                                                        <div style={{ marginBottom: '12px' }}>
-                                                                <div style={{ display: 'flex' }}>
-                                                                        <div style={{ fontWeight: '600', color: 'red' }}>*</div>
-                                                                        <label style={{ fontSize: '0.9em' }}>상품 선택</label>
-                                                                </div>
-                                                                <select style={{ width: '100%', padding: '6px', marginTop: '4px' }}
-                                                                        value={newEvent.pId}
-                                                                        onChange={(e) => setNewEvent({ ...newEvent, pId: e.target.value })}>
-                                                                        <option value=''>상품을 선택하세요</option>
-                                                                        {products.map(pd => (
-                                                                                <option key={pd.pid} value={pd.pid}>
-                                                                                        [{pd.pid}] {pd.name} ({pd.company?.businessName})
-                                                                                </option>
-                                                                        ))}
+                                                                        <option value="">전체</option>
+                                                                        <option value="name">상품명</option>
+                                                                        <option value="businessName">기업명</option>
                                                                 </select>
+                                                                <input type='text' style={{ width: '320px', padding: '3px',
+                                                                        borderRadius: '10px', fontSize: '0.8em', height: '30px',
+                                                                        border: '1px solid #333333' }} placeholder="검색어를 입력하세요."
+                                                                        value={buySearchWord}
+                                                                        onChange={(e) => setBuySearchWord(e.target.value)}
+                                                                />
                                                         </div>
-
-                                                        {/* 제목 */}
-                                                        <div style={{ marginBottom: '12px' }}>
-                                                                <div style={{ display: 'flex' }}>
-                                                                        <div style={{ fontWeight: '600', color: 'red' }}>*</div>
-                                                                        <label style={{ fontSize: '0.9em' }}>제목</label>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                                                                <p style={{ width: "80px d-inline-flex" }}>등록일자 :</p>
+                                                                <div className="row mx-0" style={{ cursor:'pointer', backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
+                                                                        <div className="col p-1 text-center" onClick={() => handleDateStatsPreset('day')}>당일</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateStatsPreset('week')}>일주일</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateStatsPreset('month', 1)}>1개월</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateStatsPreset('month', 3)}>3개월</div>
+                                                                        <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateStatsPreset('year')}>1년</div>
                                                                 </div>
-                                                                <input type='text' style={{ width: '100%', padding: '6px', marginTop: '4px' }}
-                                                                        value={newEvent.subject}
-                                                                        onChange={(e) => setNewEvent({ ...newEvent, subject: e.target.value })}
-                                                                        placeholder='제목을 입력하세요' />
                                                         </div>
-                                                        {/* 내용 */}
-                                                        <div style={{ marginBottom: '12px' }}>
-                                                                <div style={{ display: 'flex' }}>
-                                                                        <div style={{ fontWeight: '600', color: 'red' }}>*</div>
-                                                                        <label style={{ fontSize: '0.9em' }}>내용</label>
+                                                        <div style={{ marginLeft: "85px" }}>
+                                                                <div style={{ display: "flex", gap: "10px", fontSize: "0.8em", padding: "10px" }}>
+                                                                        <input type='date' className='calendar'
+                                                                        value={statsStartDate}
+                                                                        onChange={(e) => setStatsStartDate(e.target.value)}
+                                                                        />
+                                                                        <b>~</b>
+                                                                        <input type='date' className='calendar' value={statsEndDate}
+                                                                        onChange={(e) => setStatsEndDate(e.target.value)} />
                                                                 </div>
-                                                                <textarea style={{ width: '100%', padding: '6px', marginTop: '4px', height: '100px' }}
-                                                                        value={newEvent.context}
-                                                                        onChange={(e) => setNewEvent({ ...newEvent, context: e.target.value })}
-                                                                        placeholder='내용을 입력하세요' />
-                                                        </div>
-
-                                                        {/* 시작 날짜 */}
-                                                        <div style={{ marginBottom: '12px' }}>
-                                                                <div style={{ display: 'flex' }}>
-                                                                        <div style={{ fontWeight: '600', color: 'red' }}>*</div>
-                                                                        <label style={{ fontSize: '0.9em' }}>시작 날짜</label>
-                                                                </div>
-                                                                <input type='date' style={{ width: '100%', padding: '6px', marginTop: '4px' }}
-                                                                        value={newEvent.updatedate}
-                                                                        onChange={(e) => setNewEvent({ ...newEvent, updatedate: e.target.value })} />
-                                                        </div>
-
-                                                        {/* 종료 날짜 */}
-                                                        <div style={{ marginBottom: '20px' }}>
-                                                                <div style={{ display: 'flex' }}>
-                                                                        <div style={{ fontWeight: '600', color: 'red' }}>*</div>
-                                                                        <label style={{ fontSize: '0.9em' }}>종료 날짜</label>
-                                                                </div>
-                                                                <input type='date' style={{ width: '100%', padding: '6px', marginTop: '4px' }}
-                                                                        value={newEvent.enddate}
-                                                                        onChange={(e) => setNewEvent({ ...newEvent, enddate: e.target.value })} />
-                                                        </div>
-
-                                                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                                                                <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}
-                                                                        onClick={handleEventSubmit}>등록</button>
                                                         </div>
                                                 </div>
+                                                {/* 상품 목록 */}
+                                                <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '20px' }}>상품 목록</h4>
+                                                <hr />
+                                                <button className='button' style={{ marginLeft: '90%', border: '1px solid blue', backgroundColor: 'blue' }}
+                                                        onClick={() => handleOpenSalesChart(
+                                                                buySearchKey === 'businessName' ? 'company' : buySearchKey === 'name' ? 'product' : null,
+                                                                buySearchWord || ''
+                                                        )}
+                                                >매출 통계</button>
+                                                <table className="table table-bordered" style={{ width: '100%', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
+                                                        <thead>
+                                                                <tr style={{ fontSize: '0.8em' }}>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>날짜</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>상품코드</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>카테고리</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>상품명</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>기업명</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>판매가</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>주문건수</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>구매비</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>수수료</th>
+                                                                        <th style={{ backgroundColor: '#eeeeee' }}>상세보기</th>
+                                                                </tr>
+                                                        </thead>
+                                                        {filteredGroupedList.map((item) => (
+                                                                <tbody key={item.pId}>
+                                                                        <tr style={{ fontSize: '0.8em' }}>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.latestDate}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.pId}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.name}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.company?.businessName}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.price}원</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>{item.totalCount}</td>
+                                                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                                        {(item.totalPrice - item.totalDiscount).toLocaleString()}원
+                                                                                </td>
+                                                                                <td style={{textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                                        {Math.floor(item.totalPrice * 0.1).toLocaleString()}원
+                                                                                </td>
+                                                                                <td>
+                                                                                        <button className='button2' onClick={() => { setSelectedBuyItem(item); setModalOpen(true); }} style={{width:'80px'}}>상세보기</button>
+                                                                                </td>
+                                                                        </tr>
+                                                                </tbody>
+                                                        ))}
+                                                </table>
                                         </div>
-                                )
-                        }
+                                </div>
+                        )}
+                        {modalOpen && (
+                                <>
+                                        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999 }} onClick={() => setModalOpen(false)} />
+                                        <BuyTag />
+                                </>
+                        )}
+                        {chartOpen && (
+                                <>
+                                        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999 }} onClick={() => setChartOpen(false)} />
+                                        <ChartModel />
+                                </>
+                        )}
+                        {eventModalOpen && (
+                                <div style={{
+                                        position: 'fixed', top: 0, left: 0,
+                                        width: '100%', height: '100%',
+                                        backgroundColor: 'rgba(0,0,0,0.4)',
+                                        display: 'flex', justifyContent: 'center', alignItems: 'center',
+                                        zIndex: 999
+                                }}>
+                                        <div style={{
+                                                width: '800px', background: '#fff',
+                                                padding: '30px', borderRadius: '14px',
+                                                boxShadow: '0 6px 18px rgba(0,0,0,0.2)'
+                                        }}>
+                                                <div style={{display:'flex', justifyContent:'space-between'}}>
+                                                        <h4 style={{ marginBottom: '20px', fontWeight:'600' }}>게시글 등록</h4>
+                                                        <button style={{backgroundColor:'white', border:'1px solid white',
+                                                                textAlign:'center', alignItems:'center', marginBottom:'30px'
+                                                        }}
+                                                        onClick={() => setEventModalOpen(false)}
+                                                        >
+                                                                X
+                                                        </button>
+                                                </div>
+                                                {/* 상품 선택 */}
+                                                <div style={{ marginBottom: '12px' }}>
+                                                        <div style={{display:'flex'}}>
+                                                                <div style={{fontWeight:'600', color:'red'}}>*</div>
+                                                                <label style={{ fontSize: '0.9em' }}>상품 선택</label>
+                                                        </div>
+                                                        <select style={{ width: '100%', padding: '6px', marginTop: '4px' }}
+                                                        value={newEvent.pId}
+                                                        onChange={(e) => setNewEvent({ ...newEvent, pId: e.target.value })}>
+                                                        <option value=''>상품을 선택하세요</option>
+                                                        {products.map(pd => (
+                                                                <option key={pd.pid} value={pd.pid}>
+                                                                [{pd.pid}] {pd.name} ({pd.company?.businessName})
+                                                                </option>
+                                                        ))}
+                                                        </select>
+                                                </div>
+
+                                                {/* 제목 */}
+                                                <div style={{ marginBottom: '12px' }}>
+                                                        <div style={{display:'flex'}}>
+                                                                <div style={{fontWeight:'600', color:'red'}}>*</div>
+                                                                <label style={{ fontSize: '0.9em' }}>제목</label>
+                                                        </div>
+                                                        <input type='text' style={{ width: '100%', padding: '6px', marginTop: '4px' }}
+                                                        value={newEvent.subject}
+                                                        onChange={(e) => setNewEvent({ ...newEvent, subject: e.target.value })}
+                                                        placeholder='제목을 입력하세요' />
+                                                </div>
+                                                {/* 내용 */}
+                                                <div style={{ marginBottom: '12px' }}>
+                                                        <div style={{display:'flex'}}>
+                                                                <div style={{fontWeight:'600', color:'red'}}>*</div>
+                                                                <label style={{ fontSize: '0.9em' }}>내용</label>
+                                                        </div>
+                                                        <textarea style={{ width: '100%', padding: '6px', marginTop: '4px', height: '100px' }}
+                                                        value={newEvent.context}
+                                                        onChange={(e) => setNewEvent({ ...newEvent, context: e.target.value })}
+                                                        placeholder='내용을 입력하세요' />
+                                                </div>
+
+                                                {/* 시작 날짜 */}
+                                                <div style={{ marginBottom: '12px' }}>
+                                                        <div style={{display:'flex'}}>
+                                                                <div style={{fontWeight:'600', color:'red'}}>*</div>
+                                                                <label style={{ fontSize: '0.9em' }}>시작 날짜</label>
+                                                        </div>
+                                                        <input type='date' style={{ width: '100%', padding: '6px', marginTop: '4px' }}
+                                                        value={newEvent.updatedate}
+                                                        onChange={(e) => setNewEvent({ ...newEvent, updatedate: e.target.value })} />
+                                                </div>
+
+                                                {/* 종료 날짜 */}
+                                                <div style={{ marginBottom: '20px' }}>
+                                                        <div style={{display:'flex'}}>
+                                                                <div style={{fontWeight:'600', color:'red'}}>*</div>
+                                                                <label style={{ fontSize: '0.9em' }}>종료 날짜</label>
+                                                        </div>
+                                                        <input type='date' style={{ width: '100%', padding: '6px', marginTop: '4px' }}
+                                                        value={newEvent.enddate}
+                                                        onChange={(e) => setNewEvent({ ...newEvent, enddate: e.target.value })} />
+                                                </div>
+
+                                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                                                        <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}
+                                                        onClick={handleEventSubmit}>등록</button>
+                                                </div>
+                                        </div>
+                                </div>
+                        )}
                         {/* 환경설정 페이지
                         {activeMenu == '환경설정' && (
                                 <div>
                                 </div>
                         )} */}
                         {/* 정산 */}
-                        {
-                                activeMenu == '정산' && (
-                                        <div style={{ display: 'flex', flexDirection: 'column', width: '80%' }}>
-                                                <div className='category-content'>
-                                                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>정산</h4>
-                                                        <hr />
+                        {activeMenu == '정산' && (
+                                <div style={{ display: 'flex', flexDirection: 'column', width: '80%' }}>
+                                        <div className='category-content'>
+                                                <h4 style={{ textAlign: 'left', fontWeight: '600' }}>정산</h4>
+                                                <hr />
 
-                                                        {/* 정산 요약 박스 영역 */}
+                                                {/* 정산 요약 박스 영역 */}
+                                                <div style={{
+                                                        display: 'flex',
+                                                        gap: '20px',
+                                                        margin: '45px 0'
+                                                }}>
+
+                                                        {/* 정산 예정 금액 */}
                                                         <div style={{
-                                                                display: 'flex',
-                                                                gap: '20px',
-                                                                margin: '45px 0'
+                                                                flex: 1,
+                                                                border: '1px solid #dcdcdc',
+                                                                borderRadius: '12px',
+                                                                padding: '25px 20px',
+                                                                textAlign: 'center'
+
                                                         }}>
+                                                                <h4 style={{ margin: 0, marginBottom: '10px', fontSize: '16px', color: '#555' }}>
+                                                                        정산 예정금액
+                                                                </h4>
 
-                                                                {/* 정산 예정 금액 */}
-                                                                <div style={{
-                                                                        flex: 1,
-                                                                        border: '1px solid #dcdcdc',
-                                                                        borderRadius: '12px',
-                                                                        padding: '25px 20px',
-                                                                        textAlign: 'center'
-
-                                                                }}>
-                                                                        <h4 style={{ margin: 0, marginBottom: '10px', fontSize: '16px', color: '#555' }}>
-                                                                                정산 예정금액
-                                                                        </h4>
-
-                                                                        <div style={{ fontSize: '24px', fontWeight: '700', color: '#2d7df4' }}>
-                                                                                ₩ 1,200,000
-                                                                        </div>
+                                                                <div style={{ fontSize: '24px', fontWeight: '700', color: '#2d7df4' }}>
+                                                                        ₩ 1,200,000
                                                                 </div>
-
-                                                                {/* 이번달 판매 총액 */}
-                                                                <div style={{
-                                                                        flex: 1,
-                                                                        border: '1px solid #dcdcdc',
-                                                                        borderRadius: '12px',
-                                                                        padding: '25px 20px',
-                                                                        textAlign: 'center'
-
-                                                                }}>
-                                                                        <h4 style={{ margin: 0, marginBottom: '10px', fontSize: '16px', color: '#555' }}>
-                                                                                이번달 판매 총액
-                                                                        </h4>
-
-                                                                        <div style={{ fontSize: '24px', fontWeight: '700', color: '#2d7df4' }}>
-                                                                                ₩ 3,540,000
-                                                                        </div>
-                                                                </div>
-
-                                                                {/* 판매 수수료 */}
-                                                                <div style={{
-                                                                        flex: 1,
-                                                                        border: '1px solid #dcdcdc',
-                                                                        borderRadius: '12px',
-                                                                        padding: '25px 20px',
-                                                                        textAlign: 'center'
-                                                                }}>
-                                                                        <h4 style={{ margin: 0, marginBottom: '10px', fontSize: '16px', color: '#555' }}>
-                                                                                판매 수수료
-                                                                        </h4>
-
-                                                                        <div style={{ fontSize: '24px', fontWeight: '700', color: '#e74c3c' }}>
-                                                                                ₩ 354,000
-                                                                        </div>
-                                                                </div>
-
                                                         </div>
-                                                        {/* 정산 목록 테이블 */}
-                                                        <table className="management-table">
-                                                                <thead>
+
+                                                        {/* 이번달 판매 총액 */}
+                                                        <div style={{
+                                                                flex: 1,
+                                                                border: '1px solid #dcdcdc',
+                                                                borderRadius: '12px',
+                                                                padding: '25px 20px',
+                                                                textAlign: 'center'
+
+                                                        }}>
+                                                                <h4 style={{ margin: 0, marginBottom: '10px', fontSize: '16px', color: '#555' }}>
+                                                                        이번달 판매 총액
+                                                                </h4>
+
+                                                                <div style={{ fontSize: '24px', fontWeight: '700', color: '#2d7df4' }}>
+                                                                        ₩ 3,540,000
+                                                                </div>
+                                                        </div>
+
+                                                        {/* 판매 수수료 */}
+                                                        <div style={{
+                                                                flex: 1,
+                                                                border: '1px solid #dcdcdc',
+                                                                borderRadius: '12px',
+                                                                padding: '25px 20px',
+                                                                textAlign: 'center'
+                                                        }}>
+                                                                <h4 style={{ margin: 0, marginBottom: '10px', fontSize: '16px', color: '#555' }}>
+                                                                        판매 수수료
+                                                                </h4>
+
+                                                                <div style={{ fontSize: '24px', fontWeight: '700', color: '#e74c3c' }}>
+                                                                        ₩ 354,000
+                                                                </div>
+                                                        </div>
+
+                                                </div>
+                                                {/* 정산 목록 테이블 */}
+                                                <table className="management-table">
+                                                        <thead>
+                                                                <tr>
+                                                                        <th>거래 일시/번호</th>
+                                                                        <th>업체명</th>
+                                                                        <th>카테고리</th>
+                                                                        <th>상품 정보</th>
+                                                                        <th>판매가</th>
+                                                                        <th>수수료</th>
+                                                                        <th>정산액</th>
+                                                                        <th className="text-center">상태</th>
+                                                                        <th className="text-center">관리</th>
+                                                                </tr>
+                                                        </thead>
+
+                                                        <tbody>
+                                                                {products.length > 0 ? (
+                                                                        products.map((pd) => {
+                                                                                const price = pd.cost
+                                                                                        ? (typeof pd.cost === "string"
+                                                                                                ? Number(pd.cost.replace(/[^0-9]/g, ""))
+                                                                                                : Number(pd.cost))
+                                                                                        : 0;
+
+                                                                                const fee = Math.floor((price || 0) * 0.1);
+
+                                                                                return (
+                                                                                        <tr key={pd.id}>
+                                                                                                {/* 거래 일시/번호 */}
+                                                                                                <td className="order-date">
+                                                                                                        <span className="id-text">NO.{pd.id}2026</span><br />
+                                                                                                        <small>{pd.writedate}</small>
+                                                                                                </td>
+
+                                                                                                {/* 업체명 */}
+                                                                                                <td>{pd.comname}</td>
+
+                                                                                                {/* 카테고리 */}
+                                                                                                <td>{pd.category}</td>
+
+                                                                                                {/* 상품명 */}
+                                                                                                <td><strong>{pd.title}</strong></td>
+
+                                                                                                {/* 판매가 */}
+                                                                                                <td className="text-right">{price.toLocaleString()}원</td>
+
+                                                                                                {/* 수수료 */}
+                                                                                                <td className="fee-text">-{fee.toLocaleString()}원</td>
+
+                                                                                                {/* 정산액 */}
+                                                                                                <td className="settle-price">
+                                                                                                        {(price - fee).toLocaleString()}원
+                                                                                                </td>
+
+                                                                                                {/* 상태 */}
+                                                                                                <td className="text-center">
+                                                                                                        <span
+                                                                                                                className={
+                                                                                                                        pd.state === "정산완료"
+                                                                                                                                ? "corp-status-badge done"
+                                                                                                                                : "corp-status-badge"
+                                                                                                                }
+                                                                                                        >
+                                                                                                                {pd.state}
+                                                                                                        </span>
+                                                                                                </td>
+
+                                                                                                {/* 수정/삭제 */}
+                                                                                                <td className="text-center">
+                                                                                                        <button className="button2"
+                                                                                                                onClick={() => {
+                                                                                                                        setSelectedItem(pd);      // 선택된 상품 저장
+                                                                                                                        setOpenSettleModal(true); // 모달 열기
+                                                                                                                }}
+                                                                                                        >
+                                                                                                                정산
+                                                                                                        </button>
+                                                                                                </td>
+
+                                                                                        </tr>
+
+                                                                                );
+                                                                        })
+
+                                                                ) : (
                                                                         <tr>
-                                                                                <th>거래 일시/번호</th>
-                                                                                <th>업체명</th>
-                                                                                <th>카테고리</th>
-                                                                                <th>상품 정보</th>
-                                                                                <th>판매가</th>
-                                                                                <th>수수료</th>
-                                                                                <th>정산액</th>
-                                                                                <th className="text-center">상태</th>
-                                                                                <th className="text-center">관리</th>
+                                                                                <td colSpan="9" className="empty-row">
+                                                                                        데이터가 존재하지 않습니다.
+                                                                                </td>
                                                                         </tr>
-                                                                </thead>
-
-                                                                <tbody>
-                                                                        {products.length > 0 ? (
-                                                                                products.map((pd) => {
-                                                                                        const price =
-                                                                                                typeof pd.cost === "string"
-                                                                                                        ? Number(pd.cost.replace(/[^0-9]/g, ""))
-                                                                                                        : pd.cost;
-
-                                                                                        const fee = Math.floor(price * 0.1);
-
-                                                                                        return (
-                                                                                                <tr key={pd.id}>
-                                                                                                        {/* 거래 일시/번호 */}
-                                                                                                        <td className="order-date">
-                                                                                                                <span className="id-text">NO.{pd.id}2026</span><br />
-                                                                                                                <small>{pd.writedate}</small>
-                                                                                                        </td>
-
-                                                                                                        {/* 업체명 */}
-                                                                                                        <td>{pd.comname}</td>
-
-                                                                                                        {/* 카테고리 */}
-                                                                                                        <td>{pd.category}</td>
-
-                                                                                                        {/* 상품명 */}
-                                                                                                        <td><strong>{pd.title}</strong></td>
-
-                                                                                                        {/* 판매가 */}
-                                                                                                        <td className="text-right">{price.toLocaleString()}원</td>
-
-                                                                                                        {/* 수수료 */}
-                                                                                                        <td className="fee-text">-{fee.toLocaleString()}원</td>
-
-                                                                                                        {/* 정산액 */}
-                                                                                                        <td className="settle-price">
-                                                                                                                {(price - fee).toLocaleString()}원
-                                                                                                        </td>
-
-                                                                                                        {/* 상태 */}
-                                                                                                        <td className="text-center">
-                                                                                                                <span
-                                                                                                                        className={
-                                                                                                                                pd.state === "정산완료"
-                                                                                                                                        ? "corp-status-badge done"
-                                                                                                                                        : "corp-status-badge"
-                                                                                                                        }
-                                                                                                                >
-                                                                                                                        {pd.state}
-                                                                                                                </span>
-                                                                                                        </td>
-
-                                                                                                        {/* 수정/삭제 */}
-                                                                                                        <td className="text-center">
-                                                                                                                <button className="button2"
-                                                                                                                        onClick={() => {
-                                                                                                                                setSelectedItem(pd);      // 선택된 상품 저장
-                                                                                                                                setOpenSettleModal(true); // 모달 열기
-                                                                                                                        }}
-                                                                                                                >
-                                                                                                                        정산
-                                                                                                                </button>
-                                                                                                        </td>
-
-                                                                                                </tr>
-
-                                                                                        );
-                                                                                })
-
-                                                                        ) : (
-                                                                                <tr>
-                                                                                        <td colSpan="9" className="empty-row">
-                                                                                                데이터가 존재하지 않습니다.
-                                                                                        </td>
-                                                                                </tr>
-                                                                        )}
-                                                                </tbody>
-                                                        </table>
-                                                        {/* 정산 버튼 눌렀을때 상세화면 */}
-                                                        {openSettleModal && (
+                                                                )}
+                                                        </tbody>
+                                                </table>
+                                                {/* 정산 버튼 눌렀을때 상세화면 */}
+                                                {openSettleModal && (
+                                                        <div style={{
+                                                                position: "fixed",
+                                                                top: 0, left: 0,
+                                                                width: "100%", height: "100%",
+                                                                backgroundColor: "rgba(0,0,0,0.4)",
+                                                                display: "flex",
+                                                                justifyContent: "center",
+                                                                alignItems: "center",
+                                                                zIndex: 999
+                                                        }}>
                                                                 <div style={{
-                                                                        position: "fixed",
-                                                                        top: 0, left: 0,
-                                                                        width: "100%", height: "100%",
-                                                                        backgroundColor: "rgba(0,0,0,0.4)",
-                                                                        display: "flex",
-                                                                        justifyContent: "center",
-                                                                        alignItems: "center",
-                                                                        zIndex: 999
+                                                                        width: "420px",
+                                                                        background: "#fff",
+                                                                        padding: "30px 25px",
+                                                                        borderRadius: "14px",
+                                                                        boxShadow: "0 6px 18px rgba(0,0,0,0.2)"
                                                                 }}>
-                                                                        <div style={{
-                                                                                width: "420px",
-                                                                                background: "#fff",
-                                                                                padding: "30px 25px",
-                                                                                borderRadius: "14px",
-                                                                                boxShadow: "0 6px 18px rgba(0,0,0,0.2)"
-                                                                        }}>
-                                                                                <h3 style={{ marginTop: 0, marginBottom: "15px" }}>
-                                                                                        정산 상세
-                                                                                </h3>
+                                                                        <h3 style={{ marginTop: 0, marginBottom: "15px" }}>
+                                                                                정산 상세
+                                                                        </h3>
 
-                                                                                <p><strong>상품명:</strong> {selectedItem?.title}</p>
+                                                                        <p><strong>상품명:</strong> {selectedItem?.title}</p>
 
-                                                                                <p><strong>판매가:</strong> {parsePrice(selectedItem?.cost).toLocaleString()}원</p>
+                                                                        <p><strong>판매가:</strong> {parsePrice(selectedItem?.cost).toLocaleString()}원</p>
 
-                                                                                <p><strong>수수료(10%):</strong> {(parsePrice(selectedItem?.cost) * 0.1).toLocaleString()}원</p>
+                                                                        <p><strong>수수료(10%):</strong> {(parsePrice(selectedItem?.cost) * 0.1).toLocaleString()}원</p>
 
-                                                                                <p><strong>정산액:</strong> {(parsePrice(selectedItem?.cost) * 0.9).toLocaleString()}원</p>
+                                                                        <p><strong>정산액:</strong> {(parsePrice(selectedItem?.cost) * 0.9).toLocaleString()}원</p>
 
-                                                                                <div style={{ textAlign: "right", marginTop: "20px" }}>
-                                                                                        <button
-                                                                                                className="button2"
-                                                                                                onClick={() => setOpenSettleModal(false)}
-                                                                                        >
-                                                                                                닫기
-                                                                                        </button>
-                                                                                </div>
+                                                                        <div style={{ textAlign: "right", marginTop: "20px" }}>
+                                                                                <button
+                                                                                        className="button2"
+                                                                                        onClick={() => setOpenSettleModal(false)}
+                                                                                >
+                                                                                        닫기
+                                                                                </button>
                                                                         </div>
                                                                 </div>
-                                                        )}
-                                                </div>
+                                                        </div>
+                                                )}
                                         </div>
-                                )
-                        }
-                </div >
+                                </div>
+                        )}
+                </div>
         )
 }
 
