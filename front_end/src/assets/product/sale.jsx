@@ -11,7 +11,7 @@ function sale(){
 
         const [events, setEvents] = useState([]);
                 useEffect(() => {
-                axios.get('http://localhost:9991/event/active')
+                axios.get('http://localhost:9990/event/active')
                         .then(res => setEvents(res.data))
                         .catch(err => console.log(err));
         }, []);

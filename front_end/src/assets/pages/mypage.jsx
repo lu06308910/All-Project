@@ -33,7 +33,7 @@ const MyPage = () => {
 
                                 // 유저 정보 가져오기
                                 if (logId) {
-                                        const userRes = await axios.get(`http://localhost:9991/member/edit?userid=${logId}&usertype=${usertype}`);
+                                        const userRes = await axios.get(`http://localhost:9990/member/edit?userid=${logId}&usertype=${usertype}`);
                                         setUserInfo(userRes.data);
                                         // 주문목록 가져올때 필요한 id
                                         ordersMemberId = userRes.data?.mid;
@@ -41,32 +41,32 @@ const MyPage = () => {
 
                                 // 문의 내역 가져오기 (DB 연동)
                                 if (loginName) {
-                                        const inqRes = await axios.get(`http://localhost:9991/support/list?writer=${loginName}`);
+                                        const inqRes = await axios.get(`http://localhost:9990/support/list?writer=${loginName}`);
                                         setInquiries(inqRes.data);
                                 }
                                 // 일반사용자 목록
                                 if (logId && !isCorporate) {
-                                        const wishRes = await axios.get(`http://localhost:9991/wish/list?userid=${logId}`);
+                                        const wishRes = await axios.get(`http://localhost:9990/wish/list?userid=${logId}`);
                                         setWishItems(wishRes.data); // 찜목록
 
-                                        const orderRes = await axios.get(`http://localhost:9991/buy/list/${ordersMemberId}`);
+                                        const orderRes = await axios.get(`http://localhost:9990/buy/list/${ordersMemberId}`);
                                         setOrders(orderRes.data); // 주문목록
 
-                                        const cancelRes = await axios.get(`http://localhost:9991/buy/cancel/list/${ordersMemberId}`);
+                                        const cancelRes = await axios.get(`http://localhost:9990/buy/cancel/list/${ordersMemberId}`);
                                         setCancelItems(cancelRes.data); // 취소목록              
 
                                 }
                                 // 기업사용자 목록
                                 if (logId && isCorporate) {
-                                        const salesRes = await axios.get(`http://localhost:9991/buy/seller/saleslist?sellerId=${logId}`);
+                                        const salesRes = await axios.get(`http://localhost:9990/buy/seller/saleslist?sellerId=${logId}`);
                                         setSalesList(salesRes.data); // 판매목록
 
-                                        const prodRes = await axios.get(`http://localhost:9991/product/seller/list?sellerId=${logId}`);
+                                        const prodRes = await axios.get(`http://localhost:9990/product/seller/list?sellerId=${logId}`);
                                         console.log("백엔드에서 받아온 데이터:", prodRes.data);
                                         console.log("현재 로그인된 기업 ID (logId):", logId);
                                         setProducts(prodRes.data); // 상품 목록, 수정
 
-                                        const corpInqRes = await axios.get(`http://localhost:9991/question/seller/list?sellerId=${logId}`);
+                                        const corpInqRes = await axios.get(`http://localhost:9990/question/seller/list?sellerId=${logId}`);
                                         setInquiries(corpInqRes.data); // 문의내역
                                 }
 
@@ -146,7 +146,7 @@ const MyPage = () => {
 
                 try {
                         // 아까 통합한 백엔드 LikeController 주소(/like/toggle)로 요청을 보냅니다.
-                        const response = await axios.post("http://localhost:9991/like/toggle", {
+                        const response = await axios.post("http://localhost:9990/like/toggle", {
                                 userid: logId,
                                 memberId: mId ? Number(mId) : null,
                                 productId: Number(pid),
@@ -301,7 +301,7 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
 
                 try {
                         // 2. 경로에 bid를 넣습니다.
-                        await axios.post(`http://localhost:9991/buy/status/${bid}?action=${actionType}`);
+                        await axios.post(`http://localhost:9990/buy/status/${bid}?action=${actionType}`);
 
                         alert(`${actionLabel} 처리가 완료되었습니다.`);
 
@@ -324,7 +324,7 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
                                 <div className="order-item" key={item.bId || index}>
                                         <div className="item-img">
                                                 {item.product?.fileList && item.product.fileList[0] ? (
-                                                        <img src={`http://localhost:9991/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        <img src={`http://localhost:9990/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                 ) : (
                                                         <div style={{ width: '100%', height: '100%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#aaa' }}>이미지 준비중</div>
                                                 )}
@@ -486,7 +486,7 @@ const CancelHistory = ({ cancelItems }) => {
                                         {/* 상품 이미지 출력 */}
                                         <div className="item-img">
                                                 {item.product?.fileList && item.product.fileList[0] ? (
-                                                        <img src={`http://localhost:9991/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        <img src={`http://localhost:9990/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                 ) : (
                                                         <div style={{ width: '100%', height: '100%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#aaa' }}>이미지 준비중</div>
                                                 )}
@@ -569,13 +569,13 @@ const WishList = ({ wishItems, onDelete }) => {
                                                                 <div className="item-img-box">
                                                                         {item.product?.fileList && item.product.fileList.length > 0 && item.product.fileList[0] ? (
                                                                                 <img
-                                                                                        src={`http://localhost:9991/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`}
+                                                                                        src={`http://localhost:9990/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`}
                                                                                         alt={productName}
                                                                                         style={{ width: '100px', height: '100px', objectFit: 'cover' }}
                                                                                 />
                                                                         ) : item.fileList && item.fileList.length > 0 && item.fileList[0] ? (
                                                                                 <img
-                                                                                        src={`http://localhost:9991/static/uploads/${item.fileList[0].filename}.${item.fileList[0].extname}`}
+                                                                                        src={`http://localhost:9990/static/uploads/${item.fileList[0].filename}.${item.fileList[0].extname}`}
                                                                                         alt={productName}
                                                                                         style={{ width: '100px', height: '100px', objectFit: 'cover' }}
                                                                                 />
@@ -761,7 +761,7 @@ const ProductManagement = ({ products, setProducts }) => {
                 const targetId = editingId;
                 try {
                         // 백엔드로 수정 데이터 전송
-                        await axios.put(`http://localhost:9991/product/seller/update/${targetId}`, editFormData);
+                        await axios.put(`http://localhost:9990/product/seller/update/${targetId}`, editFormData);
 
                         // 프론트 UI 실시간 업데이트 반영
                         setProducts(products.map(p => (p.pId === targetId || p.pid === targetId) ? editFormData : p));
@@ -778,7 +778,7 @@ const ProductManagement = ({ products, setProducts }) => {
                 if (!window.confirm("정말 이 상품을 완전히 삭제하시겠습니까?\n삭제된 상품은 복구할 수 없습니다.")) return;
                 try {
                         // 백엔드로 삭제 요청 보내기
-                        await axios.delete(`http://localhost:9991/product/seller/delete/${pId}`);
+                        await axios.delete(`http://localhost:9990/product/seller/delete/${pId}`);
 
                         // 프론트 UI에서 제외하기
                         setProducts(prev => prev.filter(p => (p.pId !== pId && p.pid !== pId)));
@@ -870,7 +870,7 @@ const ProductManagement = ({ products, setProducts }) => {
                                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                                                                 <div style={{ width: '40px', height: '40px', backgroundColor: '#f5f5f5', borderRadius: '4px', overflow: 'hidden' }}>
                                                                                                         {product.fileList && product.fileList[0] && (
-                                                                                                                <img src={`http://localhost:9991/static/uploads/${product.fileList[0].filename}.${product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                                                                <img src={`http://localhost:9990/static/uploads/${product.fileList[0].filename}.${product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                                                                         )}
                                                                                                 </div>
 
@@ -1097,7 +1097,7 @@ const CorpInquiryList = ({ inquiries }) => {
                 }
                 try {
                         // 백엔드 /question 컨트롤러의 PUT 주소로 데이터 전송
-                        await axios.put(`http://localhost:9991/question/seller/reply/${id}`, {
+                        await axios.put(`http://localhost:9990/question/seller/reply/${id}`, {
                                 reply: replyText
                         });
                         alert("상품 문의 답변이 성공적으로 등록되었습니다.");

@@ -17,7 +17,7 @@ function Qna() {
 
         const fetchFaqs = async () => {
                 try {
-                        const response = await axios.get("http://localhost:9991/service");
+                        const response = await axios.get("http://localhost:9990/service");
                         setFaqList(response.data);
                 } catch (error) {
                         console.error("FAQ 데이터를 가져오는 중 오류 발생:", error);
@@ -32,7 +32,7 @@ function Qna() {
                         return;
                 }
                 try {
-                        const response = await axios.get(`http://localhost:9991/service/search?keyword=${searchTerm}`);
+                        const response = await axios.get(`http://localhost:9990/service/search?keyword=${searchTerm}`);
                         setFaqList(response.data);
                 } catch (error) {
                         console.error("검색 중 오류 발생:", error);

@@ -34,7 +34,7 @@ function Manager() {
         //게시글관리
         const [events, setEvents] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9991/event/all')
+                axios.get('http://localhost:9990/event/all')
                         .then(res => setEvents(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -55,7 +55,7 @@ function Manager() {
         //회원 업데이트
         const [users, setUsers] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9991/member/all/member')
+                axios.get('http://localhost:9990/member/all/member')
                         .then(res => setUsers(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -64,7 +64,7 @@ function Manager() {
         //상품관리
         const [products, setProducts] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9991/all/product')
+                axios.get('http://localhost:9990/all/product')
                         .then(res => setProducts(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -76,7 +76,7 @@ function Manager() {
 
         // 문의 목록 함수-------------------------------------------------------------------------- 대호수정
         const getAdminInquiries = () => {
-                axios.get('http://localhost:9991/support/list/all')
+                axios.get('http://localhost:9990/support/list/all')
                         .then(res => setAsks(res.data || []))
                         .catch(err => console.log("문의 목록 갱신 에러:", err));
         };
@@ -97,7 +97,7 @@ function Manager() {
                 formData.append("s_id", sId);
                 formData.append("answer", replyText);
 
-                axios.post("http://localhost:9991/support/reply", formData)
+                axios.post("http://localhost:9990/support/reply", formData)
                         .then((res) => {
                                 if (res.data === "success") {
                                         alert("답변이 성공적으로 등록되었습니다.");
@@ -115,7 +115,7 @@ function Manager() {
         //통계용 buy테이블 연결
         const [buys, setBuys] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9991/buy/list/all')
+                axios.get('http://localhost:9990/buy/list/all')
                         .then(res => setBuys(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -163,7 +163,7 @@ function Manager() {
 
         const [companys, setCompanys] = useState([]);
         useEffect(() => {
-                axios.get('http://localhost:9991/member/all/business')
+                axios.get('http://localhost:9990/member/all/business')
                         .then(res => setCompanys(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -345,12 +345,12 @@ function Manager() {
 
                 Promise.all(
                         targets.map(mid =>
-                                axios.patch(`http://localhost:9991/member/unregister/${mid}`)
+                                axios.patch(`http://localhost:9990/member/unregister/${mid}`)
                         )
                 )
                         .then(() => {
                                 alert("탈퇴처리 완료");
-                                axios.get('http://localhost:9991/member/all')
+                                axios.get('http://localhost:9990/member/all')
                                         .then(res => setUsers(res.data));
                                 setSelectedItems(prev => ({ ...prev, '회원관리': [] }));
                         })
@@ -359,10 +359,10 @@ function Manager() {
 
         const handleProDelete = (pid) => {
                 if (!window.confirm('상품을 삭제하시겠습니까?')) return;
-                axios.delete(`http://localhost:9991/product/${pid}`)
+                axios.delete(`http://localhost:9990/product/${pid}`)
                         .then(() => {
                                 alert('삭제 완료');
-                                axios.get('http://localhost:9991/all/product').then(res => setProducts(res.data));
+                                axios.get('http://localhost:9990/all/product').then(res => setProducts(res.data));
                         })
                         .catch(err => console.log(err));
         };
@@ -370,10 +370,10 @@ function Manager() {
         const handleBulkProDelete = () => {
                 if (selectedProIds.length == 0) return alert('삭제할 제품을 선택해 주세요.');
                 if (!window.confirm(`선택한 ${selectedProIds.length}개의 글을 삭제하시겠습니까?`)) return;
-                Promise.all(selectedProIds.map(id => axios.delete(`http://localhost:9991/product/${id}`)))
+                Promise.all(selectedProIds.map(id => axios.delete(`http://localhost:9990/product/${id}`)))
                         .then(() => {
                                 setSelectedProIds([]);
-                                axios.get('http://localhost:9991/all/product').then(res => setProducts(res.data));
+                                axios.get('http://localhost:9990/all/product').then(res => setProducts(res.data));
                         })
                         .catch(err => console.log(err));
         };
@@ -387,10 +387,10 @@ function Manager() {
 
         const handleEventDelete = (eId) => {
                 if (!window.confirm('삭제하시겠습니까?')) return;
-                axios.delete(`http://localhost:9991/event/delete/${eId}`)
+                axios.delete(`http://localhost:9990/event/delete/${eId}`)
                         .then(() => {
                                 alert('삭제 완료');
-                                axios.get('http://localhost:9991/event/all').then(res => setEvents(res.data));
+                                axios.get('http://localhost:9990/event/all').then(res => setEvents(res.data));
                         })
                         .catch(err => console.log(err));
         };
@@ -398,11 +398,11 @@ function Manager() {
         const handleBulkEventDelete = () => {
                 if (selectedEventIds.length === 0) return alert('삭제할 항목을 선택해주세요.');
                 if (!window.confirm(`선택한 ${selectedEventIds.length}개를 삭제하시겠습니까?`)) return;
-                axios.delete('http://localhost:9991/event/delete', { data: selectedEventIds })
+                axios.delete('http://localhost:9990/event/delete', { data: selectedEventIds })
                         .then(() => {
                                 alert('삭제 완료');
                                 setSelectedEventIds([]);
-                                axios.get('http://localhost:9991/event/all').then(res => setEvents(res.data));
+                                axios.get('http://localhost:9990/event/all').then(res => setEvents(res.data));
                         })
                         .catch(err => console.log(err));
         };
@@ -423,7 +423,7 @@ function Manager() {
         const [companyOutSearchWord, setCompanyOutSearchWord] = useState('');
 
         const handleUserSearch = () => {
-                axios.post('http://localhost:9991/member/search', {
+                axios.post('http://localhost:9990/member/search', {
                         searchKey: userSearchKey,
                         searchWord: userSearchWord
                 })
@@ -432,7 +432,7 @@ function Manager() {
         }
 
         const handleCompanySearch = () => {
-                axios.post('http://localhost:9991/member/search/business', {
+                axios.post('http://localhost:9990/member/search/business', {
                         searchKey: companySearchKey,
                         searchWord: companySearchWord
                 })
@@ -441,7 +441,7 @@ function Manager() {
         }
 
         const handleProductSearch = () => {
-                axios.post('http://localhost:9991/search/product', {
+                axios.post('http://localhost:9990/search/product', {
                         searchKey: productSearchKey,
                         searchWord: productSearchWord
                 })
@@ -545,7 +545,7 @@ function Manager() {
                 if (!newEvent.context) return alert('내용을 입력해주세요.');
 
                 console.log('보내는테이터:', newEvent);
-                axios.post('http://localhost:9991/event/add', {
+                axios.post('http://localhost:9990/event/add', {
                         subject: newEvent.subject,
                         context: newEvent.context,
                         updatedate: newEvent.updatedate ? newEvent.updatedate + 'T00:00:00' : null,
@@ -556,7 +556,7 @@ function Manager() {
                                 alert('등록 완료');
                                 setEventModalOpen(false);
                                 setNewEvent({ subject: '', context: '', updatedate: '', enddate: '', pId: '' });
-                                axios.get('http://localhost:9991/event/all')
+                                axios.get('http://localhost:9990/event/all')
                                         .then(res => setEvents(res.data));
                         })
                         .catch(err => console.log(err));

@@ -44,7 +44,7 @@ function Basket() {
                         return;
                 }
 
-                axios.get(`http://localhost:9991/cart/list/${mId}`)
+                axios.get(`http://localhost:9990/cart/list/${mId}`)
                         .then(res => {
                                 console.log("cart response:", res.data);
 
@@ -98,7 +98,7 @@ function Basket() {
                 const newDelivery = totalPrice >= 50000 ? 0 : 3000;
 
                 try {
-                        await axios.put(`http://localhost:9991/cart/update/${item.cartId}`, {
+                        await axios.put(`http://localhost:9990/cart/update/${item.cartId}`, {
                                 color,
                                 size,
                                 count: safeCount,
@@ -199,7 +199,7 @@ function Basket() {
 
                 if (window.confirm("선택한 상품을 장바구니에서 삭제하시겠습니까?")) {
                         try {
-                                await axios.delete('http://localhost:9991/cart/delete', { data: selectedIds });
+                                await axios.delete('http://localhost:9990/cart/delete', { data: selectedIds });
                                 setCartList(remainingItems);
                         } catch (err) {
                                 console.error("삭제 실패:", err);
@@ -331,7 +331,7 @@ function Basket() {
                                                                                 <td style={{ width: '40%' }}>
                                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '20px' }}>
                                                                                                 <img src={item.product.fileList?.[0]
-                                                                                                        ? `http://localhost:9991/upload/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`
+                                                                                                        ? `http://localhost:9990/upload/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`
                                                                                                         : "/no-image.png"
                                                                                                 }
                                                                                                         className='img-basket' alt="제품" />
