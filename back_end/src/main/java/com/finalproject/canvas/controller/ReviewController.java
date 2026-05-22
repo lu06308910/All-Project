@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/review")
 @RequiredArgsConstructor
-@CrossOrigin
+
 public class ReviewController {
 
     private final ReviewService reviewService;

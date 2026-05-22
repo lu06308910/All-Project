@@ -10,13 +10,21 @@ function Top() {
   const isLogin = window.sessionStorage.getItem("logStatus") === "Y"; // 로그인 여부판단
   const logId = window.sessionStorage.getItem("logId"); // 로그인한 아이디
 
+  // 세션에서 유저 타입(PERSONAL 또는 BUSINESS)을 가져옵니다.
+  const usertype = window.sessionStorage.getItem("usertype");
+
   // 관리자 여부 확인 (예: 아이디가 'admin'인 경우)
   const isAdmin = isLogin && logId === "admin";
+
+  // 기업 회원 여부 확인 (로그인 상태이고 usertype이 BUSINESS인 경우)
+  const isBusiness = isLogin && usertype === "BUSINESS";
+
   // 로그아웃
   const handleLogout = () => {
     // 세션 스토리지의 모든 정보 삭제
     sessionStorage.clear();
     alert("로그아웃 되었습니다.");
+
     // 메인 페이지로 이동하면서 새로고침 (상태 초기화)
     window.location.href = "/";
   };
@@ -94,7 +102,7 @@ function Top() {
                 <>
                   <div><Link to="#" onClick={handleLogout}>로그아웃</Link></div>
                   <div><Link to="/mypage">마이스토어</Link></div>
-                  <div><Link to="/basket">장바구니</Link></div>
+                  {!isBusiness && <div><Link to="/basket">장바구니</Link></div>}
                 </>
               )}
 

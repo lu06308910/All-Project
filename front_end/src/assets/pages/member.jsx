@@ -95,7 +95,7 @@ function Member() {
                 }
 
                 //백엔드
-                axios.post('http://localhost:9991/member/signup', formData)
+                axios.post('http://192.168.4.60:9991/member/signup', formData)
                         .then(function (response) {
                                 console.log(response.data);
                                 if (response.data) { // 회원가입 성공
@@ -107,7 +107,15 @@ function Member() {
                         })
                         .catch(function (error) {
                                 console.error("Join Error:", error);
-                                alert("회원가입 중 오류가 발생했습니다.");
+
+                                // 🎯 [핵심] 백엔드가 Map으로 보낸 JSON 에러를 파싱하여 알림창으로 터트립니다.
+                                if (error.response && error.response.data) {
+                                        // 백엔드가 보낸 {"message": "이미 존재하는 아이디입니다."}에서 메시지를 추출합니다.
+                                        const serverMessage = error.response.data.message || "이미 존재하는 아이디입니다.";
+                                        alert(serverMessage);
+                                } else {
+                                        alert("서버와 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+                                }
                         })
 
         };
@@ -198,10 +206,10 @@ function Member() {
                                         <div className="input-group">
                                                 <p>ADDRESS</p>
                                                 <div className="address-zip">
-                                                        <input type="text" name="zipcode" placeholder="우편번호" value={formData.zipcode} readOnly  />
+                                                        <input type="text" name="zipcode" placeholder="우편번호" value={formData.zipcode} readOnly />
                                                         <button type="button" className="zip-btn" onClick={handleAddressSearch}>주소 검색</button>
                                                 </div>
-                                                <input type="text" name="address" placeholder="기본 주소" value={formData.address} readOnly className="address-main"  />
+                                                <input type="text" name="address" placeholder="기본 주소" value={formData.address} readOnly className="address-main" />
                                                 <input type="text" name="address_detail" placeholder="상세 주소" value={formData.address_detail} onChange={handleChange} className="address-detail" />
                                         </div>
 

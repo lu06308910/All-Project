@@ -28,4 +28,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // 리액트에서 메시지를 보낼 때 앞에 붙이는 접두어입니다.
         registry.setApplicationDestinationPrefixes("/app");
     }
+
+
 }

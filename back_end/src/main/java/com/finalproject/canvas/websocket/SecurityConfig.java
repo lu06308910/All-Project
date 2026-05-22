@@ -31,18 +31,21 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // ⭐ 핵심: CORS 상세 설정
+    // ⭐ 핵심 수정: 모든 IP(다른 사람 자리)에서도 로그인/인증이 가능하도록 패턴 수정
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // 리액트 서버 주소 허용 (5173)
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
-        // 모든 HTTP 메서드 허용 (GET, POST, PUT, DELETE 등)
+        // 🌟 중요: localhost뿐만 아니라 다른 사람 IP로도 접속할 수 있게 패턴을 전체 허용(*)으로 변경합니다.
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+
+        // 모든 HTTP 메서드 허용 (GET, POST, PUT, DELETE, OPTIONS 등)
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
         // 모든 헤더 허용
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        // ⭐ 중요: 쿠키/세션 정보를 주고받기 위해 true 설정
+
+        // ⭐ 중요: 쿠키/세션 정보를 주고받기 위해 true 설정 유지
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

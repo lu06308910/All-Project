@@ -16,7 +16,7 @@ public class DataEntity {
     @Column(name = "m_id")
     private Integer mId;
 
-    @Column(nullable = false, length = 15)
+    @Column(nullable = false, length = 15, unique = true)
     private String userid;
     @Column(nullable = false, length = 255)
     private String userpwd;

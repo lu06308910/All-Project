@@ -25,7 +25,6 @@ import java.util.*;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "*")
 public class ProductController {
 
     private final ProductService productService;
@@ -39,11 +38,12 @@ public class ProductController {
             @RequestParam("files") List<MultipartFile> files,
             @RequestParam("colors") String colorsJson,
             @RequestParam("size") String size,
+            @RequestParam("cId") Integer cId,
             HttpSession session
     ) {
 
         CpDataEntity cp = new CpDataEntity();
-        cp.setCId(1);
+        cp.setCId(cId);
         productEntity.setCompany(cp);
 
         String uploadPath = "C:/upload/";

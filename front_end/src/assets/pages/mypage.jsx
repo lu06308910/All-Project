@@ -33,7 +33,7 @@ const MyPage = () => {
 
                                 // 유저 정보 가져오기
                                 if (logId) {
-                                        const userRes = await axios.get(`http://localhost:9991/member/edit?userid=${logId}&usertype=${usertype}`);
+                                        const userRes = await axios.get(`http://192.168.4.60:9991/member/edit?userid=${logId}&usertype=${usertype}`);
                                         setUserInfo(userRes.data);
                                         // 주문목록 가져올때 필요한 id
                                         ordersMemberId = userRes.data?.mid;
@@ -41,32 +41,32 @@ const MyPage = () => {
 
                                 // 문의 내역 가져오기 (DB 연동)
                                 if (loginName) {
-                                        const inqRes = await axios.get(`http://localhost:9991/support/list?writer=${loginName}`);
+                                        const inqRes = await axios.get(`http://192.168.4.60:9991/support/list?writer=${loginName}`);
                                         setInquiries(inqRes.data);
                                 }
                                 // 일반사용자 목록
                                 if (logId && !isCorporate) {
-                                        const wishRes = await axios.get(`http://localhost:9991/wish/list?userid=${logId}`);
+                                        const wishRes = await axios.get(`http://192.168.4.60:9991/wish/list?userid=${logId}`);
                                         setWishItems(wishRes.data); // 찜목록
 
-                                        const orderRes = await axios.get(`http://localhost:9991/buy/list/${ordersMemberId}`);
+                                        const orderRes = await axios.get(`http://192.168.4.60:9991/buy/list/${ordersMemberId}`);
                                         setOrders(orderRes.data); // 주문목록
 
-                                        const cancelRes = await axios.get(`http://localhost:9991/buy/cancel/list/${ordersMemberId}`);
+                                        const cancelRes = await axios.get(`http://192.168.4.60:9991/buy/cancel/list/${ordersMemberId}`);
                                         setCancelItems(cancelRes.data); // 취소목록              
 
                                 }
                                 // 기업사용자 목록
                                 if (logId && isCorporate) {
-                                        const salesRes = await axios.get(`http://localhost:9991/buy/seller/saleslist?sellerId=${logId}`);
+                                        const salesRes = await axios.get(`http://192.168.4.60:9991/buy/seller/saleslist?sellerId=${logId}`);
                                         setSalesList(salesRes.data); // 판매목록
 
-                                        const prodRes = await axios.get(`http://localhost:9991/product/seller/list?sellerId=${logId}`);
+                                        const prodRes = await axios.get(`http://192.168.4.60:9991/product/seller/list?sellerId=${logId}`);
                                         console.log("백엔드에서 받아온 데이터:", prodRes.data);
                                         console.log("현재 로그인된 기업 ID (logId):", logId);
                                         setProducts(prodRes.data); // 상품 목록, 수정
 
-                                        const corpInqRes = await axios.get(`http://localhost:9991/question/seller/list?sellerId=${logId}`);
+                                        const corpInqRes = await axios.get(`http://192.168.4.60:9991/question/seller/list?sellerId=${logId}`);
                                         setInquiries(corpInqRes.data); // 문의내역
                                 }
 
@@ -78,11 +78,11 @@ const MyPage = () => {
                 };
 
                 fetchData();
-                setActiveMenu(isCorporate ? '판매 현황' : '주문내역');
+                setActiveMenu(isCorporate ? '상품 등록/관리' : '주문내역');
         }, [logId, usertype, loginName, isCorporate]);
 
         const sideMenus = isCorporate
-                ? ['판매 현황', '상품 등록/관리', '정산내역', '고객문의 관리']
+                ? ['상품 등록/관리', '판매 현황',  '정산내역', '고객문의 관리']
                 : ['주문내역', '취소/반품/교환 내역', '찜', '상품문의 내역'];
 
 
@@ -119,8 +119,8 @@ const MyPage = () => {
                 // 기업용 메뉴
                 if (isCorporate) {
                         switch (activeMenu) {
-                                case '판매 현황': return <SalesStatus sales={salesList} />;
                                 case '상품 등록/관리': return <ProductManagement products={products} setProducts={setProducts} />;
+                                case '판매 현황': return <SalesStatus sales={salesList} />;    
                                 case '정산내역': return <SettlementHistory sales={salesList} />
                                 case '고객문의 관리': return <CorpInquiryList inquiries={inquiries} />;
                                 default:
@@ -146,7 +146,7 @@ const MyPage = () => {
 
                 try {
                         // 아까 통합한 백엔드 LikeController 주소(/like/toggle)로 요청을 보냅니다.
-                        const response = await axios.post("http://localhost:9991/like/toggle", {
+                        const response = await axios.post("http://192.168.4.60:9991/like/toggle", {
                                 userid: logId,
                                 memberId: mId ? Number(mId) : null,
                                 productId: Number(pid),
@@ -301,7 +301,7 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
 
                 try {
                         // 2. 경로에 bid를 넣습니다.
-                        await axios.post(`http://localhost:9991/buy/status/${bid}?action=${actionType}`);
+                        await axios.post(`http://192.168.4.60:9991/buy/status/${bid}?action=${actionType}`);
 
                         alert(`${actionLabel} 처리가 완료되었습니다.`);
 
@@ -324,7 +324,7 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
                                 <div className="order-item" key={item.bId || index}>
                                         <div className="item-img">
                                                 {item.product?.fileList && item.product.fileList[0] ? (
-                                                        <img src={`http://localhost:9991/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        <img src={`http://192.168.4.60:9991/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                 ) : (
                                                         <div style={{ width: '100%', height: '100%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#aaa' }}>이미지 준비중</div>
                                                 )}
@@ -486,7 +486,7 @@ const CancelHistory = ({ cancelItems }) => {
                                         {/* 상품 이미지 출력 */}
                                         <div className="item-img">
                                                 {item.product?.fileList && item.product.fileList[0] ? (
-                                                        <img src={`http://localhost:9991/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        <img src={`http://192.168.4.60:9991/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                 ) : (
                                                         <div style={{ width: '100%', height: '100%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#aaa' }}>이미지 준비중</div>
                                                 )}
@@ -569,13 +569,13 @@ const WishList = ({ wishItems, onDelete }) => {
                                                                 <div className="item-img-box">
                                                                         {item.product?.fileList && item.product.fileList.length > 0 && item.product.fileList[0] ? (
                                                                                 <img
-                                                                                        src={`http://localhost:9991/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`}
+                                                                                        src={`http://192.168.4.60:9991/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`}
                                                                                         alt={productName}
                                                                                         style={{ width: '100px', height: '100px', objectFit: 'cover' }}
                                                                                 />
                                                                         ) : item.fileList && item.fileList.length > 0 && item.fileList[0] ? (
                                                                                 <img
-                                                                                        src={`http://localhost:9991/static/uploads/${item.fileList[0].filename}.${item.fileList[0].extname}`}
+                                                                                        src={`http://192.168.4.60:9991/static/uploads/${item.fileList[0].filename}.${item.fileList[0].extname}`}
                                                                                         alt={productName}
                                                                                         style={{ width: '100px', height: '100px', objectFit: 'cover' }}
                                                                                 />
@@ -669,71 +669,6 @@ const InquiryList = ({ inquiries, isCorp }) => {
         );
 };
 
-// 기업 사용자 : 판매현황
-const SalesStatus = ({ sales }) => {
-        if (!sales || sales.length === 0) {
-                return (
-                        <div className="recent-orders">
-                                <table className="management-table">
-                                        <tbody>
-                                                <tr>
-                                                        <td className="empty-row" style={{ textAlign: 'center', padding: '50px', color: '#888' }}>
-                                                                현재 접수된 판매/주문 현황이 없습니다.
-                                                        </td>
-                                                </tr>
-                                        </tbody>
-                                </table>
-                        </div>
-                );
-        }
-
-        return (
-                <div className="recent-orders">
-                        <table className="management-table">
-                                <thead>
-                                        <tr>
-                                                <th style={{ width: '15%' }}>주문일시</th>
-                                                <th>상품정보</th>
-                                                <th style={{ width: '10%' }}>수량</th>
-                                                <th style={{ width: '18%' }}>결제금액</th>
-                                                <th style={{ width: '15%' }}>주문자 ID</th>
-                                                <th style={{ width: '12%', textAlign: 'center' }}>상태</th>
-                                        </tr>
-                                </thead>
-                                <tbody>
-                                        {sales.map((item, index) => {
-                                                const price = item.price ? Number(item.price.toString().replace(/[^0-9]/g, "")) : 0;
-                                                return (
-                                                        <tr key={item.bId || index}>
-                                                                {/* 주문일시 */}
-                                                                <td className="order-date">
-                                                                        {item.writedate ? item.writedate.split("T")[0] : "날짜 없음"}
-                                                                </td>
-                                                                {/* 상품명 */}
-                                                                <td>
-                                                                        <strong>{item.product?.name || "상품명 없음"}</strong>
-                                                                </td>
-                                                                {/* 수량 */}
-                                                                <td>{item.count || 1}개</td>
-                                                                {/* 결제금액 */}
-                                                                <td className="settle-price">{price.toLocaleString()}원</td>
-                                                                {/* 주문자 ID */}
-                                                                <td>{item.member?.userid || `회원(${item.mId || '정보없음'})`}</td>
-                                                                {/* 주문상태 뱃지 */}
-                                                                <td className="text-center">
-                                                                        <span className={`status-badge ${item.status === '결제완료' ? 'complete' : 'waiting'}`}>
-                                                                                {item.status || "결제완료"}
-                                                                        </span>
-                                                                </td>
-                                                        </tr>
-                                                );
-                                        })}
-                                </tbody>
-                        </table>
-                </div>
-        );
-};
-
 // 기업 사용자 : 상품 등록/수정
 const ProductManagement = ({ products, setProducts }) => {
         const [editingId, setEditingId] = useState(null);
@@ -761,7 +696,7 @@ const ProductManagement = ({ products, setProducts }) => {
                 const targetId = editingId;
                 try {
                         // 백엔드로 수정 데이터 전송
-                        await axios.put(`http://localhost:9991/product/seller/update/${targetId}`, editFormData);
+                        await axios.put(`http://192.168.4.60:9991/product/seller/update/${targetId}`, editFormData);
 
                         // 프론트 UI 실시간 업데이트 반영
                         setProducts(products.map(p => (p.pId === targetId || p.pid === targetId) ? editFormData : p));
@@ -778,7 +713,7 @@ const ProductManagement = ({ products, setProducts }) => {
                 if (!window.confirm("정말 이 상품을 완전히 삭제하시겠습니까?\n삭제된 상품은 복구할 수 없습니다.")) return;
                 try {
                         // 백엔드로 삭제 요청 보내기
-                        await axios.delete(`http://localhost:9991/product/seller/delete/${pId}`);
+                        await axios.delete(`http://192.168.4.60:9991/product/seller/delete/${pId}`);
 
                         // 프론트 UI에서 제외하기
                         setProducts(prev => prev.filter(p => (p.pId !== pId && p.pid !== pId)));
@@ -870,7 +805,7 @@ const ProductManagement = ({ products, setProducts }) => {
                                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                                                                 <div style={{ width: '40px', height: '40px', backgroundColor: '#f5f5f5', borderRadius: '4px', overflow: 'hidden' }}>
                                                                                                         {product.fileList && product.fileList[0] && (
-                                                                                                                <img src={`http://localhost:9991/static/uploads/${product.fileList[0].filename}.${product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                                                                <img src={`http://192.168.4.60:9991/static/uploads/${product.fileList[0].filename}.${product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                                                                         )}
                                                                                                 </div>
 
@@ -920,6 +855,71 @@ const ProductManagement = ({ products, setProducts }) => {
                                         </tbody>
                                 </table>
                         </div>
+                </div>
+        );
+};
+
+// 기업 사용자 : 판매현황
+const SalesStatus = ({ sales }) => {
+        if (!sales || sales.length === 0) {
+                return (
+                        <div className="recent-orders">
+                                <table className="management-table">
+                                        <tbody>
+                                                <tr>
+                                                        <td className="empty-row" style={{ textAlign: 'center', padding: '50px', color: '#888' }}>
+                                                                현재 접수된 판매/주문 현황이 없습니다.
+                                                        </td>
+                                                </tr>
+                                        </tbody>
+                                </table>
+                        </div>
+                );
+        }
+
+        return (
+                <div className="recent-orders">
+                        <table className="management-table">
+                                <thead>
+                                        <tr>
+                                                <th style={{ width: '15%' }}>주문일시</th>
+                                                <th>상품정보</th>
+                                                <th style={{ width: '10%' }}>수량</th>
+                                                <th style={{ width: '18%' }}>결제금액</th>
+                                                <th style={{ width: '15%' }}>주문자 ID</th>
+                                                <th style={{ width: '12%', textAlign: 'center' }}>상태</th>
+                                        </tr>
+                                </thead>
+                                <tbody>
+                                        {sales.map((item, index) => {
+                                                const price = item.price ? Number(item.price.toString().replace(/[^0-9]/g, "")) : 0;
+                                                return (
+                                                        <tr key={item.bId || index}>
+                                                                {/* 주문일시 */}
+                                                                <td className="order-date">
+                                                                        {item.writedate ? item.writedate.split("T")[0] : "날짜 없음"}
+                                                                </td>
+                                                                {/* 상품명 */}
+                                                                <td>
+                                                                        <strong>{item.product?.name || "상품명 없음"}</strong>
+                                                                </td>
+                                                                {/* 수량 */}
+                                                                <td>{item.count || 1}개</td>
+                                                                {/* 결제금액 */}
+                                                                <td className="settle-price">{price.toLocaleString()}원</td>
+                                                                {/* 주문자 ID */}
+                                                                <td>{item.member?.userid || `회원(${item.mId || '정보없음'})`}</td>
+                                                                {/* 주문상태 뱃지 */}
+                                                                <td className="text-center">
+                                                                        <span className={`status-badge ${item.status === '결제완료' ? 'complete' : 'waiting'}`}>
+                                                                                {item.status || "결제완료"}
+                                                                        </span>
+                                                                </td>
+                                                        </tr>
+                                                );
+                                        })}
+                                </tbody>
+                        </table>
                 </div>
         );
 };
@@ -1097,7 +1097,7 @@ const CorpInquiryList = ({ inquiries }) => {
                 }
                 try {
                         // 백엔드 /question 컨트롤러의 PUT 주소로 데이터 전송
-                        await axios.put(`http://localhost:9991/question/seller/reply/${id}`, {
+                        await axios.put(`http://192.168.4.60:9991/question/seller/reply/${id}`, {
                                 reply: replyText
                         });
                         alert("상품 문의 답변이 성공적으로 등록되었습니다.");
