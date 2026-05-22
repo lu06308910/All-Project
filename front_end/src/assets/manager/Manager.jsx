@@ -120,6 +120,7 @@ function Manager() {
         const [chartOpen, setChartOpen] = useState(false);
         const [currentPage, setCurrentPage] = useState(1);
         const [currentPage2, setCurrentPage2] = useState(1);
+        const [currentPage3, setCurrentPage3] = useState(1);
         const [openId, setOpenId] = useState(null); // 현재 열려있는 게시글의 ID 저장
         //선택 변수 저장
         const [selectedItems, setSelectedItems] = useState({});
@@ -148,27 +149,8 @@ function Manager() {
         const memberDateList = Object.values(memberDateGrouped)
                 .sort((a, b) => b.date.localeCompare(a.date));
 
-        const postsPerPage = 10;
-        const totalPages = Math.ceil(asks.length / postsPerPage);
 
-        const postsPerPage2 = 5;
-        const totalPosts2 = 10;
-        const totalPages2 = Math.ceil(totalPosts2 / postsPerPage2);
-
-        // 페이지 이동 함수
-        const paginate = (pageNumber, e) => {
-                e.preventDefault(); // 클릭 시 페이지 새로고침 방지
-                if (pageNumber >= 1 && pageNumber <= totalPages) {
-                        setCurrentPage(pageNumber);
-                }
-        };
-
-        const paginate2 = (pageNumber2, e) => {
-                e.preventDefault(); // 클릭 시 페이지 새로고침 방지
-                if (pageNumber2 >= 1 && pageNumber2 <= totalPages2) {
-                        setCurrentPage2(pageNumber2);
-                }
-        };
+        
 
         //체크박스 변경 핸들러
         const handleCheck = (menu, id) => {
@@ -581,6 +563,29 @@ function Manager() {
                         return true;
                 });
 
+        //페이징 함수
+        const postsPerPage = 10;
+        const totalPages = Math.ceil(asks.length / postsPerPage);
+
+        const postsPerPage3 = 10;
+        const totalPages3 = Math.ceil(filteredProducts.length / postsPerPage3);
+        
+        // 페이지 이동 함수
+        const paginate = (pageNumber, e) => {
+                e.preventDefault(); // 클릭 시 페이지 새로고침 방지
+                if (pageNumber >= 1 && pageNumber <= totalPages) {
+                        setCurrentPage(pageNumber);
+                }
+        };
+
+        //상품관리 페이지네이션
+        const paginate3 = (pageNumber3, e) => {
+                e.preventDefault(); // 클릭 시 페이지 새로고침 방지
+                if (pageNumber3 >= 1 && pageNumber3 <= totalPages3) {
+                        setCurrentPage3(pageNumber3);
+                }
+        };
+
         // 날짜를 YYYY-MM-DD 형식으로 변환하는 보조 함수
         const formatDate = (date) => {
                 return date.toISOString().split('T')[0];
@@ -835,6 +840,17 @@ function Manager() {
         const BuyTag = () => {
                 // 날짜 범위 있으면 그 범위만, 없으면 해당 pId 전체 주문
                 const items = filteredRawItems(selectedBuyItem);
+
+                const postsPerPage2 = 5;
+                const totalPages2 = Math.ceil(items.length / postsPerPage2);
+
+                const paginate2 = (pageNumber2, e) => {
+                        e.preventDefault(); // 클릭 시 페이지 새로고침 방지
+                        if (pageNumber2 >= 1 && pageNumber2 <= totalPages2) {
+                                setCurrentPage2(pageNumber2);
+                        }
+                };
+
                 return (
                 <div style={{
                         position: 'fixed',
@@ -1094,7 +1110,7 @@ function Manager() {
                                 {/* 헤더 */}
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                                         <h4 style={{ margin: 0, fontWeight: '700' }}>
-                                                📊 매출 통계
+                                                매출 통계
                                                 {hasContext && (
                                                         <span style={{ fontSize: '0.75em', marginLeft: '10px', color: '#555', fontWeight: '400' }}>
                                                                 ({salesStatContext.type === 'company' ? '기업' : '상품'}: {salesStatContext.value})
@@ -1113,7 +1129,7 @@ function Manager() {
                                         <input type='date' className='calendar' value={salesChartEnd}
                                                 onChange={(e) => setSalesChartEnd(e.target.value)} />
                                         <button className='button2' onClick={() => { setSalesChartStart(''); setSalesChartEnd(''); }}
-                                                style={{ whiteSpace: 'nowrap' }}>초기화 (오늘)</button>
+                                                style={{ whiteSpace: 'nowrap', backgroundColor:'#85bdeb', color:'white' }}>초기화</button>
                                         <span style={{ color: '#888', fontSize: '0.9em' }}>
                                                 ※ 미선택 시 오늘({todayStr}) 기준
                                         </span>
@@ -1230,8 +1246,10 @@ function Manager() {
                         {/* 대시보드 페이지 */}
                         {activeMenu == '대시보드' && (
                                 <div className='category-content'>
-                                        <h4 style={{ textAlign: 'left', fontWeight: '600', textAlign:'center' }}>CANVAS 총 매출</h4>
+                                        <h4 style={{ fontWeight: '600', textAlign:'center' }}>CANVAS 총 매출</h4>
                                         <hr />
+                                        <h5 style={{ textAlign:'center', marginTop:'60px' }}>오늘의 매출 : {(dailySalesMap[todayStr] || 0).toLocaleString()}원</h5>
+                                        <div style={{ fontSize:'0.8em', textAlign:'center', color:'#ccc' }}>수수료는 정산 시 10%씩 차감됩니다.</div>
                                         <div className='dash-board' style={{width:'80%', scrollbarWidth: 'none', margin:'0 auto', height:'400px', margin:'50px auto 100px auto'}}>
                                                 <Line
                                                         data={data2}
@@ -1670,7 +1688,7 @@ function Manager() {
                                                         </div>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                                 <p style={{ width: "80px d-inline-flex" }}>등록일자 :</p>
-                                                                <div className="row mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
+                                                                <div className="row mx-0" style={{ cursor:'pointer', backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
                                                                         <div className="col p-1 text-center" onClick={() => handleDateProductPreset('day')}>당일</div>
                                                                         <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('week')}>일주일</div>
                                                                         <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateProductPreset('month', 1)}>1개월</div>
@@ -1733,7 +1751,7 @@ function Manager() {
                                                                         <th style={{ backgroundColor: '#eeeeee' }}>목록 수정/삭제</th>
                                                                 </tr>
                                                         </thead>
-                                                        {filteredProducts.map((pd) => (
+                                                        {filteredProducts.slice((currentPage3 - 1) * postsPerPage3, currentPage3 * postsPerPage3).map((pd) => (
                                                                 <tbody key={pd.pid}>
                                                                         <tr>
                                                                                 <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
@@ -1774,6 +1792,38 @@ function Manager() {
                                                                 </tbody>
                                                         ))}
                                                 </table>
+                                                <nav>
+                                                        <ul className="pagination" style={{ marginTop: '20px' }}>
+                                                                <li>
+                                                                        <a className='paging-text' href="#" onClick={(e) => paginate3(currentPage3 - 1, e)}
+                                                                                style={{ textDecoration: 'none', color: currentPage3 === 1 ? '#ccc' : '#333' }}>
+                                                                                ≪
+                                                                        </a>
+                                                                </li>
+                                                                {Array.from({ length: totalPages3 }, (_, i) => i + 1).map((num) => (
+                                                                        <li key={num}>
+                                                                                <a
+                                                                                        href="#"
+                                                                                        onClick={(e) => paginate3(num, e)}
+                                                                                        className={currentPage3 === num ? 'paging-active-text' : 'paging-text'}
+                                                                                        style={{
+                                                                                                textDecoration: 'none',
+                                                                                                fontWeight: currentPage3 === num ? 'bold' : 'normal',
+                                                                                                color: currentPage3 === num ? '#000' : '#888'
+                                                                                        }}
+                                                                                >
+                                                                                        {num}
+                                                                                </a>
+                                                                        </li>
+                                                                ))}
+                                                                <li>
+                                                                        <a className='paging-text' href="#" onClick={(e) => paginate3(currentPage3 + 1, e)}
+                                                                                style={{ textDecoration: 'none', color: currentPage3 === totalPages3 ? '#ccc' : '#333' }}>
+                                                                                ≫
+                                                                        </a>
+                                                                </li>
+                                                        </ul>
+                                                </nav>
                                         </div>
                                 </div>
                         )}
@@ -1928,7 +1978,7 @@ function Manager() {
                                                         </div>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                                 <p style={{ width: "80px d-inline-flex" }}>등록일자 :</p>
-                                                                <div className="row mx-0" style={{ backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
+                                                                <div className="row mx-0" style={{ cursor:'pointer', backgroundColor: '#eeeeee', fontSize: '0.8em', border: '1px solid #333333', borderRadius: '10px', width: '400px' }}>
                                                                         <div className="col p-1 text-center" onClick={() => handleDateStatsPreset('day')}>당일</div>
                                                                         <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateStatsPreset('week')}>일주일</div>
                                                                         <div className="col p-1 text-center" style={{ borderLeft: '1px solid black' }} onClick={() => handleDateStatsPreset('month', 1)}>1개월</div>
@@ -2195,12 +2245,13 @@ function Manager() {
                                                         <tbody>
                                                                 {products.length > 0 ? (
                                                                         products.map((pd) => {
-                                                                                const price =
-                                                                                        typeof pd.cost === "string"
+                                                                                const price = pd.cost
+                                                                                        ? (typeof pd.cost === "string"
                                                                                                 ? Number(pd.cost.replace(/[^0-9]/g, ""))
-                                                                                                : pd.cost;
+                                                                                                : Number(pd.cost))
+                                                                                        : 0;
 
-                                                                                const fee = Math.floor(price * 0.1);
+                                                                                const fee = Math.floor((price || 0) * 0.1);
 
                                                                                 return (
                                                                                         <tr key={pd.id}>
