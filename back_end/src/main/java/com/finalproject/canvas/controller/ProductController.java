@@ -187,7 +187,18 @@ public class ProductController {
         return productService.getAllProducts();
 
     }
-
+    // 안전한 가격 파싱 유틸 (숫자만 추출), 이슬 추가
+    private int parsePrice(String priceStr) {
+        if (priceStr == null) return 0;
+        try {
+            // 숫자만 남기기 (콤마, 원, 공백 모두 제거)
+            String cleaned = priceStr.replaceAll("[^0-9]", "");
+            if (cleaned.isEmpty()) return 0;
+            return Integer.parseInt(cleaned);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
     /**
      * 상품 상세 조회
      */
@@ -205,7 +216,7 @@ public class ProductController {
         EventEntity event = productService.getEventByProductId(id).orElse(null);
 
         // 최종 가격 계산
-        int originalPrice = Integer.parseInt(product.getPrice());
+        int originalPrice = parsePrice(product.getPrice());
 
         //  null-safe 할인 퍼센트
         int discountPercent = 0;

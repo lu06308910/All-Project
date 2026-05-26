@@ -18,10 +18,11 @@ function Space() {
 
         const [list, setList] = useState([]);// 모든 상품 데이터
         const [mergedList, setMergedList] = useState([]);
+        const [saleList, setSaleList] = useState([]); // 할인상품
 
         const [starMap, setStarMap] = useState({});// 상품별 별점 평균 저장 (예: { productId: avgRating, ... })
 
-        const [saleList, setSaleList] = useState([]); // 할인상품
+
 
 
         useEffect(() => {
