@@ -29,10 +29,17 @@ public class EventService {
         eventRepository.deleteAllById(eIds);
     }
     //이벤트(게시글) 등록
-    public void addEvent(EventEntity eventEntity) {
+    public void addEvent(EventRequestDto dto) {
+        EventEntity eventEntity = new EventEntity();
+        eventEntity.setSubject(dto.getSubject());
+        eventEntity.setContext(dto.getContext());
+        eventEntity.setUpdatedate(dto.getUpdatedate());
+        eventEntity.setEnddate(dto.getEnddate());
+        eventEntity.setPId(dto.getP_id());
+
         LocalDateTime now = LocalDateTime.now();
-        if (eventEntity.getUpdatedate() != null && eventEntity.getEnddate() != null) {
-            if (!now.isBefore(eventEntity.getUpdatedate()) && !now.isAfter(eventEntity.getEnddate())) {
+        if (dto.getUpdatedate() != null && dto.getEnddate() != null) {
+            if (!now.isBefore(dto.getUpdatedate()) && !now.isAfter(dto.getEnddate())) {
                 eventEntity.setUpload(OutStatus.Y);
             }
         }

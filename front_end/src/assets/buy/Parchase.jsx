@@ -12,6 +12,7 @@ function Parchase() {
                 const items = sessionStorage.getItem('buyItems');
                 if (items) setCartList(JSON.parse(items));
         }, []);
+        console.log(cartList)
 
         // 로그인 유저 정보 (기존 주소 표시용)
         const [userInfo, setUserInfo] = useState(null);
@@ -237,7 +238,7 @@ function Parchase() {
                                                                 <td style={{ width: '20%' }}>
                                                                         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center' }}>
                                                                                 <span style={{ fontWeight: '600' }}>
-                                                                                        {(item.product.price * item.count - item.discount).toLocaleString()}원
+                                                                                        {(item.product.price * item.count).toLocaleString()}원
                                                                                 </span>
                                                                         </div>
                                                                 </td>

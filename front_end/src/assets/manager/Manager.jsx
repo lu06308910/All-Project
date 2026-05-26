@@ -483,6 +483,30 @@ function Manager() {
                 d.setDate(thirtyDaysAgo.getDate() + i);
                 return d.toISOString().slice(0, 10);
         });
+        // 월별 매출 집계 (최근 12개월)
+        const monthlySalesMap = buys.reduce((acc, item) => {
+                const month = item.writedate?.slice(0, 7) || ''; // "2024-03"
+                if (!month) return acc;
+                const cleanPrice = parseInt((item.price || '0').toString().replace(/,/g, ''));
+                acc[month] = (acc[month] || 0) + cleanPrice * (item.count || 0);
+                return acc;
+        }, {});
+        const allMonths = Array.from({ length: 12 }, (_, i) => {
+                const d = new Date();
+                d.setMonth(d.getMonth() - (11 - i));
+                return d.toISOString().slice(0, 7);
+        });
+        // 연도별 매출 집계 (최근 5년)
+        const yearlySalesMap = buys.reduce((acc, item) => {
+                const year = item.writedate?.slice(0, 4) || '';
+                if (!year) return acc;
+                const cleanPrice = parseInt((item.price || '0').toString().replace(/,/g, ''));
+                acc[year] = (acc[year] || 0) + cleanPrice * (item.count || 0);
+                return acc;
+        }, {});
+                const allYears = Array.from({ length: 5 }, (_, i) => {
+                return String(new Date().getFullYear() - (4 - i));
+        });
 
         // 상세보기 모달용: 통계 전용 날짜 기준
         const filteredRawItems = (item) => {
@@ -647,6 +671,25 @@ function Manager() {
                         })
                         .catch(err => console.log(err));
         }
+        //기업 회원 탈퇴
+        const handleBulkCpUnregister = () => {
+                const targets = selectedItems['기업관리'] || [];
+                if (targets.length === 0) return alert("탈퇴처리할 기업을 선택해주세요.");
+                if (!window.confirm(`선택한 ${targets.length}개 기업을 탈퇴처리 하시겠습니까?`)) return;
+
+                Promise.all(
+                        targets.map(cid =>
+                        axios.patch(`http://192.168.4.51:9989/member/cp/unregister/${cid}`)
+                        )
+                )
+                        .then(() => {
+                        alert("탈퇴처리 완료");
+                        axios.get('http://192.168.4.51:9989/member/all/business')
+                                .then(res => setCompanys(res.data));
+                        setSelectedItems(prev => ({ ...prev, '기업관리': [] }));
+                        })
+                        .catch(err => console.log(err));
+        };
 
         const handleProDelete = (pid) => {
                 if (!window.confirm('상품을 삭제하시겠습니까?')) return;
@@ -701,6 +744,8 @@ function Manager() {
                         prev.includes(eId) ? prev.filter(id => id !== eId) : [...prev, eId]
                 );
         };
+        //대시보드 메인 일별 월별 연별 관련 변수
+        const [salesPeriod, setSalesPeriod] = useState('daily');
 
         const handleEventDelete = (eId) => {
                 if (!window.confirm('삭제하시겠습니까?')) return;
@@ -1065,16 +1110,19 @@ function Manager() {
                 }]
         };
         const data2 = {
-                labels: allDates,
-                datasets: [
-                        {
-                                label: '날짜별 매출',
-                                data: allDates.map(d => dailySalesMap[d] || 0),
-                                borderColor: 'rgb(255, 99, 132)',
-                                backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                                yAxisID: 'y',
-                        }
-                ],
+                labels: salesPeriod === 'daily' ? allDates : salesPeriod === 'monthly' ? allMonths : allYears,
+                datasets: [{
+                        label: salesPeriod === 'daily' ? '일별 매출' : salesPeriod === 'monthly' ? '월별 매출' : '연도별 매출',
+                        data: salesPeriod === 'daily'
+                        ? allDates.map(d => dailySalesMap[d] || 0)
+                        : salesPeriod === 'monthly'
+                        ? allMonths.map(m => monthlySalesMap[m] || 0)
+                        : allYears.map(y => yearlySalesMap[y] || 0),
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        tension: 0.3,
+                        yAxisID: 'y',
+                }],
         };
         const barData = {
                 labels: ['회원 수'],  // X축은 하나
@@ -1369,12 +1417,28 @@ function Manager() {
                                         <hr />
                                         <h5 style={{ textAlign: 'center', marginTop: '60px' }}>오늘의 매출 : {(dailySalesMap[todayStr] || 0).toLocaleString()}원</h5>
                                         <div style={{ fontSize: '0.8em', textAlign: 'center', color: '#ccc' }}>수수료는 정산 시 10%씩 차감됩니다.</div>
-                                        <div className='dash-board' style={{ width: '80%', scrollbarWidth: 'none', margin: '0 auto', height: '400px', margin: '50px auto 100px auto' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', margin: '30px 0 0 0' }}>
+                                                {[['daily', '일별'], ['monthly', '월별'], ['yearly', '연도별']].map(([key, label]) => (
+                                                        <button
+                                                        key={key}
+                                                        onClick={() => setSalesPeriod(key)}
+                                                        style={{
+                                                                padding: '6px 20px', borderRadius: '20px',
+                                                                border: '1px solid #ff6384',
+                                                                backgroundColor: salesPeriod === key ? '#ff6384' : 'white',
+                                                                color: salesPeriod === key ? 'white' : '#ff6384',
+                                                                cursor: 'pointer',
+                                                                fontWeight: salesPeriod === key ? '600' : '400',
+                                                        }}
+                                                        >{label}</button>
+                                                ))}
+                                        </div>
+                                        <div className='dash-board' style={{ width: '80%', scrollbarWidth: 'none', height: '400px', margin: '20px auto 100px auto' }}>
                                                 <Line
                                                         data={data2}
                                                         options={{
-                                                                ...ChartData.options2,
-                                                                maintainAspectRatio: false
+                                                        ...ChartData.options2,
+                                                        maintainAspectRatio: false
                                                         }}
                                                 />
                                         </div>
@@ -1672,7 +1736,9 @@ function Manager() {
                                                         .map((company) => (
                                                                 <div key={company.cid} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
                                                                         <div className="col-1 border-start" style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                                <input type="checkbox" aria-label="항목 선택" />
+                                                                                <input type="checkbox"
+                                                                                checked={selectedItems['기업관리']?.includes(company.cid) || false}
+                                                                                onChange={() => handleCheck('기업관리', company.cid)}aria-label="항목 선택" />
                                                                         </div>
                                                                         <div className="col-2 border-start">{company.userid}</div>
                                                                         <div className="col-2 border-start">{company.businessName}</div>
@@ -1700,7 +1766,7 @@ function Manager() {
                                                                                 📊 "{companySearchWord}" 매출 통계
                                                                         </button>
                                                                 )}
-                                                                <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}>탈퇴처리</button>
+                                                                <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }} onClick={handleBulkCpUnregister}>탈퇴처리</button>
                                                         </div>
                                                 </div>
                                         </div>

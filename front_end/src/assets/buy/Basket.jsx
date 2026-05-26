@@ -7,6 +7,7 @@ function Basket() {
 
         const navigate = useNavigate();
         const [cartList, setCartList] = useState([]);
+        console.log(cartList)
 
         // 로그인 사용자
         const mId = sessionStorage.getItem("mId");

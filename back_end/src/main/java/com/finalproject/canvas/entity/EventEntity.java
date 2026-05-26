@@ -39,7 +39,10 @@ public class EventEntity {
     @Column(name = "upload")
     private OutStatus upload = OutStatus.N;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @Column(name = "p_id")
+    private Integer pId;
+
+    @ManyToOne(fetch = FetchType.EAGER)  // LAZY → EAGER
     @JoinColumn(name = "p_id", insertable = false, updatable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "fileList", "files", "delFile"})
     private ProductEntity product;
