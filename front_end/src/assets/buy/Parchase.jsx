@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import './../css/gayoung.css'
 
 function Parchase() {
         const navigate = useNavigate();
@@ -24,8 +25,14 @@ function Parchase() {
                         setUserInfo({ mId, logId, logName, usertype });
 
                         axios.get(`http://192.168.4.51:9989/member/info/${mId}`)
-                                .then(res=> setUserInfo(prev=>({...prev,...res.data})))
-                                .catch(err=>console.log(err));
+                                .then(res => {
+                                        setUserInfo(prev => ({ ...prev, ...res.data }));
+                                        setDelivery(prev => ({
+                                                ...prev,
+                                                n_name: res.data.username || '',
+                                                n_tel: res.data.tel || '',
+                                        }));
+                                })
                 }
         }, []);
 
@@ -141,6 +148,8 @@ function Parchase() {
                                 const prices = cartList.map(item =>
                                         parseInt(String(item.price).replace(/[^0-9]/g, ''))
                                 );
+                                const colors = cartList.map(item => item.color || '');
+                                const sizes = cartList.map(item => item.size || '');
 
                                 return axios.post('http://192.168.4.51:9989/buy/add', {
                                         cartIds, dIds, counts, discounts, prices
@@ -212,7 +221,7 @@ function Parchase() {
                                                                                         }}>
                                                                                                 {item.product.name}
                                                                                         </span>
-                                                                                        <div><span>{item.product.option}</span></div>
+                                                                                        <div style={{fontSize:'0.8em', color:'gray'}}><span>{item.color}, {item.size}</span></div>
                                                                                 </div>
                                                                         </div>
                                                                 </td>
@@ -225,9 +234,6 @@ function Parchase() {
                                                                         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center' }}>
                                                                                 <span style={{ fontWeight: '600' }}>
                                                                                         {(item.product.price * item.count - item.discount).toLocaleString()}원
-                                                                                </span>
-                                                                                <span style={{ textDecoration: 'line-through', color: 'gray' }}>
-                                                                                        {(item.product.price * item.count).toLocaleString()}원
                                                                                 </span>
                                                                         </div>
                                                                 </td>
@@ -402,9 +408,10 @@ function Parchase() {
                                                 </div>
                                         </div>
                                         <button type="button" onClick={handleSubmit}
+                                                className='button2'
                                                 style={{
-                                                        width: '80px', backgroundColor: 'blue', color: 'white',
-                                                        border: '1px solid blue', marginLeft: '90%', marginTop: '20px'
+                                                        color:'black',
+                                                        width: '80px', marginLeft: '90%', marginTop: '20px'
                                                 }}>
                                                 결제 진행
                                         </button>
