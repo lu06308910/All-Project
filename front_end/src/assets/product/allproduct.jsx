@@ -37,7 +37,7 @@ function AllProduct() {
 
         if (!loginUserId) return;
 
-        axios.get(`http://192.168.4.51:9989/like/list/${mId}`)
+        axios.get(`http://192.168.4.60:9991/like/list/${mId}`)
             .then(res => setLikedItems(res.data))
             .catch(err => console.log(err));
     }, []);
@@ -70,7 +70,7 @@ function AllProduct() {
                 "&searchWord=" + searchData.searchWord;
         }
 
-        axios.get(`http://192.168.4.51:9989/allproduct${url}`)
+        axios.get(`http://192.168.4.60:9991/allproduct${url}`)
             .then((response) => {
 
                 console.log(response.data);
@@ -82,7 +82,7 @@ function AllProduct() {
                         title: record.name,
                         price: record.price,
                         img: record.fileList?.[0]
-                            ? `http://192.168.4.51:9989/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
+                            ? `http://192.168.4.60:9991/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
                             : "/no-image.png"
                     };
                 });
@@ -100,7 +100,7 @@ function AllProduct() {
         if (!list || list.length === 0) return;
 
         list.forEach(product => {
-            axios.get(`http://192.168.4.51:9989/review/avg/${product.id}`)
+            axios.get(`http://192.168.4.60:9991/review/avg/${product.id}`)
                 .then(res => {
 
                     setStarMap(prev => ({
@@ -136,7 +136,7 @@ function AllProduct() {
             return;
         }
 
-        axios.post("http://192.168.4.51:9989/like/toggle", {
+        axios.post("http://192.168.4.60:9991/like/toggle", {
             memberId: mId,
             productId: productId
         })

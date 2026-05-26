@@ -317,7 +317,7 @@ public class ProductController {
 
         System.out.println("들어온 값: " + sCategory);
         System.out.println("SEARCH CATEGORY = [" + sCategory + "]");
-        List<ProductEntity> list = productService.getBysCategory(sCategory);
+        List<ProductEntity> list = productService.getWishList(sCategory);
 
         return ResponseEntity.ok(
                 Map.of("dataList", list)

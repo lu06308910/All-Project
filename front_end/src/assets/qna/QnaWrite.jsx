@@ -80,7 +80,7 @@ function QnaWrite() {
 
         try {
             // 환경 변수 주소 사용
-            const BASE_URL = import.meta.env.REACT_APP_API_URL || "http://192.168.4.51:9989";
+            const BASE_URL = import.meta.env.REACT_APP_API_URL || "http://192.168.4.60:9991";
             const response = await axios.post(`${BASE_URL}/support/write`, sendData, {
                 headers: {
                     "Content-Type": "multipart/form-data"
@@ -213,20 +213,6 @@ function QnaWrite() {
                                 <option value="환불문의">환불문의</option>
                                 <option value="교환문의">교환문의</option>
                             </select>
-                        </div>
-                    </div>
-
-                    {/* 상품명 + 조회 */}
-                    <div style={{ marginBottom: '25px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px' }}>상품명</label>
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                            <input type="text"
-                                style={{ flex: 1, padding: '12px', border: '1px solid #ccc' }} />
-                            <button type="button" style={{
-                                width: '180px', padding: '14px 0', backgroundColor: '#000', color: '#fff', fontSize: '16px', cursor: 'pointer'
-                            }}>
-                                주문번호 조회
-                            </button>
                         </div>
                     </div>
 

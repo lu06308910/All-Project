@@ -5,6 +5,7 @@ import com.finalproject.canvas.entity.ProductEntity;
 import com.finalproject.canvas.entity.*;
 import com.finalproject.canvas.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
@@ -115,14 +116,18 @@ public class ProductService {
         else return productRepository.findByCompany_BusinessNameContaining(word);
     }
 
-    // 사찜한 상품 목록 마이페이지 가져오기 - 대호추가
-    @GetMapping("/wish/list")
+    // 찜한 상품 목록 마이페이지 가져오기 - 대호추가
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<ProductEntity> getWishList(String userid) {
-        return productRepository.findWishListByUserId(userid);
-    }
+        List<ProductEntity> list = productRepository.findWishListByUserId(userid);
 
-    public List<ProductEntity> getBysCategory(String sCategory) {
-        return productRepository.findBysCategory(sCategory.trim());
+        for (ProductEntity product : list) {
+            if (product.getFileList() != null) {
+                int size = product.getFileList().size();
+                System.out.println("상품명: " + product.getName() + " / 파일 개수: " + size); // ★ 추가해서 콘솔 확인
+            }
+        }
+        return list;
     }
 
     // 특정 기업(판매자)이 등록한 상품 목록 조회

@@ -34,7 +34,7 @@ function Manager() {
         //게시글관리
         const [events, setEvents] = useState([]);
         useEffect(() => {
-                axios.get('http://192.168.4.51:9989/event/all')
+                axios.get('http://192.168.4.60:9991/event/all')
                         .then(res => setEvents(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -55,7 +55,7 @@ function Manager() {
         //회원 업데이트
         const [users, setUsers] = useState([]);
         useEffect(() => {
-                axios.get('http://192.168.4.51:9989/member/all/member')
+                axios.get('http://192.168.4.60:9991/member/all/member')
                         .then(res => setUsers(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -64,7 +64,7 @@ function Manager() {
         //상품관리
         const [products, setProducts] = useState([]);
         useEffect(() => {
-                axios.get('http://192.168.4.51:9989/all/product')
+                axios.get('http://192.168.4.60:9991/all/product')
                         .then(res => setProducts(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -76,7 +76,7 @@ function Manager() {
 
         // 문의 목록 함수-------------------------------------------------------------------------- 대호수정
         const getAdminInquiries = () => {
-                axios.get('http://192.168.4.51:9989/support/list/all')
+                axios.get('http://192.168.4.60:9991/support/list/all')
                         .then(res => setAsks(res.data || []))
                         .catch(err => console.log("문의 목록 갱신 에러:", err));
         };
@@ -97,7 +97,7 @@ function Manager() {
                 formData.append("s_id", sId);
                 formData.append("answer", replyText);
 
-                axios.post("http://192.168.4.51:9989/support/reply", formData)
+                axios.post("http://192.168.4.60:9991/support/reply", formData)
                         .then((res) => {
                                 if (res.data === "success") {
                                         alert("답변이 성공적으로 등록되었습니다.");
@@ -115,7 +115,7 @@ function Manager() {
         //통계용 buy테이블 연결
         const [buys, setBuys] = useState([]);
         useEffect(() => {
-                axios.get('http://192.168.4.51:9989/buy/list/all')
+                axios.get('http://192.168.4.60:9991/buy/list/all')
                         .then(res => setBuys(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -166,7 +166,7 @@ function Manager() {
 
         const [companys, setCompanys] = useState([]);
         useEffect(() => {
-                axios.get('http://192.168.4.51:9989/member/all/business')
+                axios.get('http://192.168.4.60:9991/member/all/business')
                         .then(res => setCompanys(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -424,12 +424,12 @@ function Manager() {
 
                 Promise.all(
                         targets.map(mid =>
-                                axios.patch(`http://192.168.4.51:9989/member/unregister/${mid}`)
+                                axios.patch(`http://192.168.4.60:9991/member/unregister/${mid}`)
                         )
                 )
                         .then(() => {
                                 alert("탈퇴처리 완료");
-                                axios.get('http://192.168.4.51:9989/member/all/member')
+                                axios.get('http://192.168.4.60:9991/member/all/member')
                                         .then(res => setUsers(res.data));
                                 setSelectedItems(prev => ({ ...prev, '회원관리': [] }));
                         })
@@ -438,10 +438,10 @@ function Manager() {
 
         const handleProDelete = (pid) => {
                 if (!window.confirm('상품을 삭제하시겠습니까?')) return;
-                axios.delete(`http://192.168.4.51:9989/product/${pid}`)
+                axios.delete(`http://192.168.4.60:9991/product/${pid}`)
                         .then(() => {
                                 alert('삭제 완료');
-                                axios.get('http://192.168.4.51:9989/all/product').then(res => setProducts(res.data));
+                                axios.get('http://192.168.4.60:9991/all/product').then(res => setProducts(res.data));
                         })
                         .catch(err => console.log(err));
         };
@@ -475,10 +475,10 @@ function Manager() {
         const handleBulkProDelete = () => {
                 if (selectedProIds.length == 0) return alert('삭제할 제품을 선택해 주세요.');
                 if (!window.confirm(`선택한 ${selectedProIds.length}개의 글을 삭제하시겠습니까?`)) return;
-                Promise.all(selectedProIds.map(id => axios.delete(`http://192.168.4.51:9989/product/${id}`)))
+                Promise.all(selectedProIds.map(id => axios.delete(`http://192.168.4.60:9991/product/${id}`)))
                         .then(() => {
                                 setSelectedProIds([]);
-                                axios.get('http://192.168.4.51:9989/all/product').then(res => setProducts(res.data));
+                                axios.get('http://192.168.4.60:9991/all/product').then(res => setProducts(res.data));
                         })
                         .catch(err => console.log(err));
         };
@@ -492,10 +492,10 @@ function Manager() {
 
         const handleEventDelete = (eId) => {
                 if (!window.confirm('삭제하시겠습니까?')) return;
-                axios.delete(`http://192.168.4.51:9989/event/delete/${eId}`)
+                axios.delete(`http://192.168.4.60:9991/event/delete/${eId}`)
                         .then(() => {
                                 alert('삭제 완료');
-                                axios.get('http://192.168.4.51:9989/event/all').then(res => setEvents(res.data));
+                                axios.get('http://192.168.4.60:9991/event/all').then(res => setEvents(res.data));
                         })
                         .catch(err => console.log(err));
         };
@@ -503,11 +503,11 @@ function Manager() {
         const handleBulkEventDelete = () => {
                 if (selectedEventIds.length === 0) return alert('삭제할 항목을 선택해주세요.');
                 if (!window.confirm(`선택한 ${selectedEventIds.length}개를 삭제하시겠습니까?`)) return;
-                axios.delete('http://192.168.4.51:9989/event/delete', { data: selectedEventIds })
+                axios.delete('http://192.168.4.60:9991/event/delete', { data: selectedEventIds })
                         .then(() => {
                                 alert('삭제 완료');
                                 setSelectedEventIds([]);
-                                axios.get('http://192.168.4.51:9989/event/all').then(res => setEvents(res.data));
+                                axios.get('http://192.168.4.60:9991/event/all').then(res => setEvents(res.data));
                         })
                         .catch(err => console.log(err));
         };
@@ -528,7 +528,7 @@ function Manager() {
         const [companyOutSearchWord, setCompanyOutSearchWord] = useState('');
 
         const handleUserSearch = () => {
-                axios.post('http://192.168.4.51:9989/member/search', {
+                axios.post('http://192.168.4.60:9991/member/search', {
                         searchKey: userSearchKey,
                         searchWord: userSearchWord
                 })
@@ -537,7 +537,7 @@ function Manager() {
         }
 
         const handleCompanySearch = () => {
-                axios.post('http://192.168.4.51:9989/member/search/business', {
+                axios.post('http://192.168.4.60:9991/member/search/business', {
                         searchKey: companySearchKey,
                         searchWord: companySearchWord
                 })
@@ -546,7 +546,7 @@ function Manager() {
         }
 
         const handleProductSearch = () => {
-                axios.post('http://192.168.4.51:9989/search/product', {
+                axios.post('http://192.168.4.60:9991/search/product', {
                         searchKey: productSearchKey,
                         searchWord: productSearchWord
                 })
@@ -671,7 +671,7 @@ function Manager() {
                 if (!newEvent.context) return alert('내용을 입력해주세요.');
 
                 console.log('보내는테이터:', newEvent);
-                axios.post('http://192.168.4.51:9989/event/add', {
+                axios.post('http://192.168.4.60:9991/event/add', {
                         subject: newEvent.subject,
                         context: newEvent.context,
                         updatedate: newEvent.updatedate ? newEvent.updatedate + 'T00:00:00' : null,
@@ -682,7 +682,7 @@ function Manager() {
                                 alert('등록 완료');
                                 setEventModalOpen(false);
                                 setNewEvent({ subject: '', context: '', updatedate: '', enddate: '', pId: '' });
-                                axios.get('http://192.168.4.51:9989/event/all')
+                                axios.get('http://192.168.4.60:9991/event/all')
                                         .then(res => setEvents(res.data));
                         })
                         .catch(err => console.log(err));
@@ -2002,6 +2002,7 @@ function Manager() {
                                                                                 const isAnswered = q.answer !== null && q.answer !== undefined && q.answer.trim() !== "";
 
                                                                                 const isExpanded = selectedInquiry?.s_id === q.s_id;
+                                                                                console.log("👉 백엔드에서 넘어온 문의글 데이터 1개 분석:", asks);
 
                                                                                 return (
                                                                                         <tbody key={q.s_id || index}>
@@ -2030,21 +2031,54 @@ function Manager() {
 
                                                                                                                                 {/* Q. 고객 문의 내용 */}
                                                                                                                                 <div className="question-box" style={{ marginBottom: '15px' }}>
+
                                                                                                                                         <strong>Q. 문의 내용</strong>
                                                                                                                                         <p style={{ whiteSpace: 'pre-wrap', marginTop: '8px', color: '#333' }}>{q.context}</p>
+                                                                                                                                        {(() => {
+                                                                                                                                                // 1. 백엔드 컨트롤러가 entity.setFilename()으로 넣어준 변수명 'filename'을 정확히 읽어옵니다.
+                                                                                                                                                const realFileName = q.filename || selectedInquiry?.filename;
+
+                                                                                                                                                if (realFileName && realFileName !== "null") {
+                                                                                                                                                        return (
+                                                                                                                                                                <div className="attached-img-zone my-3">
+                                                                                                                                                                        <p><strong>첨부 사진:</strong></p>
+                                                                                                                                                                        <img
+                                                                                                                                                                                // 2. WebMvcConfig가 열어준 /upload/ 경로와 매핑합니다. (포트는 대호님 백엔드 포트)
+                                                                                                                                                                                src={`http://192.168.4.60:9991/upload/${realFileName}`}
+                                                                                                                                                                                alt="사용자 첨부 이미지"
+                                                                                                                                                                                style={{
+                                                                                                                                                                                        maxWidth: '100%',
+                                                                                                                                                                                        maxHeight: '350px',
+                                                                                                                                                                                        borderRadius: '8px',
+                                                                                                                                                                                        border: '1px solid #ddd'
+                                                                                                                                                                                }}
+                                                                                                                                                                                onError={(e) => {
+                                                                                                                                                                                        // 9991 포트에서 실패할 경우, 다른 백엔드 구동 포트인 9989 환경으로 자동 스위칭 보완
+                                                                                                                                                                                        if (!e.target.src.includes(":9991")) {
+                                                                                                                                                                                                e.target.src = `http://192.168.4.51:9989/upload/${realFileName}`;
+                                                                                                                                                                                        }
+                                                                                                                                                                                }}
+                                                                                                                                                                        />
+                                                                                                                                                                </div>
+                                                                                                                                                        );
+                                                                                                                                                }
+                                                                                                                                                return null;
+                                                                                                                                        })()}
                                                                                                                                 </div>
 
                                                                                                                                 {/* A. 관리자 기존 답변 내역 */}
-                                                                                                                                {isAnswered ? (
-                                                                                                                                        <div className="answer-box">
-                                                                                                                                                <strong>A. 답변 내용</strong>
-                                                                                                                                                <p style={{ whiteSpace: 'pre-wrap', marginTop: '8px', color: '#333' }}>{q.answer}</p>
-                                                                                                                                        </div>
-                                                                                                                                ) : (
-                                                                                                                                        <div className="waiting-box" style={{ padding: '10px 0', color: '#999' }}>
-                                                                                                                                                <small>아직 등록된 답변이 없습니다. 아래 버튼을 눌러 답변을 작성해 주세요.</small>
-                                                                                                                                        </div>
-                                                                                                                                )}
+                                                                                                                                {
+                                                                                                                                        isAnswered ? (
+                                                                                                                                                <div className="answer-box">
+                                                                                                                                                        <strong>A. 답변 내용</strong>
+                                                                                                                                                        <p style={{ whiteSpace: 'pre-wrap', marginTop: '8px', color: '#333' }}>{q.answer}</p>
+                                                                                                                                                </div>
+                                                                                                                                        ) : (
+                                                                                                                                                <div className="waiting-box" style={{ padding: '10px 0', color: '#999' }}>
+                                                                                                                                                        <small>아직 등록된 답변이 없습니다. 아래 버튼을 눌러 답변을 작성해 주세요.</small>
+                                                                                                                                                </div>
+                                                                                                                                        )
+                                                                                                                                }
 
                                                                                                                                 <div style={{ textAlign: 'right', marginTop: '15px' }}>
                                                                                                                                         <button

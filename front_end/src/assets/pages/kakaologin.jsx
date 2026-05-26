@@ -18,7 +18,7 @@ function Kakaologin() {
                         console.log("카카오 인가 코드 획득:", code);
 
                         // 스프링 부트 백엔드로 인가 코드 전송
-                        axios.get(`http://192.168.4.51:9989/member/kakao?code=${code}`)
+                        axios.get(`http://192.168.4.60:9991/member/kakao?code=${code}`)
                                 .then(response => {
                                         console.log("백엔드 로그인 결과:", response.data);
 

@@ -15,7 +15,7 @@ function NoticeList() {
   // 백엔드(Spring Boot)에서 공지사항 리스트 가져오기
   const fetchNotices = async () => {
     try {
-      const response = await axios.get("http://192.168.4.51:9989/notice/list");
+      const response = await axios.get("http://192.168.4.60:9991/notice/list");
       console.log("받아온 데이터 확인:", response.data);
 
       if (Array.isArray(response.data)) {
@@ -39,7 +39,7 @@ function NoticeList() {
       return;
     }
     try {
-      const response = await axios.get(`http://192.168.4.51:9989/notice/list?keyword=${searchTerm}`);
+      const response = await axios.get(`http://192.168.4.60:9991/notice/list?keyword=${searchTerm}`);
 
       if (Array.isArray(response.data)) {
         const sortedData = response.data.sort((a, b) => b.n_id - a.n_id);
