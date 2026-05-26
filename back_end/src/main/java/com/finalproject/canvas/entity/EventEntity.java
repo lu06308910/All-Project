@@ -47,9 +47,9 @@ public class EventEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "upload")
     private OutStatus upload = OutStatus.N;
+    
 
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)  // LAZY → EAGER
     @JoinColumn(name = "p_id", insertable = false, updatable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "delFile"}) // 이슬 수정
     private ProductEntity product;

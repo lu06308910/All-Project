@@ -57,9 +57,9 @@ public class EventController {
     }
     //게시글 등록
     @PostMapping("/add")
-    public String addEvent(@RequestBody EventEntity eventEntity) {
+    public String addEvent(@RequestBody EventRequestDto dto) {
         try {
-            eventService.addEvent(eventEntity);
+            eventService.addEvent(dto);  // dto로 변경
             return "OK";
         } catch (Exception e) {
             e.printStackTrace();

@@ -243,6 +243,15 @@ public class DataController {
         }
         return ResponseEntity.badRequest().body("탈퇴처리 실패");
     }
+    // 기업 회원 탈퇴
+    @PatchMapping("/cp/unregister/{id}")
+    public ResponseEntity<?> cpUnregister(@PathVariable("id") Integer id) {
+        int result = dataService.cpUnregister(id);
+        if (result != 0) {
+            return ResponseEntity.ok("탈퇴처리 완료");
+        }
+        return ResponseEntity.badRequest().body("탈퇴처리 실패");
+    }
 
     //모든 회원 정보 가져오기 (관리자 페이지)
     @GetMapping("/all/member")

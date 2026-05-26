@@ -117,6 +117,18 @@ public class DataService {
             return 0;
         }
     }
+    //기업 회원 탈퇴
+    public Integer cpUnregister(Integer cId) {
+        try {
+            CpDataEntity entity = cpDataRepository.findById(cId).orElse(null);
+            if (entity == null) return 0;
+            entity.setIsOut(OutStatus.Y);
+            cpDataRepository.save(entity);
+            return cId;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
 
     //모든 일반회원 정보 가져오기
     public List<DataEntity> getAllMembers() {
