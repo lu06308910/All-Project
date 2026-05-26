@@ -292,7 +292,13 @@ function Parchase() {
                                         <div style={{ flex: 1, textAlign: 'center' }}>배송비{'\u2003'}{'\u2003'}{totalDelivery.toLocaleString()}원</div>
                                 </div>
                                 <hr />
-                                <div style={{ textDecoration: 'underline', textAlign: 'right' }}>주문 취소</div>
+                                <div onClick={() => {
+                                        if (window.confirm('주문을 취소하시겠습니까?')) {
+                                                navigate('/basket');
+                                                window.confirm('취소되었습니다.')
+                                        }
+                                        }}
+                                        style={{ textDecoration: 'underline', textAlign: 'right' }}>주문 취소</div>
 
                                 {/* 배송지 입력 섹션 */}
                                 <div style={{ backgroundColor: '#EDEDED', padding: '40px', marginTop: '50px' }}>
