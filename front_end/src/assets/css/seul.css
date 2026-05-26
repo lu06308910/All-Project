@@ -89,7 +89,7 @@
 /* 그리드 */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 30px;
   transition: all 0.5s ease-in-out;
   margin-bottom: 20px;

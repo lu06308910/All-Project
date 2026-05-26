@@ -30,6 +30,13 @@ public class ProductService {
         return productRepository.save(productEntity);
     }
 
+    // 할인상품 할인가격 적용
+    public Optional<EventEntity> getEventByProductId(Integer pId) {
+        List<EventEntity> list = eventRepository.findActiveEvents(pId);
+        if (list.isEmpty()) return Optional.empty();
+        return Optional.of(list.get(0));
+    }
+
     // 파일 리스트 저장
     public int fileListInsert(List<FileEntity> fileList) {
         int cnt = 0;

@@ -28,8 +28,9 @@ public class EventEntity {
     @Column(nullable = false)
     private Integer hit = 0;
 
-    @Column(name = "discount_percent")
-    private Integer discountPercent;  // 예: 20 → 20% 할인
+    //  null 방지: 기본값 0 , 할인률 추가  -이슬
+    @Column(name = "discount_percent", nullable = false)
+    private Integer discountPercent = 0;
 
 
     @CreationTimestamp
@@ -50,6 +51,6 @@ public class EventEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "p_id", insertable = false, updatable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "fileList", "files", "delFile"})
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "delFile"}) // 이슬 수정
     private ProductEntity product;
 }

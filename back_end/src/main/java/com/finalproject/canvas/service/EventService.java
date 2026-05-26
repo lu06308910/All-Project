@@ -45,9 +45,8 @@ public class EventService {
 
     // 할인 상품 가져오기 , 이슬추가
     public List<EventEntity> getSaleProducts() {
-        return eventRepository.findSaleProducts()
-                .stream()
-                .map(EventEntity::new)
-                .collect(Collectors.toList());
+        return eventRepository.findSaleProducts();
+
     }
+
 }

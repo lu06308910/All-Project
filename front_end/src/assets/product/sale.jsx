@@ -203,6 +203,7 @@ function sale() {
                                                         const product = item.product;
                                                         const pid = item.pid;
 
+
                                                         return (
                                                                 <Link
                                                                         to={`/productDetail/${pid}`}
@@ -220,7 +221,11 @@ function sale() {
                                                                                         }}>
                                                                                         <img
                                                                                                 className="main-product-img"
-                                                                                                src={product?.img}
+                                                                                                src={
+                                                                                                        product.fileList[0].filename
+                                                                                                                ? `http://localhost:9990/upload/${product.fileList[0].filename}.${product.fileList[0].extname}`
+                                                                                                                : "/no-image.png"
+                                                                                                }
                                                                                                 alt={product?.name}
                                                                                                 style={{
                                                                                                         width: "100%",

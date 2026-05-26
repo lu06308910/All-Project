@@ -67,7 +67,7 @@ public class EventController {
     }
 
     // 할인상품 리스트 , 이슬
-    @GetMapping("/event/sale/list")
+    @GetMapping("/sale/list")
     public List<EventEntity> saleList() {
         return eventService.getSaleProducts();
     }
