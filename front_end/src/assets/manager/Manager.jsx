@@ -30,6 +30,218 @@ ChartJS.register(
         Legend
 );
 
+// ──────────────────────────────────────────────
+// Reservation 컴포넌트 (Manager 바깥으로 분리)
+// ──────────────────────────────────────────────
+function Reservation({ reservedEvents, selectedEventIds, handleEventCheck, handleBulkEventDelete, handleEventDelete, handleEventEditClick, setEventModalOpen }) {
+        return (
+                <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>예약 게시글 목록</h4>
+                        <hr />
+                        <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue', marginLeft: '10px' }} onClick={handleBulkEventDelete}>선택삭제</button>
+                        <table className="table table-bordered" style={{ width: '100%', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
+                                <thead>
+                                        <tr style={{ fontSize: '0.8em' }}>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>일괄삭제</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>카테고리</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>이벤트명</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>등록시간</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>예약시간</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>발행상태</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>목록 수정/삭제</th>
+                                        </tr>
+                                </thead>
+                                <tbody>
+                                {reservedEvents.map((item) => (
+                                        <tr key={item.e_id}>
+                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                        <input type="checkbox"
+                                                                checked={selectedEventIds.includes(item.e_id)}
+                                                                onChange={() => handleEventCheck(item.e_id)}
+                                                        />
+                                                </td>
+                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
+                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                        <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                {item.subject}
+                                                        </div>
+                                                </td>
+                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.writedate?.slice(0, 10)}</td>
+                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
+                                                <td>
+                                                        <span style={{
+                                                                background: item.upload == "N" ? '#ffebee' : '#e3f2fd',
+                                                                color: item.upload == "N" ? '#c62828' : '#1976d2',
+                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
+                                                                textAlign: 'center', verticalAlign: 'middle'
+                                                        }}>
+                                                                {item.upload == "N" ? '미공개' : '공개'}
+                                                        </span>
+                                                </td>
+                                                <td>
+                                                        <button className='button2' style={{ marginRight: '10px' }} onClick={() => handleEventEditClick(item)}>수정</button>
+                                                        <button className='button2' onClick={() => handleEventDelete(item.e_id)}>삭제</button>
+                                                </td>
+                                        </tr>
+                                ))}
+                                </tbody>
+                        </table>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
+                                        더보기
+                                </button>
+                                <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}
+                                        onClick={() => setEventModalOpen(true)}
+                                >
+                                        게시글등록
+                                </button>
+                        </div>
+                </div>
+        );
+}
+
+// ──────────────────────────────────────────────
+// Event 컴포넌트 (Manager 바깥으로 분리)
+// ──────────────────────────────────────────────
+function EventList({ activeMenu, events, endedEvents, selectedEventIds, handleEventCheck, handleBulkEventDelete, handleEventDelete, handleEventEditClick, setEventModalOpen }) {
+        return (
+                <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                        <h4 style={{
+                                textAlign: 'left', fontWeight: '600',
+                                marginTop: activeMenu === '-이벤트 관리' ? '0px' : '20px',
+                        }}>
+                                진행 중인 이벤트
+                        </h4>
+                        <hr />
+                        <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue', marginLeft: '10px' }} onClick={handleBulkEventDelete}>선택삭제</button>
+                        <table className="table table-bordered" style={{ width: '100%', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
+                                <thead>
+                                        <tr style={{ fontSize: '0.8em' }}>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>일괄삭제</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>카테고리</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>이벤트명</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>시작기간</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>종료기간</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>발행상태</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>목록 수정/삭제</th>
+                                        </tr>
+                                </thead>
+                                <tbody>
+                                {events
+                                        .filter((item) => item.upload == 'Y')
+                                        .map((item) => (
+                                                <tr key={item.e_id}>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                <input type="checkbox"
+                                                                        aria-label="항목 선택"
+                                                                        checked={selectedEventIds.includes(item.e_id)}
+                                                                        onChange={() => handleEventCheck(item.e_id)}
+                                                                />
+                                                        </td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                                <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                        {item.subject}
+                                                                </div>
+                                                        </td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
+                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.enddate?.slice(0, 10)}</td>
+                                                        <td>
+                                                                <span style={{
+                                                                        background: item.upload == 'N' ? '#ffebee' : '#e3f2fd',
+                                                                        color: item.upload == 'N' ? '#c62828' : '#1976d2',
+                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
+                                                                        textAlign: 'center', verticalAlign: 'middle'
+                                                                }}>
+                                                                        {item.upload == 'N' ? '비공개' : '공개'}
+                                                                </span>
+                                                        </td>
+                                                        <td>
+                                                                <button className='button2' style={{ marginRight: '10px' }} onClick={() => handleEventEditClick(item)}>수정</button>
+                                                                <button className='button2' onClick={() => handleEventDelete(item.e_id)}>삭제</button>
+                                                        </td>
+                                                </tr>
+                                        ))}
+                                </tbody>
+                        </table>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
+                                        더보기
+                                </button>
+                                <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}
+                                        onClick={() => setEventModalOpen(true)}
+                                >
+                                        게시글등록
+                                </button>
+                        </div>
+                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '20px' }}>마무리 된 이벤트</h4>
+                        <hr />
+                        <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue', marginLeft: '10px' }}
+                                onClick={handleBulkEventDelete}
+                        >
+                                선택삭제
+                        </button>
+                        <table className="table table-bordered" style={{ width: '100%', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
+                                <thead>
+                                        <tr style={{ fontSize: '0.8em' }}>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>일괄삭제</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>카테고리</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>이벤트명</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>시작기간</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>종료기간</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>발행상태</th>
+                                                <th style={{ backgroundColor: '#eeeeee' }}>목록 수정/삭제</th>
+                                        </tr>
+                                </thead>
+                                <tbody>
+                                {endedEvents.map((item) => (
+                                        <tr key={item.e_id}>
+                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                        <input type="checkbox"
+                                                                checked={selectedEventIds.includes(item.e_id)}
+                                                                onChange={() => handleEventCheck(item.e_id)}
+                                                        />
+                                                </td>
+                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
+                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                        <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                {item.subject}
+                                                        </div>
+                                                </td>
+                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
+                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.enddate?.slice(0, 10)}</td>
+                                                <td>
+                                                        <span style={{
+                                                                background: item.upload == 'N' ? '#ffebee' : '#e3f2fd',
+                                                                color: item.upload == 'N' ? '#c62828' : '#1976d2',
+                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
+                                                                textAlign: 'center', verticalAlign: 'middle'
+                                                        }}>
+                                                                {item.upload == 'N' ? '비공개' : '공개'}
+                                                        </span>
+                                                </td>
+                                                <td>
+                                                        <button className='button2' style={{ marginRight: '10px' }} onClick={() => handleEventEditClick(item)}>수정</button>
+                                                        <button className='button2' onClick={() => handleEventDelete(item.e_id)}>삭제</button>
+                                                </td>
+                                        </tr>
+                                ))}
+                                </tbody>
+                        </table>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
+                                        더보기
+                                </button>
+                                <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}
+                                        onClick={() => setEventModalOpen(true)}
+                                >
+                                        게시글등록
+                                </button>
+                        </div>
+                </div>
+        );
+}
+
 function Manager() {
         //게시글관리
         const [events, setEvents] = useState([]);
@@ -664,6 +876,49 @@ function Manager() {
                 enddate: '',
                 pId: ''
         });
+        // 이벤트 수정용 state
+        const [editEventModalOpen, setEditEventModalOpen] = useState(false);
+        const [editEvent, setEditEvent] = useState({
+                e_id: null,
+                subject: '',
+                context: '',
+                updatedate: '',
+                enddate: '',
+                pId: ''
+        });
+        //수정 버튼 클릭 시 등장 핸들러
+        const handleEventEditClick = (item) => {
+                setEditEvent({
+                        e_id: item.e_id,
+                        subject: item.subject || '',
+                        context: item.context || '',
+                        updatedate: item.updatedate ? item.updatedate.slice(0, 10) : '',
+                        enddate: item.enddate ? item.enddate.slice(0, 10) : '',
+                        pId: item.product?.pid || item.product?.p_id || ''
+                });
+                setEditEventModalOpen(true);
+        };
+        const handleEventEditSubmit = () => {
+        if (!editEvent.subject) return alert('제목을 입력해주세요.');
+        if (!editEvent.context) return alert('내용을 입력해주세요.');
+
+        axios.put(`http://192.168.4.51:9989/event/update/${editEvent.e_id}`, {
+                subject: editEvent.subject,
+                context: editEvent.context,
+                updatedate: editEvent.updatedate ? editEvent.updatedate + 'T00:00:00' : null,
+                enddate: editEvent.enddate ? editEvent.enddate + 'T00:00:00' : null,
+                p_id: Number(editEvent.pId)
+        })
+                .then(() => {
+                        alert('수정 완료');
+                        setEditEventModalOpen(false);
+                        axios.get('http://192.168.4.51:9989/event/all').then(res => setEvents(res.data));
+                })
+                .catch(err => {
+                        console.log(err);
+                        alert('수정 중 오류가 발생했습니다.');
+                });
+        };
 
         const handleEventSubmit = () => {
                 if (!newEvent.pId) return alert('상품을 선택해주세요.');
@@ -700,209 +955,7 @@ function Manager() {
                 return Number(String(value).replace(/[^0-9]/g, ""));
         };
 
-        const Reservation = () => (
-                <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>예약 게시글 목록</h4>
-                        <hr />
-                        <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue', marginLeft: '10px' }} onClick={handleBulkEventDelete}>선택삭제</button>
-                        <table className="table table-bordered" style={{ width: '100%', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
-                                <thead>
-                                        <tr style={{ fontSize: '0.8em' }}>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>일괄삭제</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>카테고리</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>이벤트명</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>등록시간</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>예약시간</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>발행상태</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>목록 수정/삭제</th>
-                                        </tr>
-                                </thead>
-                                {reservedEvents.map((item) => (
-                                        <tbody key={item.e_id}>
-                                                <tr>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                <input type="checkbox"
-                                                                        checked={selectedEventIds.includes(item.e_id)}
-                                                                        onChange={() => handleEventCheck(item.e_id)}
-                                                                />
-                                                        </td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                                        {item.subject}
-                                                                </div>
-                                                        </td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.writedate?.slice(0, 10)}</td>
-                                                        <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
-                                                        <td>
-                                                                <span style={{
-                                                                        background: item.upload == "N" ? '#ffebee' : '#e3f2fd',
-                                                                        color: item.upload == "N" ? '#c62828' : '#1976d2',
-                                                                        padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
-                                                                        textAlign: 'center', verticalAlign: 'middle'
-                                                                }}>
-                                                                        {item.upload == "N" ? '미공개' : '공개'}
-                                                                </span>
-                                                        </td>
-                                                        <td>
-                                                                <button className='button2' style={{ marginRight: '10px' }}>수정</button>
-                                                                <button className='button2' onClick={() => handleEventDelete(item.e_id)}>삭제</button>
-                                                        </td>
-                                                </tr>
-                                        </tbody>
-                                ))}
-                        </table>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                                <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
-                                        더보기
-                                </button>
-                                <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}
-                                        onClick={() => setEventModalOpen(true)}
-                                >
-                                        게시글등록
-                                </button>
-                        </div>
-                </div>
-        )
-        const Event = () => (
-                <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                        <h4 style={{
-                                textAlign: 'left', fontWeight: '600',
-                                marginTop: activeMenu === '-이벤트 관리' ? '0px' : '20px',
-                        }}
-                        >
-                                진행 중인 이벤트
-                        </h4>
-                        <hr />
-                        <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue', marginLeft: '10px' }} onClick={handleBulkEventDelete}>선택삭제</button>
-                        <table className="table table-bordered" style={{ width: '100%', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
-                                <thead>
-                                        <tr style={{ fontSize: '0.8em' }}>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>일괄삭제</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>카테고리</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>이벤트명</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>시작기간</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>종료기간</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>발행상태</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>목록 수정/삭제</th>
-                                        </tr>
-                                </thead>
-                                {events
-                                        .filter((item) => item.upload == 'Y')
-                                        .map((item) => (
-                                                <tbody key={item.e_id}>
-                                                        <tr>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                        <input type="checkbox"
-                                                                                aria-label="항목 선택"
-                                                                                checked={selectedEventIds.includes(item.e_id)}
-                                                                                onChange={() => handleEventCheck(item.e_id)}
-                                                                        />
-                                                                </td>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                        <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                                                {item.subject}
-                                                                        </div></td>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.enddate?.slice(0, 10)}</td>
-                                                                <td>
-                                                                        <span style={{
-                                                                                background: item.upload == 'N' ? '#ffebee' : '#e3f2fd',
-                                                                                color: item.upload == 'N' ? '#c62828' : '#1976d2',
-                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
-                                                                                textAlign: 'center', verticalAlign: 'middle'
-                                                                        }}>
-                                                                                {item.upload == 'N' ? '비공개' : '공개'}
-                                                                        </span>
-                                                                </td>
-                                                                <td>
-                                                                        <button className='button2' style={{ marginRight: '10px' }}>수정</button>
-                                                                        <button className='button2' onClick={() => handleEventDelete(item.e_id)}>삭제</button>
-                                                                </td>
-                                                        </tr>
-                                                </tbody>
-                                        ))}
-                        </table>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                                <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
-                                        더보기
-                                </button>
-                                <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}
-                                        onClick={() => setEventModalOpen(true)}
-                                >
-                                        게시글등록
-                                </button>
-                        </div>
-                        <h4 style={{ textAlign: 'left', fontWeight: '600', marginTop: '20px' }}>마무리 된 이벤트</h4>
-                        <hr />
-                        <button className='button' style={{
-                                border: '1px solid blue', backgroundColor: 'blue', marginLeft: '10px'
-                        }}
-                                onClick={handleBulkEventDelete}
-                        >
-                                선택삭제
-                        </button>
-                        <table className="table table-bordered" style={{ width: '100%', textAlign: 'center', border: '1px solid #787878', marginTop: '20px' }}>
-                                <thead>
-                                        <tr style={{ fontSize: '0.8em' }}>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>일괄삭제</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>카테고리</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>이벤트명</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>시작기간</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>종료기간</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>발행상태</th>
-                                                <th style={{ backgroundColor: '#eeeeee' }}>목록 수정/삭제</th>
-                                        </tr>
-                                </thead>
-                                {endedEvents
-                                        .map((item) => (
-                                                <tbody key={item}>
-                                                        <tr>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                        <input type="checkbox"
-                                                                                checked={selectedEventIds.includes(item.e_id)}
-                                                                                onChange={() => handleEventCheck(item.e_id)}
-                                                                        />
-                                                                </td>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.product?.b_category}〉{item.product?.scategory}</td>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                        <div style={{ width: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                                                {item.subject}
-                                                                        </div>
-                                                                </td>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.updatedate?.slice(0, 10)}</td>
-                                                                <td style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>{item.enddate?.slice(0, 10)}</td>
-                                                                <td>
-                                                                        <span style={{
-                                                                                background: item.upload == 'N' ? '#ffebee' : '#e3f2fd',
-                                                                                color: item.upload == 'N' ? '#c62828' : '#1976d2',
-                                                                                padding: '2px 6px', borderRadius: '4px', fontSize: '12px',
-                                                                                textAlign: 'center', verticalAlign: 'middle'
-                                                                        }}>
-                                                                                {item.upload == 'N' ? '비공개' : '공개'}
-                                                                        </span>
-                                                                </td>
-                                                                <td>
-                                                                        <button className='button2' style={{ marginRight: '10px' }}>수정</button>
-                                                                        <button className='button2' onClick={() => handleEventDelete(item.e_id)}>삭제</button>
-                                                                </td>
-                                                        </tr>
-                                                </tbody>
-                                        ))}
-                        </table>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                                <button style={{ backgroundColor: 'white', border: '0px', textDecoration: 'underline', textAlign: 'left', fontSize: '0.8em' }}>
-                                        더보기
-                                </button>
-                                <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}
-                                        onClick={() => setEventModalOpen(true)}
-                                >
-                                        게시글등록
-                                </button>
-                        </div>
-                </div>
-        )
+
         const BuyTag = () => {
                 // 날짜 범위 있으면 그 범위만, 없으면 해당 pId 전체 주문
                 const items = filteredRawItems(selectedBuyItem);
@@ -1950,18 +2003,54 @@ function Manager() {
                         {/* 세일관리 페이지 */}
                         {activeMenu == '세일 관리' && (
                                 <div className='category-content'>
-                                        <Reservation />
-                                        <Event />
+                                        <Reservation
+                                                reservedEvents={reservedEvents}
+                                                selectedEventIds={selectedEventIds}
+                                                handleEventCheck={handleEventCheck}
+                                                handleBulkEventDelete={handleBulkEventDelete}
+                                                handleEventDelete={handleEventDelete}
+                                                handleEventEditClick={handleEventEditClick}
+                                                setEventModalOpen={setEventModalOpen}
+                                        />
+                                        <EventList
+                                                activeMenu={activeMenu}
+                                                events={events}
+                                                endedEvents={endedEvents}
+                                                selectedEventIds={selectedEventIds}
+                                                handleEventCheck={handleEventCheck}
+                                                handleBulkEventDelete={handleBulkEventDelete}
+                                                handleEventDelete={handleEventDelete}
+                                                handleEventEditClick={handleEventEditClick}
+                                                setEventModalOpen={setEventModalOpen}
+                                        />
                                 </div>
                         )}
                         {activeMenu == '-예약' && (
                                 <div className='category-content'>
-                                        <Reservation />
+                                        <Reservation
+                                                reservedEvents={reservedEvents}
+                                                selectedEventIds={selectedEventIds}
+                                                handleEventCheck={handleEventCheck}
+                                                handleBulkEventDelete={handleBulkEventDelete}
+                                                handleEventDelete={handleEventDelete}
+                                                handleEventEditClick={handleEventEditClick}
+                                                setEventModalOpen={setEventModalOpen}
+                                        />
                                 </div>
                         )}
                         {activeMenu == '-이벤트 관리' && (
                                 <div className='category-content'>
-                                        <Event />
+                                        <EventList
+                                                activeMenu={activeMenu}
+                                                events={events}
+                                                endedEvents={endedEvents}
+                                                selectedEventIds={selectedEventIds}
+                                                handleEventCheck={handleEventCheck}
+                                                handleBulkEventDelete={handleBulkEventDelete}
+                                                handleEventDelete={handleEventDelete}
+                                                handleEventEditClick={handleEventEditClick}
+                                                setEventModalOpen={setEventModalOpen}
+                                        />
                                 </div>
                         )}
                         {/* 문의관리 페이지 */}
@@ -2238,6 +2327,55 @@ function Manager() {
                                         <ChartModel />
                                 </>
                         )}
+                        {/* 이벤트 수정 모달 */}
+                        {editEventModalOpen && (
+                                <div style={{
+                                        position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                                        backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999,
+                                        display: 'flex', justifyContent: 'center', alignItems: 'center'
+                                }}>
+                                        <div style={{
+                                        backgroundColor: 'white', padding: '30px', borderRadius: '8px',
+                                        width: '500px', maxHeight: '80vh', overflowY: 'auto'
+                                        }}>
+                                        <h5 style={{ marginBottom: '20px', fontWeight: '600' }}>이벤트 수정</h5>
+
+                                        <div style={{ marginBottom: '12px' }}>
+                                                <div style={{ fontWeight: '500', marginBottom: '4px' }}>제목</div>
+                                                <input type='text' style={{ width: '100%', padding: '6px' }}
+                                                value={editEvent.subject}
+                                                onChange={(e) => setEditEvent({ ...editEvent, subject: e.target.value })} />
+                                        </div>
+
+                                        <div style={{ marginBottom: '12px' }}>
+                                                <div style={{ fontWeight: '500', marginBottom: '4px' }}>내용</div>
+                                                <textarea style={{ width: '100%', padding: '6px', minHeight: '100px' }}
+                                                value={editEvent.context}
+                                                onChange={(e) => setEditEvent({ ...editEvent, context: e.target.value })} />
+                                        </div>
+
+                                        <div style={{ marginBottom: '12px' }}>
+                                                <div style={{ fontWeight: '500', marginBottom: '4px' }}>시작일 (updatedate)</div>
+                                                <input type='date' style={{ width: '100%', padding: '6px', marginTop: '4px' }}
+                                                value={editEvent.updatedate}
+                                                onChange={(e) => setEditEvent({ ...editEvent, updatedate: e.target.value })} />
+                                        </div>
+
+                                        <div style={{ marginBottom: '20px' }}>
+                                                <div style={{ fontWeight: '500', marginBottom: '4px' }}>종료일 (enddate)</div>
+                                                <input type='date' style={{ width: '100%', padding: '6px', marginTop: '4px' }}
+                                                value={editEvent.enddate}
+                                                onChange={(e) => setEditEvent({ ...editEvent, enddate: e.target.value })} />
+                                        </div>
+
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                                                <button className='button2' onClick={() => setEditEventModalOpen(false)}>취소</button>
+                                                <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}
+                                                onClick={handleEventEditSubmit}>저장</button>
+                                        </div>
+                                        </div>
+                                </div>
+                        )}
                         {eventModalOpen && (
                                 <div style={{
                                         position: 'fixed', top: 0, left: 0,
@@ -2332,6 +2470,7 @@ function Manager() {
                                         </div>
                                 </div>
                         )}
+                        
                         {/* 환경설정 페이지
                         {activeMenu == '환경설정' && (
                                 <div>
