@@ -201,8 +201,29 @@ public class ProductController {
 
         List<FileEntity> fileList = productService.fileSelect(id);
 
+        // 이벤트 정보
+        EventEntity event = productService.getEventByProductId(id).orElse(null);
+
+        // 최종 가격 계산
+        int originalPrice = Integer.parseInt(product.getPrice());
+
+        //  null-safe 할인 퍼센트
+        int discountPercent = 0;
+        if (event != null && event.getDiscountPercent() != null) {
+            discountPercent = event.getDiscountPercent();
+        }
+
+        // 최종 가격 계산
+        int finalPrice = originalPrice;
+        if (discountPercent > 0) {
+            finalPrice = originalPrice * (100 - discountPercent) / 100;
+        }
+        System.out.println("finalPrice 보내는 값 = " + finalPrice);
+        // 결과
         result.put("product", product);
         result.put("fileList", fileList);
+        result.put("event", event);
+        result.put("finalPrice", finalPrice);
 
         return result;
     }
@@ -328,21 +349,8 @@ public class ProductController {
      * 공간별 페이지 처음상품 불러오기
      */
     @GetMapping("/spaceproduct")
-    public Map<String, Object> spaceallList(
-            @PageableDefault(sort = "pId", direction = Sort.Direction.DESC) Pageable pageable
-    ) {
-
-        Page<ProductEntity> result = productService.productList(pageable);
-
-        Map<String, Object> map = new HashMap<>();
-
-        map.put("dataList", result.getContent());
-        map.put("totalPages", result.getTotalPages());
-        map.put("totalElements", result.getTotalElements());
-        map.put("currentPage", result.getNumber());
-        map.put("size", result.getSize());
-
-        return map;
+    public List<ProductEntity> getSpaceProducts() {
+        return productService.getAllProducts();
     }
 
     // 판매자의 상품 목록 조회 - 대호추가

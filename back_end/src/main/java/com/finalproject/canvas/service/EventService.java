@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -66,4 +67,11 @@ public class EventService {
 
         eventRepository.save(event);
     }
+
+    // 할인 상품 가져오기 , 이슬추가
+    public List<EventEntity> getSaleProducts() {
+        return eventRepository.findSaleProducts();
+
+    }
+
 }

@@ -2,38 +2,22 @@ import './../css/kdh.css';
 import './../css/seul.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useState, useEffect } from 'react';
+import { useParams } from "react-router-dom";
 import { Carousel } from 'react-bootstrap';
 import { Ellipsis } from 'react-bootstrap/esm/PageItem';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
-function sale(){
-
+function sale() {
         const [events, setEvents] = useState([]);
                 useEffect(() => {
                 axios.get('http://192.168.4.60:9991/event/active')
                         .then(res => setEvents(res.data))
                         .catch(err => console.log(err));
         }, []);
-        
-        // 제품 데이터 배열
-        const products = [
-                { id: 1, img: "public/p1.png", title: "글자수체크를위해서최대한글귀를늘려보고있습니다안녕하세요반갑습니다어서오세요", price: "89,900", discount: "17%", rating:'4.9', ratcut:'304' },
-                { id: 2, img: "public/p2.png", title: "BILLY 빌리", price: "89,900", discount: "17%", rating:'4.9', ratcut:'304' },
-                { id: 3, img: "public/p3.png", title: "BILLY 빌리", price: "89,900", discount: "17%", rating:'4.9', ratcut:'304' },
-                { id: 4, img: "public/p4.png", title: "BILLY 빌리", price: "89,900", discount: "17%", rating:'4.9', ratcut:'304' },
-                { id: 5, img: "public/p1.png", title: "BILLY 빌리", price: "89,900", discount: "17%", rating:'4.9', ratcut:'304' },
-                { id: 6, img: "public/p2.png", title: "BILLY 빌리", price: "89,900", discount: "17%", rating:'4.9', ratcut:'304' },
-                { id: 7, img: "public/p3.png", title: "BILLY 빌리", price: "89,900", discount: "17%", rating:'4.9', ratcut:'304' },
-        ];
-        const chunkProducts = (arr, size) => {
-                const result = [];
-                for (let i = 0; i < arr.length; i += size) {
-                result.push(arr.slice(i, i + size));
-                }
-                return result;
-        };
-        
+
+
+
         const now = new Date();
         const activeEvent = events.find(e => {
                 const start = e.updatedate ? new Date(e.updatedate) : null;
@@ -52,132 +36,267 @@ function sale(){
                 const start = new Date(activeEvent.updatedate);
 
                 const tick = () => {
-                const now = new Date();
+                        const now = new Date();
 
-                // D-day 계산
-                const diffMs = end - now;
-                if (diffMs <= 0) {
-                        setTimeLeft('종료');
-                        setDDay('종료');
-                        return;
-                }
-                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                setDDay(diffDays === 0 ? 'D-DAY' : `D-${diffDays}`);
+                        // D-day 계산
+                        const diffMs = end - now;
+                        if (diffMs <= 0) {
+                                setTimeLeft('종료');
+                                setDDay('종료');
+                                return;
+                        }
+                        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                        setDDay(diffDays === 0 ? 'D-DAY' : `D-${diffDays}`);
 
-                // 시:분:초
-                const hours = String(Math.floor((diffMs / (1000 * 60 * 60)) % 24)).padStart(2, '0');
-                const minutes = String(Math.floor((diffMs / (1000 * 60)) % 60)).padStart(2, '0');
-                const seconds = String(Math.floor((diffMs / 1000) % 60)).padStart(2, '0');
-                setTimeLeft(`${hours}:${minutes}:${seconds}`);
-        };
+                        // 시:분:초
+                        const hours = String(Math.floor((diffMs / (1000 * 60 * 60)) % 24)).padStart(2, '0');
+                        const minutes = String(Math.floor((diffMs / (1000 * 60)) % 60)).padStart(2, '0');
+                        const seconds = String(Math.floor((diffMs / 1000) % 60)).padStart(2, '0');
+                        setTimeLeft(`${hours}:${minutes}:${seconds}`);
+                };
 
                 tick(); // 즉시 1회 실행
                 const timer = setInterval(tick, 1000);
                 return () => clearInterval(timer); // 클린업
         }, [activeEvent]);
 
-        const productChunks = chunkProducts(products, 4);
 
-        return(
+
+        // ====================== 이슬 ===========================
+        // 상품리스트 더보기 상태
+        const [showMore, setShowMore] = useState(false);
+
+        // 상품 정보
+        const [list, setList] = useState([]);
+        const [saleList, setSaleList] = useState([]);
+
+        useEffect(() => {
+                axios.get("http://192.168.4.60:9991/event/sale/list")
+                        .then(res => {
+                                console.log("할인상품 리스트:", res.data);
+                                setList(res.data);
+                        })
+                        .catch(err => console.log(err));
+        }, []);
+
+        // 보여줄 상품
+        const visibleProducts = showMore ? list : list.slice(0, 8);
+
+        // 할인 필터 (안전하게)
+        const discountedProducts = visibleProducts.filter(
+                item => Number(item?.discountPercent || 0) > 0
+        );
+
+        // 리뷰,별점  
+        const [starMap, setStarMap] = useState({});// 예: { 1: 4.2, 3: 0, 5: 3.7 }
+        const [dataList, setDataList] = useState([]);
+
+
+
+        // 좋아요 상태 저장
+        const [likedItems, setLikedItems] = useState([]);
+
+        const toggleMenu = (menuName) => {
+                setOpenMenu(openMenu === menuName ? null : menuName);
+        };
+
+        // 카테고리 파라미터
+        const CategoryProduct = () => {
+                const { sCategory } = useParams();
+
+                console.log("카테고리:", sCategory);
+        }
+
+
+
+        // 좋아요
+        useEffect(() => {
+                const loginUserId = sessionStorage.getItem("loginUserId");
+                const mId = sessionStorage.getItem("mId");
+
+                if (!loginUserId) return;
+
+                axios.get(`http://192.168.4.60:9991/like/list/${mId}`)
+                        .then(res => setLikedItems(res.data))
+                        .catch(err => console.log(err));
+        }, []);
+
+        // 별 리뷰 수 가져오기
+        useEffect(() => {
+                if (list.length === 0) return;
+
+                list.forEach(product => {
+                        axios.get(`http://192.168.4.60:9991/review/avg/${product.pid}`)
+                                .then(res => {
+                                        setStarMap(prev => ({
+                                                ...prev,
+                                                [product.pid]: res.data ?? 0
+                                        }));
+                                });
+                });
+        }, [list]);
+        // 숫자 → 별(★) 변환 함수
+        function renderStars(avg) {
+                if (!avg) return "☆☆☆☆☆";  // 값 없을 때
+
+                const fullStars = Math.floor(avg);      // 정수 부분 (예: 3.7 → 3)
+                const halfStar = avg % 1 >= 0.5 ? 1 : 0; // 반개 여부
+                const emptyStars = 5 - fullStars - halfStar;
+
+                return "★".repeat(fullStars)
+                        + (halfStar ? "☆" : "")
+                        + "☆".repeat(emptyStars);
+        }
+
+        // 좋아요 백엔드
+        function handleLike(productId) {
+                const mId = sessionStorage.getItem("mId");
+                console.log("mId:", mId);
+                console.log("productId:", productId);
+
+                if (!mId || !productId) {
+                        console.log("값 없음", mId, productId);
+                        navigate("/login");
+                        return;
+                }
+
+                axios.post("http://192.168.4.60:9991/like/toggle", {
+                        memberId: mId,
+                        productId: productId
+                })
+                        .then(res => {
+                                const { liked } = res.data;
+
+                                setLikedItems(prev =>
+                                        liked
+                                                ? [...prev, productId]
+                                                : prev.filter(id => id !== productId)
+                                );
+                        })
+                        .catch(err => console.log(err));
+        }
+        return (
                 <>
-                        <div style={{margin:'0 auto', marginTop:'100px', textAlign:'center'}}>
-                                <h3 style={{fontWeight:'600'}}>CANVAS 특가 상품 기획</h3>
-                                <div style={{display:'flex', gap:'20px', justifyContent: 'center'}}>
-                                        {activeEvent ? (
-                                                <>
-                                                        <h1 style={{ color: "white", backgroundColor: "black", padding: "2px 10px" }}>
-                                                                {dDay}
-                                                        </h1>
-                                                        <h1>{timeLeft}</h1>
-                                                </>
+                        <div >
+                                <div style={{ margin: '0 auto', marginTop: '100px', textAlign: 'center' }}>
+                                        <h3 style={{ fontWeight: '600' }}>CANVAS 특가 상품 기획</h3>
+                                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                                                {activeEvent ? (
+                                                        <>
+                                                                <h1 style={{ color: "white", backgroundColor: "black", padding: "2px 10px" }}>
+                                                                        {dDay}
+                                                                </h1>
+                                                                <h1>{timeLeft}</h1>
+                                                        </>
                                                 ) : (
-                                                <h1 style={{ color: 'gray' }}>진행 중인 세일이 없습니다</h1>
-                                        )}
-                                </div>
-                                {/* 슬라이드(Carousel) */}
-                                <div style={{display:'flex', gap:'20px', justifyContent: 'center', marginTop:'20px'}}>
-                                        <div className="sub-slider">
-                                                <Carousel fade interval={3000}>
-                                                        <Carousel.Item>
-                                                                <Link to="#">
-                                                                        <img className="d-block w-100" src="/image/banner1.jpg" alt="first slide" />
-                                                                </Link>
-                                                        </Carousel.Item>
-                                                        <Carousel.Item>
-                                                                <Link to="#">
-                                                                        <img className="d-block w-100" src="/image/banner2.jpg" alt="twice slide" />
-                                                                </Link>
-                                                        </Carousel.Item>
-                                                        <Carousel.Item>
-                                                                <Link to="#">
-                                                                        <img className="d-block w-100" src="/image/banner3.jpg" alt="twice slide" />
-                                                                </Link>
-                                                        </Carousel.Item>
-                                                </Carousel>
-                                        </div>
-                                        <div className="sub-slider">
-                                                <Carousel fade interval={3000}>
-                                                        <Carousel.Item>
-                                                                <Link to="#">
-                                                                        <img className="d-block w-100" src="/image/banner1.jpg" alt="first slide" />
-                                                                </Link>
-                                                        </Carousel.Item>
-                                                        <Carousel.Item>
-                                                                <Link to="#">
-                                                                        <img className="d-block w-100" src="/image/banner2.jpg" alt="twice slide" />
-                                                                </Link>
-                                                        </Carousel.Item>
-                                                        <Carousel.Item>
-                                                                <Link to="#">
-                                                                        <img className="d-block w-100" src="/image/banner3.jpg" alt="twice slide" />
-                                                                </Link>
-                                                        </Carousel.Item>
-                                                </Carousel>
+                                                        <h1 style={{ color: 'gray' }}>진행 중인 세일이 없습니다</h1>
+                                                )}
                                         </div>
                                 </div>
-                                {/* 상품 리스트 슬라이더 */}
-                                <Carousel 
-                                        indicators={false}
-                                        interval={null}
-                                >
-                                        {productChunks.map((chunk, index) => (
-                                        <Carousel.Item key={index}>
-                                                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', padding: '0 50px', marginTop:'100px', marginBottom:'100px' }}>
-                                                {chunk.map((item) => (
-                                                        <Link to="/productDetail" className="product-link" key={item.id} style={{ textDecoration: 'none', color: 'inherit', width: '25%' }}>
-                                                        <div className="product-card">
-                                                                <div className="product-img">
-                                                                <img src={item.img} alt={item.title} style={{ width: '100%' }} />
-                                                                </div>
-                                                                <div style={{ textAlign: 'left', marginTop: '10px' }}>
-                                                                <div style={{ color: "gray", fontSize: '0.8em' }}>한샘</div>
-                                                                <div className="title" style={{
-                                                                        overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
-                                                                        WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, whiteSpace: 'normal',
-                                                                        height: '2.8em', fontWeight: '500'
-                                                                }}>{item.title}</div>
-                                                                <div style={{ color: 'gray', textDecoration: 'line-through', fontSize: '0.8em' }}>
-                                                                        {item.price}원
-                                                                </div>
-                                                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                                        <span style={{ color: 'red', marginRight: '5px', fontWeight: 'bold' }}>{item.discount}</span>
-                                                                        <span style={{ fontWeight: 'bold' }}>{item.price}원</span>
-                                                                </div>
-                                                                <div style={{ fontSize: '0.8em', color:'gray' }}>
-                                                                        <span>★</span>
-                                                                        <span>{item.rating}</span>
-                                                                        <span style={{ color: 'gray' }}>({item.ratcut})</span>
-                                                                </div>
-                                                                </div>
-                                                        </div>
-                                                        </Link>
-                                                ))}
-                                                </div>
-                                        </Carousel.Item>
-                                        ))}
-                                </Carousel>
+                                {/* 상품 리스트 */}
+                                <div className="product-grid">
+
+                                        {visibleProducts
+                                                .filter(item => Number(item.discountPercent || 0) > 0)
+                                                .map((item) => {
+
+                                                        const product = item.product;
+                                                        const pid = item.pid;
+
+
+                                                        return (
+                                                                <Link
+                                                                        to={`/productDetail/${pid}`}
+                                                                        className="product-link"
+                                                                        key={pid}
+                                                                >
+                                                                        <div className="product-card">
+
+                                                                                {/* 이미지 */}
+                                                                                <div className="product-img"
+                                                                                        style={{
+                                                                                                position: "relative",
+                                                                                                overflow: "hidden"
+
+                                                                                        }}>
+                                                                                        <img
+                                                                                                className="main-product-img"
+                                                                                                src={
+                                                                                                        product.fileList[0].filename
+                                                                                                                ? `http://192.168.4.60:9991/upload/${product.fileList[0].filename}.${product.fileList[0].extname}`
+                                                                                                                : "/no-image.png"
+                                                                                                }
+                                                                                                alt={product?.name}
+                                                                                                style={{
+                                                                                                        width: "100%",
+                                                                                                        display: "block",
+                                                                                                }}
+                                                                                        />
+
+                                                                                        <img
+                                                                                                className="like-btn"
+                                                                                                src={
+                                                                                                        likedItems.includes(pid)
+                                                                                                                ? "/like2.png"
+                                                                                                                : "/like.png"
+                                                                                                }
+                                                                                                onClick={(e) => {
+                                                                                                        e.preventDefault();
+                                                                                                        e.stopPropagation();
+                                                                                                        handleLike(pid);
+                                                                                                }}
+                                                                                        />
+                                                                                </div>
+
+                                                                                {/* 정보 */}
+                                                                                <div className="product-info">
+
+                                                                                        <div className="brand">
+                                                                                                {product?.company?.businessName || "brand"}
+                                                                                        </div>
+
+                                                                                        <div className="title">
+                                                                                                {product?.name}
+                                                                                        </div>
+
+                                                                                        {/* 가격 (line style) */}
+                                                                                        <div className="price-line">
+
+                                                                                                {/* 정가 */}
+                                                                                                <span className="origin-price">
+                                                                                                        ₩ {Number(product?.price || 0).toLocaleString()}
+                                                                                                </span>
+                                                                                                {/* 할인율 */}
+                                                                                                <span className="discount-percent">
+                                                                                                        {item.discountPercent}%
+                                                                                                </span>
+
+                                                                                        </div>
+                                                                                        <div>
+
+
+                                                                                                {/* 할인 가격 */}
+                                                                                                <span className="sale-price">
+                                                                                                        ₩ {Math.floor(
+                                                                                                                Number(product?.price || 0) *
+                                                                                                                (1 - Number(item.discountPercent || 0) / 100)
+                                                                                                        ).toLocaleString()}
+                                                                                                </span>
+                                                                                        </div>
+
+                                                                                        {/* 별점 */}
+                                                                                        <div className="rating">
+                                                                                                {renderStars(starMap[pid])}
+                                                                                        </div>
+
+                                                                                </div>
+                                                                        </div>
+                                                                </Link>
+                                                        );
+                                                })}
+                                </div>
                         </div>
-                        
+
                 </>
         )
 }

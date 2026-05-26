@@ -17,6 +17,15 @@ const maskUserId = (name) => {
         return name.slice(0, -3) + "***";
 };
 
+// 이미지 추출 함수
+const getImageUrl = (item) => {
+        const fileList = item.product?.fileList || item.fileList;
+        if (fileList && fileList.length > 0 && fileList[0].filename) {
+                return `http://192.168.4.60:9991/upload/${fileList[0].filename}.${fileList[0].extname}`;
+        }
+        return null;
+};
+
 const MyPage = () => {
 
         // 상태 관리: 사용자 데이터 및 타입
@@ -86,6 +95,7 @@ const MyPage = () => {
 
                                         const orderRes = await axios.get(`http://192.168.4.60:9991/buy/list/${ordersMemberId}`);
                                         setOrders(orderRes.data); // 주문목록
+                                        console.log("주문상품정보 : ", orderRes.data)
 
                                         const cancelRes = await axios.get(`http://192.168.4.60:9991/buy/cancel/list/${ordersMemberId}`);
                                         setCancelItems(cancelRes.data); // 취소목록              
@@ -337,9 +347,9 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
         const handleOrderAction = async (item, actionType, actionLabel) => {
 
                 console.log("전달받은 bId 값:", item);
-                const bid = item.bid;
+                const bId = item.bId;
 
-                if (!bid) {
+                if (!bId) {
                         console.error("주문 번호(bid)를 찾을 수 없습니다:", item);
                         alert("데이터 오류: 주문 번호를 확인해주세요.");
                         return;
@@ -349,11 +359,11 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
 
                 try {
                         // 2. 경로에 bid를 넣습니다.
-                        await axios.post(`http://192.168.4.60:9991/buy/status/${bid}?action=${actionType}`);
+                        await axios.post(`http://192.168.4.60:9991/buy/status/${bId}?action=${actionType}`);
 
                         alert(`${actionLabel} 처리가 완료되었습니다.`);
 
-                        setOrders(prev => prev.filter(i => i.bid !== bid));
+                        setOrders(prev => prev.filter(i => i.bId !== bId));
 
                 } catch (error) {
                         console.error("요청 중 오류 발생:", error);
@@ -372,24 +382,17 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
                         {validOrders.map((item, index) => (
 
                                 <div className="order-item" key={item.bd || index}>
-                                        <div className="item-img">
-                                                {/* ★ 대대적 수정: 백엔드 실제 필드명(p_fileList, fileName, extName) 반영 */}
-                                                {item.product?.p_fileList && item.product.p_fileList.length > 0 ? (
+                                        <div className="item-img-box">
+                                                {item.product?.fileList?.[0] ? (
                                                         <img
-                                                                // 🚨 핵심 수정: .extName을 뒤에 붙이지 마세요! 
-                                                                // 백엔드에서 fileName에 이미 확장자까지 포함된 값을 보내고 있습니다.
-                                                                src={`http://192.168.4.60:9991/upload/${encodeURIComponent(item.product.p_fileList[0].fileName)}`}
+                                                                src={getImageUrl(item)}
                                                                 alt="상품이미지"
-                                                                style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '4px' }}
-                                                                onError={(e) => {
-                                                                        // 이미 404가 났다면 경로가 잘못된 것이니 더미 이미지를 보여줌
-                                                                        e.target.onerror = null;
-                                                                        e.target.src = 'https://via.placeholder.com/100?text=No+Image';
-                                                                }}
+                                                                style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }}
                                                         />
                                                 ) : (
-                                                        <div style={{ width: '100px', height: '100px', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#aaa' }}>이미지 준비중</div>
+                                                        <p>파일리스트 데이터 없음</p>
                                                 )}
+
                                         </div>
                                         <div className="item-info">
                                                 <span className="brand-name">
@@ -435,14 +438,14 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
                                                                 <button
                                                                         className="btn-light"
                                                                         style={{ color: '#f0ad4e', borderColor: '#f0ad4e', padding: '4px 8px', fontSize: '12px' }}
-                                                                        onClick={() => handleOrderAction(item.bId, "RETURN", "반품신청")}
+                                                                        onClick={() => handleOrderAction(item, "RETURN", "반품신청")}
                                                                 >
                                                                         반품신청
                                                                 </button>
                                                                 <button
                                                                         className="btn-light"
                                                                         style={{ color: '#5bc0de', borderColor: '#5bc0de', padding: '4px 8px', fontSize: '12px' }}
-                                                                        onClick={() => handleOrderAction(item.bId, "EXCHANGE", "교환신청")}
+                                                                        onClick={() => handleOrderAction(item, "EXCHANGE", "교환신청")}
                                                                 >
                                                                         교환신청
                                                                 </button>
@@ -546,9 +549,10 @@ const CancelHistory = ({ cancelItems }) => {
                         {cancelItems.map((item, index) => (
                                 <div className="order-item" key={item.bId || index}>
                                         {/* 상품 이미지 출력 */}
-                                        <div className="item-img">
+                                        <div className="item-img-box">
                                                 {item.product?.fileList && item.product.fileList[0] ? (
-                                                        <img src={`http://192.168.4.60:9991/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        <img src={getImageUrl(item)}
+                                                                alt="상품 이미지" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }} />
                                                 ) : (
                                                         <div style={{ width: '100%', height: '100%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#aaa' }}>이미지 준비중</div>
                                                 )}
@@ -608,7 +612,11 @@ const CancelHistory = ({ cancelItems }) => {
         );
 };
 
+
 // 일반사용자 : 찜목록
+
+
+
 const WishList = ({ wishItems, onDelete }) => {
         return (
                 <div className="wishlist-container">
@@ -629,20 +637,20 @@ const WishList = ({ wishItems, onDelete }) => {
                                                 return (
                                                         <div className="order-item" key={currentPid}>
                                                                 <div className="item-img-box">
-                                                                        {item.product?.fileList && item.product.fileList.length > 0 && item.product.fileList[0] ? (
+                                                                        {getImageUrl(item) ? (
                                                                                 <img
-                                                                                        src={`http://192.168.4.60:9991/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`}
+                                                                                        src={getImageUrl(item)}
                                                                                         alt={productName}
-                                                                                        style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                                                                                />
-                                                                        ) : item.fileList && item.fileList.length > 0 && item.fileList[0] ? (
-                                                                                <img
-                                                                                        src={`http://192.168.4.60:9991/static/uploads/${item.fileList[0].filename}.${item.fileList[0].extname}`}
-                                                                                        alt={productName}
-                                                                                        style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                                                                                        style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }}
                                                                                 />
                                                                         ) : (
-                                                                                <div style={{ width: '100px', height: '100px', backgroundColor: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#999' }}>이미지 없음</div>
+                                                                                <div style={{
+                                                                                        width: '100px', height: '100px', backgroundColor: '#eee',
+                                                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                                        fontSize: '12px', color: '#999', borderRadius: '8px'
+                                                                                }}>
+                                                                                        이미지 없음
+                                                                                </div>
                                                                         )}
                                                                 </div>
                                                                 <div className="item-info">
@@ -770,6 +778,7 @@ const InquiryList = ({ inquiries }) => {
 };
 
 // 기업 사용자 : 상품 등록/수정
+
 const ProductManagement = ({ products, setProducts }) => {
         const [editingId, setEditingId] = useState(null);
         const [editFormData, setEditFormData] = useState({});
@@ -905,7 +914,7 @@ const ProductManagement = ({ products, setProducts }) => {
                                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                                                                 <div style={{ width: '40px', height: '40px', backgroundColor: '#f5f5f5', borderRadius: '4px', overflow: 'hidden' }}>
                                                                                                         {product.fileList && product.fileList[0] && (
-                                                                                                                <img src={`http://192.168.4.60:9991/static/uploads/${product.fileList[0].filename}.${product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                                                                <img src={getImageUrl(product)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                                                                         )}
                                                                                                 </div>
 

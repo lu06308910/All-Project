@@ -149,7 +149,8 @@ function ProductDetail() {
                 const selectedSize = sizes.find(s => s.size === extraOption);
                 const sizeExtraPrice = Number(selectedSize?.price || 0);
 
-                const basePrice = Number(data.price || 0);
+                //const basePrice = Number(data.price || 0);
+                const basePrice = Number(data.salePrice || data.price || 0); // 할인가격에서 적용
 
                 const finalPrice = basePrice + sizeExtraPrice;
 
@@ -161,9 +162,9 @@ function ProductDetail() {
                         size: extraOption,
                         count,
 
-                        basePrice,
+                        basePrice,          // 할인된 기준 가격
                         sizeExtraPrice,
-                        finalPrice   // ⭐ 핵심
+                        finalPrice          // 단가 (1개 기준)
                 };
 
                 setSelectedOptions(prev => [...prev, newOption]);
@@ -211,7 +212,10 @@ function ProductDetail() {
                                         id: d.product?.pid,
                                         username: d.product?.company?.name,
                                         name: d.product?.name,
-                                        price: d.product?.price,
+                                        scategory: d.product?.scategory,
+                                        b_category: d.product?.b_category,
+                                        price: d.finalPrice,      // 화면에 표시되는 최종가
+                                        originPrice: d.product?.price, //  옵션 계산에 필요
                                         content: d.product?.context
                                 });
 
@@ -292,6 +296,7 @@ function ProductDetail() {
                                 discount: 0,
                                 count: opt.count,
                                 color: opt.color,
+                                originprice: Number(opt.basePrice),
                                 size: opt.size || opt.extraOption,
                                 price: opt.finalPrice // 총금액(사이즈별 추가금액도 합산)
                         };
@@ -400,7 +405,7 @@ function ProductDetail() {
 
                         {/* 상단 카테고리 경로 */}
                         <div className="breadcrumb">
-                                제품 &gt; 수납가구 &gt; 책장
+                                제품 &gt; {data?.b_category } &gt; {data?.scategory} 
                         </div>
 
                         <div className="product-wrapper">
@@ -445,7 +450,26 @@ function ProductDetail() {
                                                 </span>
                                         </div>
 
-                                        <p className="price">{data?.price}원</p>
+                                        <div className="price-line" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+
+                                                {/* 원가 */}
+                                                <span className="origin-price" style={{ textDecoration: "line-through", color: "#999" }}>
+                                                       {Number(data?.originPrice || 0).toLocaleString()}원
+                                                </span>
+
+                                                {/* 할인율 (event 있을 때만) */}
+                                                {data?.event && (
+                                                        <span className="discount-percent" style={{ color: "red", fontWeight: "bold" }}>
+                                                                {data?.event?.discountPercent}%
+                                                        </span>
+                                                )}
+
+                                                {/* 최종 가격 */}
+                                                <span className="final-price" style={{ fontWeight: "bold", color: "#000" }}>
+                                                        ₩ {Number(data?.price || 0).toLocaleString()}
+                                                </span>
+
+                                        </div>
 
                                         <div className="rating">
                                                 <span style={{ fontSize: '20px' }}>{renderStar(averageStar)}</span>
@@ -701,14 +725,14 @@ function ProductDetail() {
                                                                 onClick={() => setReviewFilter("all")}
                                                                 className={reviewFilter === "all" ? "active" : ""}
                                                         >
-                                                                전체(1,500건)
+                                                                전체 {reviews.length}건
                                                         </button>
 
                                                         <button
                                                                 onClick={() => setReviewFilter("photo")}
                                                                 className={reviewFilter === "photo" ? "active" : ""}
                                                         >
-                                                                사진(620건)
+                                                                사진 {reviews.filter((r) => r.imgUrl).length}건
                                                         </button>
                                                 </div>
 

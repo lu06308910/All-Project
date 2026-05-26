@@ -17,11 +17,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins="*")
+@CrossOrigin(origins = "*")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/member")
+
 public class DataController {
     //해당 repository 검색하여
     private final DataService dataService;

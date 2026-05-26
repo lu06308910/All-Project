@@ -55,7 +55,7 @@ function Home() {
         // 더보기
         const [list, setList] = useState([]);
         // 처음 4개 + showMore true면 전체
-        const visibleProducts = showMore ? list : list.slice(0, 4);
+        const visibleProducts = showMore ? list : list.slice(0, 8);
 
         // springboot 서버에서 비동기식으로 정보를 가져올 함수
         function getDataList(page) {

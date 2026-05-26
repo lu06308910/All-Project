@@ -8,7 +8,13 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface BuyRepository extends JpaRepository<BuyEntity, Integer> {
-    List<BuyEntity> findBymId(Integer mId);
+
+    @Query("SELECT b FROM BuyEntity b " +
+            "JOIN FETCH b.product p " +
+            "LEFT JOIN FETCH p.fileList " + // 여기가 중요! p_fileList가 ProductEntity의 필드명과 일치해야 함
+            "WHERE b.mId = :mId")
+    List<BuyEntity> findBymId(@Param("mId") Integer mId);
+
 
     // 특정 회원의 취소/반품/교환 내역 조회 - 대호추가
     @Query("SELECT b FROM BuyEntity b WHERE b.mId = :mId AND b.status IN ('취소완료', '반품신청', '교환신청', '취소 완료', '반품 신청', '교환 신청')")

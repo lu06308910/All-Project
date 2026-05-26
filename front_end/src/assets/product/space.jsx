@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import axios from "axios";
@@ -9,20 +9,71 @@ function Space() {
 
         const [showMore, setShowMore] = useState(false);
 
-        // 좋아요 상태 저장
-        const [likedItems, setLikedItems] = useState([]);
 
-        const { sCategory } = useParams(); // 카테고리 매핑주소
+        const [likedItems, setLikedItems] = useState([]);// 좋아요 상태 저장
+
+        const [selectedCategory, setSelectedCategory] = useState(null); // 관련상품
+
         const [data, setData] = useState([]); // 카테고리 해당 제품 데이터
 
         const [list, setList] = useState([]);// 모든 상품 데이터
+        const [mergedList, setMergedList] = useState([]);
 
-        // 처음 4개 + showMore true면 전체
-        const visibleProducts = showMore ? list : list.slice(0, 4);
+        const [starMap, setStarMap] = useState({});// 상품별 별점 평균 저장 (예: { productId: avgRating, ... })
+
+        const [saleList, setSaleList] = useState([]); // 할인상품
+
 
         useEffect(() => {
                 getDataList();
         }, []);
+        useEffect(() => {
+                axios.get("http://192.168.4.60:9991/event/sale/list")
+                        .then(res => {
+                                console.log("할인 데이터:", res.data);
+                                setSaleList(res.data);
+                        })
+                        .catch(err => console.log(err));
+        }, []);
+
+
+        useEffect(() => {
+                if (!list.length) return;
+
+                const merged = list.map((item) => {
+                        const sale = saleList.find(
+                                (s) => Number(s.product?.pid) === Number(item.id)
+                        );
+
+                        const discountPercent = Number(sale?.discountPercent ?? 0);
+
+                        const price = item.price;
+
+                        return {
+                                ...item,
+                                discountPercent,
+                                salePrice:
+                                        discountPercent > 0
+                                                ? Math.floor(price * (1 - discountPercent / 100))
+                                                : price
+                        };
+                });
+
+                setMergedList(merged);
+        }, [list, saleList]);
+
+        // 좋아요
+        useEffect(() => {
+                const loginUserId = sessionStorage.getItem("loginUserId");
+                const mId = sessionStorage.getItem("mId");
+
+                if (!loginUserId) return;
+
+                axios.get(`http://192.168.4.60:9991/like/list/${mId}`)
+                        .then(res => setLikedItems(res.data))
+                        .catch(err => console.log(err));
+        }, []);
+
 
         // 처음 모든 제품데이터 가져오기
         function getDataList() {
@@ -32,27 +83,40 @@ function Space() {
                 axios.get(`http://192.168.4.60:9991/spaceproduct${url}`)
                         .then((response) => {
 
-                                console.log(response.data);
+                                const dataList = response.data ?? [];  // ⭐ 핵심 수정
+
+                                const newList = dataList.map((record) => ({
+                                        id: record.pid,
+                                        title: record.name,
+                                        price: Number(String(record.price).replace(/[^0-9]/g, "")),
+                                        category: record.b_category,
+                                        img: record.fileList?.[0]
+                                                ? `http://192.168.4.60:9991/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
+                                                : "/no-image.png"
 
 
-                                const newList = response.data.dataList.map((record) => {
-                                        return {
-                                                id: record.pid,
-                                                title: record.name,
-                                                price: record.price,
-                                                img: record.fileList?.[0]
-                                                        ? `http://192.168.4.60:9991/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
-                                                        : "/no-image.png"
-                                        };
-                                });
-
+                                }));
+                                console.log("공간 상품 데이터 가격 :", newList);
                                 setList(newList);
-
                         })
-                        .catch((error) => {
-                                console.log("목록조회 에러발생==>", error);
-                        });
         }
+        // 관련상품 가져오기
+        const filteredProducts = useMemo(() => {
+                if (!selectedCategory) return mergedList;
+
+                return mergedList.filter(item =>
+                        item.category === selectedCategory
+                );
+        }, [mergedList, selectedCategory]);
+        const visibleProducts = useMemo(() => {
+                return showMore
+                        ? filteredProducts
+                        : filteredProducts.slice(0, 8);
+        }, [filteredProducts, showMore]);
+
+
+
+
         // 좋아요 백엔드
         function handleLike(productId) {
                 const mId = sessionStorage.getItem("mId");
@@ -79,7 +143,35 @@ function Space() {
                         })
                         .catch(err => console.log(err));
         }
+        // 별 리뷰 수 가져오기
+        useEffect(() => {
 
+                if (!list || list.length === 0) return;
+
+                list.forEach(product => {
+                        axios.get(`http://192.168.4.60:9991/review/avg/${product.id}`)
+                                .then(res => {
+
+                                        setStarMap(prev => ({
+                                                ...prev,
+                                                [product.id]: res.data
+                                        }));
+                                })
+                                .catch(err => console.log(err));
+                });
+        }, [list]);
+        // 숫자 → 별(★) 변환 함수
+        function renderStars(avg) {
+                if (!avg) return "☆☆☆☆☆";  // 값 없을 때
+
+                const fullStars = Math.floor(avg);      // 정수 부분 (예: 3.7 → 3)
+                const halfStar = avg % 1 >= 0.5 ? 1 : 0; // 반개 여부
+                const emptyStars = 5 - fullStars - halfStar;
+
+                return "★".repeat(fullStars)
+                        + (halfStar ? "☆" : "")
+                        + "☆".repeat(emptyStars);
+        }
 
 
         return (
@@ -149,11 +241,14 @@ function Space() {
 
                                 <div className="space-grid " >
                                         {/* 1번 큰 이미지 */}
-                                        <div className="big-img img-box">
+                                        <div className="big-img img-box" onClick={() => {
+                                                console.log("CLICK OK");
+                                                setSelectedCategory("소파/암체어");
+                                                setShowMore(false);
+                                        }}>
                                                 <img src="public/imgcatagory4.jpg" />
-                                                <a href="/categoryproduct/2인용 소파">
-                                                        <img src="public/imgBtn.png" className="btn-img" />
-                                                </a>
+                                                <img src="public/imgBtn.png" className="btn-img" />
+
 
                                                 {/* 오버레이(마우스 오버 시 나타남) */}
                                                 <div className="hover-box">
@@ -162,11 +257,15 @@ function Space() {
                                         </div>
 
                                         {/* 2번 위쪽 작은 이미지 */}
-                                        <div className="small-top img-box">
+                                        <div className="small-top img-box"
+                                                onClick={() => {
+                                                        console.log("CLICK OK");
+                                                        setSelectedCategory("식탁/테이블/의자");
+                                                        setShowMore(false);
+                                                }} >
                                                 <img src="public/imgcatagory3.png" />
-                                                <a href="/categoryproduct/식탁">
-                                                        <img src="public/imgBtn.png" className="btn-img" />
-                                                </a>
+                                                <img src="public/imgBtn.png" className="btn-img" />
+
 
                                                 <div className="hover-box">
                                                         <span>주방 더보기</span>
@@ -174,11 +273,15 @@ function Space() {
                                         </div>
 
                                         {/* 3번 식물 이미지 */}
-                                        <div className="small-right img-box">
+                                        <div className="small-right img-box"
+                                                onClick={() => {
+                                                        console.log("CLICK OK");
+                                                        setSelectedCategory("욕실");
+                                                        setShowMore(false);
+                                                }}>
                                                 <img src="public/imgcatagory2.png" />
-                                                <a href="/categoryproduct/욕실">
-                                                        <img src="public/imgBtn.png" className="btn-img" />
-                                                </a>
+                                                <img src="public/imgBtn.png" className="btn-img" />
+
 
                                                 <div className="hover-box">
                                                         <span>욕실 더보기</span>
@@ -186,11 +289,14 @@ function Space() {
                                         </div>
 
                                         {/* 4번 긴 테이블 이미지 */}
-                                        <div className="wide-bottom img-box">
+                                        <div className="wide-bottom img-box" onClick={() => {
+                                                console.log("CLICK OK");
+                                                setSelectedCategory("침대/매트리스");
+                                                setShowMore(false);
+                                        }} >
                                                 <img src="public/imgcatagory.png" />
-                                                <a href="/categoryproduct/퀸 침대">
-                                                        <img src="public/imgBtn.png" className="btn-img" />
-                                                </a>
+                                                <img src="public/imgBtn.png" className="btn-img" />
+
 
                                                 <div className="hover-box">
                                                         <span>침실 더보기</span>
@@ -202,7 +308,7 @@ function Space() {
 
 
                         <div style={{ margin: '150px 20px 50px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <h2 style={{ margin: 0 }}>모든 상품</h2>
+                                <h2 style={{ margin: 0 }}>관련 상품</h2>
 
                                 <a href="/allproduct" style={{ textDecoration: 'none', color: 'black', fontSize: '15px' }}>
                                         더보기 &gt;
@@ -216,10 +322,11 @@ function Space() {
 
                                         {visibleProducts.map((item) => (
 
+
                                                 <Link
                                                         to={`/productDetail/${item.id}`}
                                                         className="product-link"
-                                                        key={item.pid}
+                                                        key={item.id}
                                                 >
 
                                                         <div className="product-card">
@@ -262,17 +369,48 @@ function Space() {
                                                                                 {item.title}
                                                                         </div>
 
-                                                                        <div className="price">
+                                                                        {/* <div className="price">
                                                                                 ₩{item.price}
+                                                                        </div> */}
+
+                                                                        {/* 가격 */}
+                                                                        <div className="price-line">
+
+                                                                                {/* 할인 있는 경우만 */}
+                                                                                {item.discountPercent > 0 ? (
+                                                                                        <>
+                                                                                                {/* 정가 */}
+                                                                                                <span className="origin-price">
+                                                                                                        ₩ {Number(item?.price || 0).toLocaleString()}
+                                                                                                </span>
+
+                                                                                                {/* 할인율 */}
+                                                                                                <span className="discount-percent">
+                                                                                                        {item.discountPercent}%
+                                                                                                </span>
+                                                                                        </>
+                                                                                ) : null}
+
+                                                                        </div>
+
+                                                                        {/* 할인 가격 or 정가 */}
+                                                                        <div>
+                                                                                {item.discountPercent > 0 ? (
+                                                                                        <span className="price">
+                                                                                                ₩ {Math.floor(
+                                                                                                        Number(item?.price || 0) *
+                                                                                                        (1 - Number(item.discountPercent || 0) / 100)
+                                                                                                ).toLocaleString()}
+                                                                                        </span>
+                                                                                ) : (
+                                                                                        <span className="price">
+                                                                                                ₩ {Number(item?.price || 0).toLocaleString()}
+                                                                                        </span>
+                                                                                )}
                                                                         </div>
 
                                                                         <div className="rating">
-                                                                                <img src="/bal.png" alt="" />
-                                                                                <img src="/bal.png" alt="" />
-                                                                                <img src="/bal.png" alt="" />
-                                                                                <img src="/bal.png" alt="" />
-                                                                                <img src="/bal.png" alt="" />
-                                                                                <span>(168)</span>
+                                                                                {renderStars(starMap[item.id])}
                                                                         </div>
 
                                                                 </div>

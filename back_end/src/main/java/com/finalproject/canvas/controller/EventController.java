@@ -77,4 +77,10 @@ public class EventController {
             return "FAIL";
         }
     }
+
+    // 할인상품 리스트 , 이슬
+    @GetMapping("/sale/list")
+    public List<EventEntity> saleList() {
+        return eventService.getSaleProducts();
+    }
 }

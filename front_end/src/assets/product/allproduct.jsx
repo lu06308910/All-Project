@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
@@ -15,6 +15,11 @@ function AllProduct() {
     const [dataList, setDataList] = useState([]);
 
     const { id } = useParams()
+
+    // 상품정보
+    const [list, setList] = useState([]);
+    const [mergedList, setMergedList] = useState([]);
+    const [saleList, setSaleList] = useState([]); // 할인상품
 
     // 카테고리 파라미터
     const CategoryProduct = () => {
@@ -42,13 +47,40 @@ function AllProduct() {
             .catch(err => console.log(err));
     }, []);
 
+    useEffect(() => {
+        axios.get("http://192.168.4.60:9991/event/sale/list")
+            .then(res => {
+                console.log("할인 데이터:", res.data);
+                setSaleList(res.data);
+            })
+            .catch(err => console.log(err));
+    }, []);
 
 
+    useEffect(() => {
+        if (!list.length) return;
 
+        const merged = list.map((item) => {
+            const sale = saleList.find(
+                (s) => Number(s.product?.pid) === Number(item.id)
+            );
 
-    const [list, setList] = useState([]);
-    // 처음 4개 + showMore true면 전체
-    const visibleProducts = showMore ? list : list.slice(0, 4);
+            const discountPercent = Number(sale?.discountPercent ?? 0);
+
+            const price = item.price;
+
+            return {
+                ...item,
+                discountPercent,
+                salePrice:
+                    discountPercent > 0
+                        ? Math.floor(price * (1 - discountPercent / 100))
+                        : price
+            };
+        });
+
+        setMergedList(merged);
+    }, [list, saleList]);
 
 
     // 검색키와 검색어를 담을 변수
@@ -58,8 +90,6 @@ function AllProduct() {
         getDataList(1);
 
     }, []);
-
-
 
     // springboot 서버에서 비동기식으로 정보를 가져올 함수
     function getDataList(page) {
@@ -80,7 +110,7 @@ function AllProduct() {
                     return {
                         id: record.pid,
                         title: record.name,
-                        price: record.price,
+                        price: Number(String(record.price).replace(/[^0-9]/g, "")),
                         img: record.fileList?.[0]
                             ? `http://192.168.4.60:9991/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
                             : "/no-image.png"
@@ -94,6 +124,12 @@ function AllProduct() {
                 console.log("목록조회 에러발생==>", error);
             });
     }
+    const visibleProducts = useMemo(() => {
+        return showMore
+            ? mergedList
+            : mergedList.slice(0, 8);
+    }, [mergedList, showMore]);
+
     // 별 리뷰 수 가져오기
     useEffect(() => {
 
@@ -287,16 +323,46 @@ function AllProduct() {
                                 <div className="product-info">
 
                                     <div style={{ fontWeight: "bold" }}>
-                                        canvas
+                                        {item.company?.businessName || "brand"}
                                     </div>
 
                                     <div className="title">
                                         {item.title}
                                     </div>
 
-                                    <div className="price">
-                                        <span className="symbol">₩</span>
-                                        <span className="amount">{item.price}</span>
+                                    <div className="price-line">
+
+                                        {/* 할인 있는 경우만 */}
+                                        {item.discountPercent > 0 ? (
+                                            <>
+                                                {/* 정가 */}
+                                                <span className="origin-price">
+                                                    ₩ {Number(item?.price || 0).toLocaleString()}
+                                                </span>
+
+                                                {/* 할인율 */}
+                                                <span className="discount-percent">
+                                                    {item.discountPercent}%
+                                                </span>
+                                            </>
+                                        ) : null}
+
+                                    </div>
+
+                                    {/* 할인 가격 or 정가 */}
+                                    <div>
+                                        {item.discountPercent > 0 ? (
+                                            <span className="price">
+                                                ₩ {Math.floor(
+                                                    Number(item?.price || 0) *
+                                                    (1 - Number(item.discountPercent || 0) / 100)
+                                                ).toLocaleString()}
+                                            </span>
+                                        ) : (
+                                            <span className="price">
+                                                ₩ {Number(item?.price || 0).toLocaleString()}
+                                            </span>
+                                        )}
                                     </div>
 
                                     <div className="rating">
