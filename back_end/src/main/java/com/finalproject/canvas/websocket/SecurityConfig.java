@@ -36,11 +36,11 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // 🌟 중요: localhost뿐만 아니라 다른 사람 IP로도 접속할 수 있게 패턴을 전체 허용(*)으로 변경합니다.
+        // 🌟 중요: 192.168.4.51뿐만 아니라 다른 사람 IP로도 접속할 수 있게 패턴을 전체 허용(*)으로 변경합니다.
         configuration.setAllowedOriginPatterns(Arrays.asList("*"));
 
         // 모든 HTTP 메서드 허용 (GET, POST, PUT, DELETE, OPTIONS 등)
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
         // 모든 헤더 허용
         configuration.setAllowedHeaders(Arrays.asList("*"));
