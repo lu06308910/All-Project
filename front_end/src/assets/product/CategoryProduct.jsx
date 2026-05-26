@@ -33,7 +33,7 @@ function CategoryProduct() {
 
                 if (!loginUserId) return;
 
-                axios.get(`http://192.168.4.51:9989/like/list/${mId}`)
+                axios.get(`http://192.168.4.60:9991/like/list/${mId}`)
                         .then(res => setLikedItems(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -51,7 +51,7 @@ function CategoryProduct() {
         useEffect(() => {
                 if (!sCategory) return;
 
-                axios.get(`http://192.168.4.51:9989/categoryproduct/${sCategory}`)
+                axios.get(`http://192.168.4.60:9991/categoryproduct/${sCategory}`)
                         .then((res) => {
                                 setData(res.data.dataList);
                         });
@@ -67,7 +67,8 @@ function CategoryProduct() {
                         return;
                 }
 
-                axios.post("http://192.168.4.51:9989/like/toggle", {
+                axios.post("http://192.168.4.60:9991/like/toggle", {
+
                         memberId: mId,
                         productId: productId
                 })
@@ -90,7 +91,8 @@ function CategoryProduct() {
                 if (!data || data.length === 0) return;
 
                 data.forEach(product => {
-                        axios.get(`http://192.168.4.51:9989/review/avg/${product.pid}`)
+                        axios.get(`http://192.168.4.60:9991/review/avg/${product.pid}`)
+
                                 .then(res => {
                                         setStarMap(prev => ({
                                                 ...prev,
@@ -186,7 +188,7 @@ function CategoryProduct() {
                                 {openMenu === "bathroom" && (
                                         <div className="submenu">
                                                 <Link to="/categoryproduct/욕실 벽수납장" onClick={() => setActiveSub("욕실 벽수납장")} className={activeSub === "욕실 벽수납장" ? "active" : ""}>욕실 벽수납장</Link>
-                                                <Link to="/categoryproduct/욕실 세면대 하부장" onClick={() => setActiveSub("욕실 세면대 하부장")} className={activeSub === "욕실 세면대 하부장" ? "active" : ""}>욕실 세면대하부장</Link>
+                                                <Link to="/categoryproduct/욕실 세면대하부장" onClick={() => setActiveSub("욕실 세면대하부장")} className={activeSub === "욕실 세면대하부장" ? "active" : ""}>욕실 세면대하부장</Link>
                                                 <Link to="/categoryproduct/욕실 거울" onClick={() => setActiveSub("욕실 거울")} className={activeSub === "욕실 거울" ? "active" : ""}>욕실 거울</Link>
                                         </div>
                                 )}
@@ -221,7 +223,7 @@ function CategoryProduct() {
                                                                         <img
                                                                                 className="main-product-img"
                                                                                 src={item.fileList?.[0]
-                                                                                        ? `http://192.168.4.51:9989/upload/${item.fileList[0].filename}.${item.fileList[0].extname}`
+                                                                                        ? `http://192.168.4.60:9991/upload/${item.fileList[0].filename}.${item.fileList[0].extname}`
                                                                                         : "/no-image.png"}
                                                                                 alt=""
                                                                         />

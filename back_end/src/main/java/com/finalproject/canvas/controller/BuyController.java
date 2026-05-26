@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins="*")
+@CrossOrigin(origins = "*")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -35,8 +35,18 @@ public class BuyController {
     // 특정 회원의 주문 조회
     @GetMapping("/list/{mId}")
     public List<BuyEntity> getBuysByMember(@PathVariable Integer mId) {
-        return buyRepository.findBymId(mId);
+        List<BuyEntity> list = buyRepository.findBymId(mId);
+
+        // JSON 직렬화 전에 강제로 fileList를 한 번씩 조회해서 초기화합니다.
+        list.forEach(buy -> {
+            if (buy.getProduct() != null && buy.getProduct().getFileList() != null) {
+                buy.getProduct().getFileList().size(); // 이 한 줄이 데이터를 강제로 로드(초기화)시킵니다.
+            }
+        });
+
+        return list;
     }
+
     // 상품 취소/변경/교환 업데이트 - 대호추가
     @PostMapping("/status/{bId}")
     public ResponseEntity<?> updateStatus(@PathVariable Integer bId, @RequestParam("action") String actionType) {
@@ -64,6 +74,7 @@ public class BuyController {
         // Service 단의 로직을 거쳐서 반환하도록 설계합니다.
         return buyRepository.findSalesBySeller(sellerId);
     }
+
     // 특정 주문 건 정산 완료 처리
     @Transactional
     @PutMapping("/settle/complete/{bId}")

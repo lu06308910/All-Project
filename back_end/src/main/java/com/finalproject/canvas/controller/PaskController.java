@@ -63,4 +63,17 @@ public class PaskController {
                 .map(updatedAsk -> ResponseEntity.ok().body("답변이 정상적으로 등록되었습니다."))
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    // 일반 사용자 본인이 작성한 상품 문의 내역 전체 조회 - 대호 추가
+    @Transactional(readOnly = true)
+    @GetMapping("/user/list")
+    public ResponseEntity<List<PaskEntity>> getUserInquiries(@RequestParam("mId") Integer mId) {
+        log.info("일반 회원 일련번호 [{}]의 상품 문의 내역 요청 수신", mId);
+
+        // Repository에 명명 규칙에 맞는 메서드가 이미 선언되어 있거나,
+        // 없다면 paskRepository.findByMid(mId) 혹은 서비스단을 호출하여 회원이 작성한 리스트를 리턴합니다.
+        List<PaskEntity> userInquiries = paskRepository.findByMemberId(mId);
+
+        return ResponseEntity.ok(userInquiries);
+    }
 }

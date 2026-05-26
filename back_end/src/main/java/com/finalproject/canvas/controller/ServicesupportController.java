@@ -29,7 +29,7 @@ public class ServicesupportController {
         try {
             if (file != null && !file.isEmpty()) {
                 // 1. 파일 저장 경로 설정 (프로젝트 내 특정 폴더)
-                String uploadDir = System.getProperty("user.dir") + "/src/main/resources/static/uploads/";
+                String uploadDir = "C:/upload/";
                 File dir = new File(uploadDir);
                 if (!dir.exists()) dir.mkdirs();
 

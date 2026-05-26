@@ -17,11 +17,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins="*")
+@CrossOrigin(origins = "*")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/member")
+
 public class DataController {
     //해당 repository 검색하여
     private final DataService dataService;
@@ -237,6 +238,15 @@ public class DataController {
     @PatchMapping("/unregister/{id}")
     public ResponseEntity<?> unregister(@PathVariable("id") Integer id) {
         int result = dataService.unregister(id);
+        if (result != 0) {
+            return ResponseEntity.ok("탈퇴처리 완료");
+        }
+        return ResponseEntity.badRequest().body("탈퇴처리 실패");
+    }
+    // 기업 회원 탈퇴
+    @PatchMapping("/cp/unregister/{id}")
+    public ResponseEntity<?> cpUnregister(@PathVariable("id") Integer id) {
+        int result = dataService.cpUnregister(id);
         if (result != 0) {
             return ResponseEntity.ok("탈퇴처리 완료");
         }

@@ -45,7 +45,7 @@ public class BuyEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "p_id", insertable = false, updatable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "fileList", "files", "delFile"})
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "files", "delFile"})
     private ProductEntity product;
 
     @ManyToOne(fetch = FetchType.LAZY)

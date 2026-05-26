@@ -1,6 +1,7 @@
 package com.finalproject.canvas.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -61,5 +62,9 @@ public class ProductEntity {
     // 삭제할 파일 id 리스트
     @Transient
     private List<Integer> delFile;
-    // ───────── 구매 수량 DB연결 ─────────
+
+    // ───────── 할인페이지  (DB 미저장) ─────────
+    @OneToMany(mappedBy = "product")
+    @JsonIgnore
+    private List<EventEntity> events;
 }

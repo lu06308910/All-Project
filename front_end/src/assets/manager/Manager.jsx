@@ -246,7 +246,7 @@ function Manager() {
         //게시글관리
         const [events, setEvents] = useState([]);
         useEffect(() => {
-                axios.get('http://192.168.4.51:9989/event/all')
+                axios.get('http://192.168.4.60:9991/event/all')
                         .then(res => setEvents(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -267,7 +267,7 @@ function Manager() {
         //회원 업데이트
         const [users, setUsers] = useState([]);
         useEffect(() => {
-                axios.get('http://192.168.4.51:9989/member/all/member')
+                axios.get('http://192.168.4.60:9991/member/all/member')
                         .then(res => setUsers(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -276,7 +276,7 @@ function Manager() {
         //상품관리
         const [products, setProducts] = useState([]);
         useEffect(() => {
-                axios.get('http://192.168.4.51:9989/all/product')
+                axios.get('http://192.168.4.60:9991/all/product')
                         .then(res => setProducts(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -288,7 +288,7 @@ function Manager() {
 
         // 문의 목록 함수-------------------------------------------------------------------------- 대호수정
         const getAdminInquiries = () => {
-                axios.get('http://192.168.4.51:9989/support/list/all')
+                axios.get('http://192.168.4.60:9991/support/list/all')
                         .then(res => setAsks(res.data || []))
                         .catch(err => console.log("문의 목록 갱신 에러:", err));
         };
@@ -309,7 +309,7 @@ function Manager() {
                 formData.append("s_id", sId);
                 formData.append("answer", replyText);
 
-                axios.post("http://192.168.4.51:9989/support/reply", formData)
+                axios.post("http://192.168.4.60:9991/support/reply", formData)
                         .then((res) => {
                                 if (res.data === "success") {
                                         alert("답변이 성공적으로 등록되었습니다.");
@@ -327,7 +327,7 @@ function Manager() {
         //통계용 buy테이블 연결
         const [buys, setBuys] = useState([]);
         useEffect(() => {
-                axios.get('http://192.168.4.51:9989/buy/list/all')
+                axios.get('http://192.168.4.60:9991/buy/list/all')
                         .then(res => setBuys(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -378,7 +378,7 @@ function Manager() {
 
         const [companys, setCompanys] = useState([]);
         useEffect(() => {
-                axios.get('http://192.168.4.51:9989/member/all/business')
+                axios.get('http://192.168.4.60:9991/member/all/business')
                         .then(res => setCompanys(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -482,6 +482,30 @@ function Manager() {
                 const d = new Date(thirtyDaysAgo);
                 d.setDate(thirtyDaysAgo.getDate() + i);
                 return d.toISOString().slice(0, 10);
+        });
+        // 월별 매출 집계 (최근 12개월)
+        const monthlySalesMap = buys.reduce((acc, item) => {
+                const month = item.writedate?.slice(0, 7) || ''; // "2024-03"
+                if (!month) return acc;
+                const cleanPrice = parseInt((item.price || '0').toString().replace(/,/g, ''));
+                acc[month] = (acc[month] || 0) + cleanPrice * (item.count || 0);
+                return acc;
+        }, {});
+        const allMonths = Array.from({ length: 12 }, (_, i) => {
+                const d = new Date();
+                d.setMonth(d.getMonth() - (11 - i));
+                return d.toISOString().slice(0, 7);
+        });
+        // 연도별 매출 집계 (최근 5년)
+        const yearlySalesMap = buys.reduce((acc, item) => {
+                const year = item.writedate?.slice(0, 4) || '';
+                if (!year) return acc;
+                const cleanPrice = parseInt((item.price || '0').toString().replace(/,/g, ''));
+                acc[year] = (acc[year] || 0) + cleanPrice * (item.count || 0);
+                return acc;
+        }, {});
+                const allYears = Array.from({ length: 5 }, (_, i) => {
+                return String(new Date().getFullYear() - (4 - i));
         });
 
         // 상세보기 모달용: 통계 전용 날짜 기준
@@ -636,24 +660,43 @@ function Manager() {
 
                 Promise.all(
                         targets.map(mid =>
-                                axios.patch(`http://192.168.4.51:9989/member/unregister/${mid}`)
+                                axios.patch(`http://192.168.4.60:9991/member/unregister/${mid}`)
                         )
                 )
                         .then(() => {
                                 alert("탈퇴처리 완료");
-                                axios.get('http://192.168.4.51:9989/member/all/member')
+                                axios.get('http://192.168.4.60:9991/member/all/member')
                                         .then(res => setUsers(res.data));
                                 setSelectedItems(prev => ({ ...prev, '회원관리': [] }));
                         })
                         .catch(err => console.log(err));
         }
+        //기업 회원 탈퇴
+        const handleBulkCpUnregister = () => {
+                const targets = selectedItems['기업관리'] || [];
+                if (targets.length === 0) return alert("탈퇴처리할 기업을 선택해주세요.");
+                if (!window.confirm(`선택한 ${targets.length}개 기업을 탈퇴처리 하시겠습니까?`)) return;
+
+                Promise.all(
+                        targets.map(cid =>
+                        axios.patch(`http://192.168.4.60:9991/member/cp/unregister/${cid}`)
+                        )
+                )
+                        .then(() => {
+                        alert("탈퇴처리 완료");
+                        axios.get('http://192.168.4.60:9991/member/all/business')
+                                .then(res => setCompanys(res.data));
+                        setSelectedItems(prev => ({ ...prev, '기업관리': [] }));
+                        })
+                        .catch(err => console.log(err));
+        };
 
         const handleProDelete = (pid) => {
                 if (!window.confirm('상품을 삭제하시겠습니까?')) return;
-                axios.delete(`http://192.168.4.51:9989/product/${pid}`)
+                axios.delete(`http://192.168.4.60:9991/product/${pid}`)
                         .then(() => {
                                 alert('삭제 완료');
-                                axios.get('http://192.168.4.51:9989/all/product').then(res => setProducts(res.data));
+                                axios.get('http://192.168.4.60:9991/all/product').then(res => setProducts(res.data));
                         })
                         .catch(err => console.log(err));
         };
@@ -674,7 +717,7 @@ function Manager() {
         const handleProSaveClick = async () => {
                 const targetId = proEditingId;
                 try {
-                        await axios.put(`http://localhost:9989/product/seller/update/${targetId}`, proEditForm);
+                        await axios.put(`http://192.168.4.60:9991/product/seller/update/${targetId}`, proEditForm);
                         setProducts(products.map(p => (p.pid === targetId) ? { ...p, ...proEditForm } : p));
                         setProEditingId(null);
                         alert('수정 완료되었습니다.');
@@ -687,10 +730,10 @@ function Manager() {
         const handleBulkProDelete = () => {
                 if (selectedProIds.length == 0) return alert('삭제할 제품을 선택해 주세요.');
                 if (!window.confirm(`선택한 ${selectedProIds.length}개의 글을 삭제하시겠습니까?`)) return;
-                Promise.all(selectedProIds.map(id => axios.delete(`http://192.168.4.51:9989/product/${id}`)))
+                Promise.all(selectedProIds.map(id => axios.delete(`http://192.168.4.60:9991/product/${id}`)))
                         .then(() => {
                                 setSelectedProIds([]);
-                                axios.get('http://192.168.4.51:9989/all/product').then(res => setProducts(res.data));
+                                axios.get('http://192.168.4.60:9991/all/product').then(res => setProducts(res.data));
                         })
                         .catch(err => console.log(err));
         };
@@ -701,13 +744,15 @@ function Manager() {
                         prev.includes(eId) ? prev.filter(id => id !== eId) : [...prev, eId]
                 );
         };
+        //대시보드 메인 일별 월별 연별 관련 변수
+        const [salesPeriod, setSalesPeriod] = useState('daily');
 
         const handleEventDelete = (eId) => {
                 if (!window.confirm('삭제하시겠습니까?')) return;
-                axios.delete(`http://192.168.4.51:9989/event/delete/${eId}`)
+                axios.delete(`http://192.168.4.60:9991/event/delete/${eId}`)
                         .then(() => {
                                 alert('삭제 완료');
-                                axios.get('http://192.168.4.51:9989/event/all').then(res => setEvents(res.data));
+                                axios.get('http://192.168.4.60:9991/event/all').then(res => setEvents(res.data));
                         })
                         .catch(err => console.log(err));
         };
@@ -715,11 +760,11 @@ function Manager() {
         const handleBulkEventDelete = () => {
                 if (selectedEventIds.length === 0) return alert('삭제할 항목을 선택해주세요.');
                 if (!window.confirm(`선택한 ${selectedEventIds.length}개를 삭제하시겠습니까?`)) return;
-                axios.delete('http://192.168.4.51:9989/event/delete', { data: selectedEventIds })
+                axios.delete('http://192.168.4.60:9991/event/delete', { data: selectedEventIds })
                         .then(() => {
                                 alert('삭제 완료');
                                 setSelectedEventIds([]);
-                                axios.get('http://192.168.4.51:9989/event/all').then(res => setEvents(res.data));
+                                axios.get('http://192.168.4.60:9991/event/all').then(res => setEvents(res.data));
                         })
                         .catch(err => console.log(err));
         };
@@ -740,7 +785,7 @@ function Manager() {
         const [companyOutSearchWord, setCompanyOutSearchWord] = useState('');
 
         const handleUserSearch = () => {
-                axios.post('http://192.168.4.51:9989/member/search', {
+                axios.post('http://192.168.4.60:9991/member/search', {
                         searchKey: userSearchKey,
                         searchWord: userSearchWord
                 })
@@ -749,7 +794,7 @@ function Manager() {
         }
 
         const handleCompanySearch = () => {
-                axios.post('http://192.168.4.51:9989/member/search/business', {
+                axios.post('http://192.168.4.60:9991/member/search/business', {
                         searchKey: companySearchKey,
                         searchWord: companySearchWord
                 })
@@ -758,7 +803,7 @@ function Manager() {
         }
 
         const handleProductSearch = () => {
-                axios.post('http://192.168.4.51:9989/search/product', {
+                axios.post('http://192.168.4.60:9991/search/product', {
                         searchKey: productSearchKey,
                         searchWord: productSearchWord
                 })
@@ -902,7 +947,7 @@ function Manager() {
         if (!editEvent.subject) return alert('제목을 입력해주세요.');
         if (!editEvent.context) return alert('내용을 입력해주세요.');
 
-        axios.put(`http://192.168.4.51:9989/event/update/${editEvent.e_id}`, {
+        axios.put(`http://192.168.4.60:9991/event/update/${editEvent.e_id}`, {
                 subject: editEvent.subject,
                 context: editEvent.context,
                 updatedate: editEvent.updatedate ? editEvent.updatedate + 'T00:00:00' : null,
@@ -912,7 +957,7 @@ function Manager() {
                 .then(() => {
                         alert('수정 완료');
                         setEditEventModalOpen(false);
-                        axios.get('http://192.168.4.51:9989/event/all').then(res => setEvents(res.data));
+                        axios.get('http://192.168.4.60:9991/event/all').then(res => setEvents(res.data));
                 })
                 .catch(err => {
                         console.log(err);
@@ -926,7 +971,7 @@ function Manager() {
                 if (!newEvent.context) return alert('내용을 입력해주세요.');
 
                 console.log('보내는테이터:', newEvent);
-                axios.post('http://192.168.4.51:9989/event/add', {
+                axios.post('http://192.168.4.60:9991/event/add', {
                         subject: newEvent.subject,
                         context: newEvent.context,
                         updatedate: newEvent.updatedate ? newEvent.updatedate + 'T00:00:00' : null,
@@ -937,7 +982,7 @@ function Manager() {
                                 alert('등록 완료');
                                 setEventModalOpen(false);
                                 setNewEvent({ subject: '', context: '', updatedate: '', enddate: '', pId: '' });
-                                axios.get('http://192.168.4.51:9989/event/all')
+                                axios.get('http://192.168.4.60:9991/event/all')
                                         .then(res => setEvents(res.data));
                         })
                         .catch(err => console.log(err));
@@ -1065,16 +1110,19 @@ function Manager() {
                 }]
         };
         const data2 = {
-                labels: allDates,
-                datasets: [
-                        {
-                                label: '날짜별 매출',
-                                data: allDates.map(d => dailySalesMap[d] || 0),
-                                borderColor: 'rgb(255, 99, 132)',
-                                backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                                yAxisID: 'y',
-                        }
-                ],
+                labels: salesPeriod === 'daily' ? allDates : salesPeriod === 'monthly' ? allMonths : allYears,
+                datasets: [{
+                        label: salesPeriod === 'daily' ? '일별 매출' : salesPeriod === 'monthly' ? '월별 매출' : '연도별 매출',
+                        data: salesPeriod === 'daily'
+                        ? allDates.map(d => dailySalesMap[d] || 0)
+                        : salesPeriod === 'monthly'
+                        ? allMonths.map(m => monthlySalesMap[m] || 0)
+                        : allYears.map(y => yearlySalesMap[y] || 0),
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        tension: 0.3,
+                        yAxisID: 'y',
+                }],
         };
         const barData = {
                 labels: ['회원 수'],  // X축은 하나
@@ -1369,12 +1417,28 @@ function Manager() {
                                         <hr />
                                         <h5 style={{ textAlign: 'center', marginTop: '60px' }}>오늘의 매출 : {(dailySalesMap[todayStr] || 0).toLocaleString()}원</h5>
                                         <div style={{ fontSize: '0.8em', textAlign: 'center', color: '#ccc' }}>수수료는 정산 시 10%씩 차감됩니다.</div>
-                                        <div className='dash-board' style={{ width: '80%', scrollbarWidth: 'none', margin: '0 auto', height: '400px', margin: '50px auto 100px auto' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', margin: '30px 0 0 0' }}>
+                                                {[['daily', '일별'], ['monthly', '월별'], ['yearly', '연도별']].map(([key, label]) => (
+                                                        <button
+                                                        key={key}
+                                                        onClick={() => setSalesPeriod(key)}
+                                                        style={{
+                                                                padding: '6px 20px', borderRadius: '20px',
+                                                                border: '1px solid #ff6384',
+                                                                backgroundColor: salesPeriod === key ? '#ff6384' : 'white',
+                                                                color: salesPeriod === key ? 'white' : '#ff6384',
+                                                                cursor: 'pointer',
+                                                                fontWeight: salesPeriod === key ? '600' : '400',
+                                                        }}
+                                                        >{label}</button>
+                                                ))}
+                                        </div>
+                                        <div className='dash-board' style={{ width: '80%', scrollbarWidth: 'none', height: '400px', margin: '20px auto 100px auto' }}>
                                                 <Line
                                                         data={data2}
                                                         options={{
-                                                                ...ChartData.options2,
-                                                                maintainAspectRatio: false
+                                                        ...ChartData.options2,
+                                                        maintainAspectRatio: false
                                                         }}
                                                 />
                                         </div>
@@ -1672,7 +1736,9 @@ function Manager() {
                                                         .map((company) => (
                                                                 <div key={company.cid} className="row border real-dark-border mx-0" style={{ fontSize: '0.8em', textAlign: 'center', padding: '5px' }}>
                                                                         <div className="col-1 border-start" style={{ fontSize: '0.8em', textAlign: 'center', verticalAlign: 'middle' }}>
-                                                                                <input type="checkbox" aria-label="항목 선택" />
+                                                                                <input type="checkbox"
+                                                                                checked={selectedItems['기업관리']?.includes(company.cid) || false}
+                                                                                onChange={() => handleCheck('기업관리', company.cid)}aria-label="항목 선택" />
                                                                         </div>
                                                                         <div className="col-2 border-start">{company.userid}</div>
                                                                         <div className="col-2 border-start">{company.businessName}</div>
@@ -1700,7 +1766,7 @@ function Manager() {
                                                                                 📊 "{companySearchWord}" 매출 통계
                                                                         </button>
                                                                 )}
-                                                                <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}>탈퇴처리</button>
+                                                                <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }} onClick={handleBulkCpUnregister}>탈퇴처리</button>
                                                         </div>
                                                 </div>
                                         </div>
@@ -2091,6 +2157,7 @@ function Manager() {
                                                                                 const isAnswered = q.answer !== null && q.answer !== undefined && q.answer.trim() !== "";
 
                                                                                 const isExpanded = selectedInquiry?.s_id === q.s_id;
+                                                                                console.log("👉 백엔드에서 넘어온 문의글 데이터 1개 분석:", asks);
 
                                                                                 return (
                                                                                         <tbody key={q.s_id || index}>
@@ -2119,21 +2186,54 @@ function Manager() {
 
                                                                                                                                 {/* Q. 고객 문의 내용 */}
                                                                                                                                 <div className="question-box" style={{ marginBottom: '15px' }}>
+
                                                                                                                                         <strong>Q. 문의 내용</strong>
                                                                                                                                         <p style={{ whiteSpace: 'pre-wrap', marginTop: '8px', color: '#333' }}>{q.context}</p>
+                                                                                                                                        {(() => {
+                                                                                                                                                // 1. 백엔드 컨트롤러가 entity.setFilename()으로 넣어준 변수명 'filename'을 정확히 읽어옵니다.
+                                                                                                                                                const realFileName = q.filename || selectedInquiry?.filename;
+
+                                                                                                                                                if (realFileName && realFileName !== "null") {
+                                                                                                                                                        return (
+                                                                                                                                                                <div className="attached-img-zone my-3">
+                                                                                                                                                                        <p><strong>첨부 사진:</strong></p>
+                                                                                                                                                                        <img
+                                                                                                                                                                                // 2. WebMvcConfig가 열어준 /upload/ 경로와 매핑합니다. (포트는 대호님 백엔드 포트)
+                                                                                                                                                                                src={`http://192.168.4.60:9991/upload/${realFileName}`}
+                                                                                                                                                                                alt="사용자 첨부 이미지"
+                                                                                                                                                                                style={{
+                                                                                                                                                                                        maxWidth: '100%',
+                                                                                                                                                                                        maxHeight: '350px',
+                                                                                                                                                                                        borderRadius: '8px',
+                                                                                                                                                                                        border: '1px solid #ddd'
+                                                                                                                                                                                }}
+                                                                                                                                                                                onError={(e) => {
+                                                                                                                                                                                        // 9991 포트에서 실패할 경우, 다른 백엔드 구동 포트인 9989 환경으로 자동 스위칭 보완
+                                                                                                                                                                                        if (!e.target.src.includes(":9991")) {
+                                                                                                                                                                                                e.target.src = `http://192.168.4.60:9991/upload/${realFileName}`;
+                                                                                                                                                                                        }
+                                                                                                                                                                                }}
+                                                                                                                                                                        />
+                                                                                                                                                                </div>
+                                                                                                                                                        );
+                                                                                                                                                }
+                                                                                                                                                return null;
+                                                                                                                                        })()}
                                                                                                                                 </div>
 
                                                                                                                                 {/* A. 관리자 기존 답변 내역 */}
-                                                                                                                                {isAnswered ? (
-                                                                                                                                        <div className="answer-box">
-                                                                                                                                                <strong>A. 답변 내용</strong>
-                                                                                                                                                <p style={{ whiteSpace: 'pre-wrap', marginTop: '8px', color: '#333' }}>{q.answer}</p>
-                                                                                                                                        </div>
-                                                                                                                                ) : (
-                                                                                                                                        <div className="waiting-box" style={{ padding: '10px 0', color: '#999' }}>
-                                                                                                                                                <small>아직 등록된 답변이 없습니다. 아래 버튼을 눌러 답변을 작성해 주세요.</small>
-                                                                                                                                        </div>
-                                                                                                                                )}
+                                                                                                                                {
+                                                                                                                                        isAnswered ? (
+                                                                                                                                                <div className="answer-box">
+                                                                                                                                                        <strong>A. 답변 내용</strong>
+                                                                                                                                                        <p style={{ whiteSpace: 'pre-wrap', marginTop: '8px', color: '#333' }}>{q.answer}</p>
+                                                                                                                                                </div>
+                                                                                                                                        ) : (
+                                                                                                                                                <div className="waiting-box" style={{ padding: '10px 0', color: '#999' }}>
+                                                                                                                                                        <small>아직 등록된 답변이 없습니다. 아래 버튼을 눌러 답변을 작성해 주세요.</small>
+                                                                                                                                                </div>
+                                                                                                                                        )
+                                                                                                                                }
 
                                                                                                                                 <div style={{ textAlign: 'right', marginTop: '15px' }}>
                                                                                                                                         <button

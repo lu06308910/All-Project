@@ -7,7 +7,7 @@ function Login() {
         const navigate = useNavigate();
 
         const KAKAO_REST_API_KEY = "12ae2c878acb7b1131ce2f5713e9867b";
-        const KAKAO_REDIRECT_URI = "http://192.168.4.51:9989/kakao/login";
+        const KAKAO_REDIRECT_URI = "http://192.168.4.60:9991/kakao/login";
         const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${KAKAO_REDIRECT_URI}&response_type=code&prompt=select_account`;
 
         // 상태 관리 통합
@@ -57,14 +57,15 @@ function Login() {
 
                 try {
                         // formData에 userType이 포함되어 서버로 전송됩니다.
-                        const response = await axios.post('http://192.168.4.51:9989/member/login', formData);
-
+                        const response = await axios.post('http://192.168.4.60:9991/member/login', formData);
+                        console.log("서버 응답 데이터:", response.data);
                         if (response.data.status === "OK") {
                                 // 로그인 성공: 객체가 존재하면 성공
                                 sessionStorage.setItem('logStatus', 'Y');
 
                                 sessionStorage.setItem("loginUserId", response.data.userid);
                                 sessionStorage.setItem("mId", response.data.mId);
+                                sessionStorage.setItem("cId", response.data.cId);
 
                                 sessionStorage.setItem('logId', response.data.userid);
                                 sessionStorage.setItem('logName', response.data.username);
@@ -154,8 +155,8 @@ function Login() {
                                         <div className="social-login">
                                                 <p>OR CONNECT WITH</p>
                                                 <button type="button"
-                                                className="kakao-login-btn"
-                                                onClick={() => window.location.href = KAKAO_AUTH_URL}>
+                                                        className="kakao-login-btn"
+                                                        onClick={() => window.location.href = KAKAO_AUTH_URL}>
                                                         <span className="kakao-icon"></span>
                                                         카카오톡으로 시작하기
                                                 </button>

@@ -2,11 +2,36 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './../css/kdh.css';
 
+
+// 개인정보 보호를 위한 아이디/이름 마스킹 공통 함수
+const maskUserId = (name) => {
+        if (!name) return "고객";
+
+        // 글자 수가 2글자 이하인 경우
+        if (name.length <= 2) {
+                return name.charAt(0) + "*";
+        }
+
+        // 글자 수가 3글자 이상인 경우
+        // 뒤에서부터 딱 3글자만 잘라내고 그 자리를 ***로 치환합니다.
+        return name.slice(0, -3) + "***";
+};
+
+// 이미지 추출 함수
+const getImageUrl = (item) => {
+        const fileList = item.product?.fileList || item.fileList;
+        if (fileList && fileList.length > 0 && fileList[0].filename) {
+                return `http://192.168.4.60:9991/upload/${fileList[0].filename}.${fileList[0].extname}`;
+        }
+        return null;
+};
+
 const MyPage = () => {
 
         // 상태 관리: 사용자 데이터 및 타입
         const [userInfo, setUserInfo] = useState(null);
         const [loading, setLoading] = useState(true);
+        const [fileList, setFileList] = useState([]);
         const [orders, setOrders] = useState([]); // DB-> 주문목록
         const [cancelItems, setCancelItems] = useState([]); // DB -> 취소목록
         const [wishItems, setWishItems] = useState([]); // DB-> 찜목록
@@ -33,41 +58,69 @@ const MyPage = () => {
 
                                 // 유저 정보 가져오기
                                 if (logId) {
-                                        const userRes = await axios.get(`http://192.168.4.51:9989/member/edit?userid=${logId}&usertype=${usertype}`);
+                                        const userRes = await axios.get(`http://192.168.4.60:9991/member/edit?userid=${logId}&usertype=${usertype}`);
                                         setUserInfo(userRes.data);
                                         // 주문목록 가져올때 필요한 id
                                         ordersMemberId = userRes.data?.mid;
                                 }
 
                                 // 문의 내역 가져오기 (DB 연동)
+                                let supportData = [];
                                 if (loginName) {
-                                        const inqRes = await axios.get(`http://192.168.4.51:9989/support/list?writer=${loginName}`);
-                                        setInquiries(inqRes.data);
+                                        try {
+                                                const inqRes = await axios.get(`http://192.168.4.60:9991/support/list?writer=${loginName}`);
+                                                supportData = inqRes.data || [];
+                                        } catch (e) {
+                                                console.error("고객센터 문의 로드 실패:", e);
+                                        }
                                 }
-                                // 일반사용자 목록
+
+                                // 일반사용자 데이터 목록 수집
                                 if (logId && !isCorporate) {
-                                        const wishRes = await axios.get(`http://192.168.4.51:9989/wish/list?userid=${logId}`);
+                                        let productQnaData = [];
+                                        try {
+                                                // 일반 사용자 본인이 상품 상세보기에서 작성한 Q&A 내역 수집
+                                                if (ordersMemberId) {
+                                                        const productQnaRes = await axios.get(`http://192.168.4.60:9991/question/user/list?mId=${ordersMemberId}`);
+                                                        productQnaData = productQnaRes.data || [];
+                                                }
+                                        } catch (e) {
+                                                console.error("일반 사용자 상품 문의 로드 실패:", e);
+                                        }
+
+                                        // 일반사용자 목록
+
+                                        const wishRes = await axios.get(`http://192.168.4.60:9991/wish/list?userid=${logId}`);
                                         setWishItems(wishRes.data); // 찜목록
 
-                                        const orderRes = await axios.get(`http://192.168.4.51:9989/buy/list/${ordersMemberId}`);
+                                        const orderRes = await axios.get(`http://192.168.4.60:9991/buy/list/${ordersMemberId}`);
                                         setOrders(orderRes.data); // 주문목록
+                                        console.log("주문상품정보 : ", orderRes.data)
 
-                                        const cancelRes = await axios.get(`http://192.168.4.51:9989/buy/cancel/list/${ordersMemberId}`);
+                                        const cancelRes = await axios.get(`http://192.168.4.60:9991/buy/cancel/list/${ordersMemberId}`);
                                         setCancelItems(cancelRes.data); // 취소목록              
 
+                                        setInquiries([...supportData, ...productQnaData]);
                                 }
+
                                 // 기업사용자 목록
                                 if (logId && isCorporate) {
-                                        const salesRes = await axios.get(`http://192.168.4.51:9989/buy/seller/saleslist?sellerId=${logId}`);
+                                        let corpInqData = [];
+                                        try {
+                                                // 소비자들이 내 상품들에 보낸 Q&A 내역 수집
+                                                const corpInqRes = await axios.get(`http://192.168.4.60:9991/question/seller/list?sellerId=${logId}`);
+                                                corpInqData = corpInqRes.data || [];
+                                        } catch (e) {
+                                                console.error("기업용 고객 상품 문의 로드 실패:", e);
+                                        }
+
+                                        const salesRes = await axios.get(`http://192.168.4.60:9991/buy/seller/saleslist?sellerId=${logId}`);
                                         setSalesList(salesRes.data); // 판매목록
 
-                                        const prodRes = await axios.get(`http://192.168.4.51:9989/product/seller/list?sellerId=${logId}`);
-                                        console.log("백엔드에서 받아온 데이터:", prodRes.data);
-                                        console.log("현재 로그인된 기업 ID (logId):", logId);
+                                        const prodRes = await axios.get(`http://192.168.4.60:9991/product/seller/list?sellerId=${logId}`);
                                         setProducts(prodRes.data); // 상품 목록, 수정
 
-                                        const corpInqRes = await axios.get(`http://192.168.4.51:9989/question/seller/list?sellerId=${logId}`);
-                                        setInquiries(corpInqRes.data); // 문의내역
+                                        setInquiries([...supportData, ...corpInqData]);
                                 }
 
                         } catch (error) {
@@ -75,6 +128,7 @@ const MyPage = () => {
                         } finally {
                                 setLoading(false);
                         }
+
                 };
 
                 fetchData();
@@ -82,7 +136,7 @@ const MyPage = () => {
         }, [logId, usertype, loginName, isCorporate]);
 
         const sideMenus = isCorporate
-                ? ['상품 등록/관리', '판매 현황',  '정산내역', '고객문의 관리']
+                ? ['상품 등록/관리', '판매 현황', '정산내역', '고객문의 관리', '문의 내역']
                 : ['주문내역', '취소/반품/교환 내역', '찜', '상품문의 내역'];
 
 
@@ -120,21 +174,23 @@ const MyPage = () => {
                 if (isCorporate) {
                         switch (activeMenu) {
                                 case '상품 등록/관리': return <ProductManagement products={products} setProducts={setProducts} />;
-                                case '판매 현황': return <SalesStatus sales={salesList} />;    
+                                case '판매 현황': return <SalesStatus sales={salesList} />;
                                 case '정산내역': return <SettlementHistory sales={salesList} />
-                                case '고객문의 관리': return <CorpInquiryList inquiries={inquiries} />;
+                                case '고객문의 관리': return <CorpCustomerInquiryList inquiries={inquiries} />;
+                                case '문의 내역': return <CorpMyInquiryList inquiries={inquiries} />;
                                 default:
                                         return <div className="empty-state">준비 중인 기업 기능입니다.</div>;
                         }
-                }
+                } else {
 
-                // 일반 사용자용 메뉴
-                switch (activeMenu) {
-                        case '주문내역': return <OrderHistory orders={orders} setOrders={setOrders} setCancelItems={setCancelItems} />;
-                        case '취소/반품/교환 내역': return <CancelHistory cancelItems={cancelItems} />;
-                        case '찜': return <WishList wishItems={wishItems} onDelete={handleWishDelete} />;
-                        case '상품문의 내역': return <InquiryList inquiries={inquiries} />;
-                        default: return <div className="empty-state">준비 중인 페이지입니다.</div>;
+                        // 일반 사용자용 메뉴
+                        switch (activeMenu) {
+                                case '주문내역': return <OrderHistory orders={orders} setOrders={setOrders} setCancelItems={setCancelItems} />;
+                                case '취소/반품/교환 내역': return <CancelHistory cancelItems={cancelItems} />;
+                                case '찜': return <WishList wishItems={wishItems} onDelete={handleWishDelete} />;
+                                case '상품문의 내역': return <InquiryList inquiries={inquiries} />;
+                                default: return <div className="empty-state">준비 중인 페이지입니다.</div>;
+                        }
                 }
         };
 
@@ -146,7 +202,7 @@ const MyPage = () => {
 
                 try {
                         // 아까 통합한 백엔드 LikeController 주소(/like/toggle)로 요청을 보냅니다.
-                        const response = await axios.post("http://192.168.4.51:9989/like/toggle", {
+                        const response = await axios.post("http://192.168.4.60:9991/like/toggle", {
                                 userid: logId,
                                 memberId: mId ? Number(mId) : null,
                                 productId: Number(pid),
@@ -206,7 +262,7 @@ const MyPage = () => {
                                                         </div>
                                                 </>
                                         ) : (
-                                                // 🧑‍💻 일반 사용자용 전용 대시보드 레이아웃
+                                                // 일반 사용자용 전용 대시보드 레이아웃
                                                 <>
                                                         <div className="stat-item" onClick={() => setActiveMenu('주문내역')} style={{ cursor: 'pointer' }}>
                                                                 <div className="stat-label">총 누적 구매 금액 〉</div>
@@ -262,6 +318,8 @@ const MyPage = () => {
 
 // 일반 사용자 : 주문내역
 const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
+
+        console.log("=== OrderHistory 전체 orders 데이터 ===", orders);
         const validOrders = orders ? orders.filter(item =>
                 item.status !== "취소완료" &&
                 item.status !== "반품신청" &&
@@ -289,9 +347,9 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
         const handleOrderAction = async (item, actionType, actionLabel) => {
 
                 console.log("전달받은 bId 값:", item);
-                const bid = item.bid;
+                const bId = item.bId;
 
-                if (!bid) {
+                if (!bId) {
                         console.error("주문 번호(bid)를 찾을 수 없습니다:", item);
                         alert("데이터 오류: 주문 번호를 확인해주세요.");
                         return;
@@ -301,11 +359,11 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
 
                 try {
                         // 2. 경로에 bid를 넣습니다.
-                        await axios.post(`http://192.168.4.51:9989/buy/status/${bid}?action=${actionType}`);
+                        await axios.post(`http://192.168.4.60:9991/buy/status/${bId}?action=${actionType}`);
 
                         alert(`${actionLabel} 처리가 완료되었습니다.`);
 
-                        setOrders(prev => prev.filter(i => i.bid !== bid));
+                        setOrders(prev => prev.filter(i => i.bId !== bId));
 
                 } catch (error) {
                         console.error("요청 중 오류 발생:", error);
@@ -320,14 +378,21 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
                                 <button className="search-icon"></button>
                         </div>
                         <hr />
+
                         {validOrders.map((item, index) => (
-                                <div className="order-item" key={item.bId || index}>
-                                        <div className="item-img">
-                                                {item.product?.fileList && item.product.fileList[0] ? (
-                                                        <img src={`http://192.168.4.51:9989/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+
+                                <div className="order-item" key={item.bd || index}>
+                                        <div className="item-img-box">
+                                                {item.product?.fileList?.[0] ? (
+                                                        <img
+                                                                src={getImageUrl(item)}
+                                                                alt="상품이미지"
+                                                                style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }}
+                                                        />
                                                 ) : (
-                                                        <div style={{ width: '100%', height: '100%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#aaa' }}>이미지 준비중</div>
+                                                        <p>파일리스트 데이터 없음</p>
                                                 )}
+
                                         </div>
                                         <div className="item-info">
                                                 <span className="brand-name">
@@ -373,14 +438,14 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
                                                                 <button
                                                                         className="btn-light"
                                                                         style={{ color: '#f0ad4e', borderColor: '#f0ad4e', padding: '4px 8px', fontSize: '12px' }}
-                                                                        onClick={() => handleOrderAction(item.bId, "RETURN", "반품신청")}
+                                                                        onClick={() => handleOrderAction(item, "RETURN", "반품신청")}
                                                                 >
                                                                         반품신청
                                                                 </button>
                                                                 <button
                                                                         className="btn-light"
                                                                         style={{ color: '#5bc0de', borderColor: '#5bc0de', padding: '4px 8px', fontSize: '12px' }}
-                                                                        onClick={() => handleOrderAction(item.bId, "EXCHANGE", "교환신청")}
+                                                                        onClick={() => handleOrderAction(item, "EXCHANGE", "교환신청")}
                                                                 >
                                                                         교환신청
                                                                 </button>
@@ -484,9 +549,10 @@ const CancelHistory = ({ cancelItems }) => {
                         {cancelItems.map((item, index) => (
                                 <div className="order-item" key={item.bId || index}>
                                         {/* 상품 이미지 출력 */}
-                                        <div className="item-img">
+                                        <div className="item-img-box">
                                                 {item.product?.fileList && item.product.fileList[0] ? (
-                                                        <img src={`http://192.168.4.51:9989/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        <img src={getImageUrl(item)}
+                                                                alt="상품 이미지" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }} />
                                                 ) : (
                                                         <div style={{ width: '100%', height: '100%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#aaa' }}>이미지 준비중</div>
                                                 )}
@@ -546,7 +612,11 @@ const CancelHistory = ({ cancelItems }) => {
         );
 };
 
+
 // 일반사용자 : 찜목록
+
+
+
 const WishList = ({ wishItems, onDelete }) => {
         return (
                 <div className="wishlist-container">
@@ -567,20 +637,20 @@ const WishList = ({ wishItems, onDelete }) => {
                                                 return (
                                                         <div className="order-item" key={currentPid}>
                                                                 <div className="item-img-box">
-                                                                        {item.product?.fileList && item.product.fileList.length > 0 && item.product.fileList[0] ? (
+                                                                        {getImageUrl(item) ? (
                                                                                 <img
-                                                                                        src={`http://192.168.4.51:9989/static/uploads/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`}
+                                                                                        src={getImageUrl(item)}
                                                                                         alt={productName}
-                                                                                        style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                                                                                />
-                                                                        ) : item.fileList && item.fileList.length > 0 && item.fileList[0] ? (
-                                                                                <img
-                                                                                        src={`http://192.168.4.51:9989/static/uploads/${item.fileList[0].filename}.${item.fileList[0].extname}`}
-                                                                                        alt={productName}
-                                                                                        style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                                                                                        style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }}
                                                                                 />
                                                                         ) : (
-                                                                                <div style={{ width: '100px', height: '100px', backgroundColor: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#999' }}>이미지 없음</div>
+                                                                                <div style={{
+                                                                                        width: '100px', height: '100px', backgroundColor: '#eee',
+                                                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                                        fontSize: '12px', color: '#999', borderRadius: '8px'
+                                                                                }}>
+                                                                                        이미지 없음
+                                                                                </div>
                                                                         )}
                                                                 </div>
                                                                 <div className="item-info">
@@ -606,9 +676,12 @@ const WishList = ({ wishItems, onDelete }) => {
 };
 
 // 일반 사용자 : 문의하기
-const InquiryList = ({ inquiries, isCorp }) => {
+const InquiryList = ({ inquiries }) => {
+        // 각각의 글이 개별적으로 열리도록 내부에 고유 ID 저장 상태를 선언합니다 (묶임 현상 원천 차단!)
         const [expandedId, setExpandedId] = useState(null);
-        const toggleInquiry = (id) => setExpandedId(expandedId === id ? null : id);
+
+        // 현재 로그인된 사용자의 이름을 세션에서 안전하게 가져옵니다 (작성자가 비어있을 때 방어용)
+        const sessionUserName = sessionStorage.getItem("logName") || "고객";
 
         return (
                 <div className="inquiry-list-wrapper">
@@ -624,45 +697,80 @@ const InquiryList = ({ inquiries, isCorp }) => {
                                         </tr>
                                 </thead>
                                 {inquiries.length === 0 ? (
-                                        <tbody><tr><td colSpan="6" className="empty-row">문의 내역이 없습니다.</td></tr></tbody>
+                                        <tbody>
+                                                <tr>
+                                                        <td colSpan="6" className="empty-row">문의 내역이 없습니다.</td>
+                                                </tr>
+                                        </tbody>
                                 ) : (
-                                        inquiries.map((inquiry, index) => (
-                                                <tbody key={inquiry.sid || index}>
-                                                        <tr onClick={() => toggleInquiry(inquiry.sid)} style={{ cursor: 'pointer' }}>
-                                                                <td>{inquiry.s_id}</td>
-                                                                <td><span className="category-tag">{inquiry.category}</span></td>
-                                                                <td className="inquiry-title-cell">{inquiry.subject}</td>
-                                                                <td>{inquiry.writer}</td>
-                                                                <td>{inquiry.writedate ? inquiry.writedate.split('T')[0] : "-"}</td>
-                                                                <td className="text-center">
-                                                                        <span className={`status-badge ${inquiry.answer ? 'complete' : 'waiting'}`}>
-                                                                                {inquiry.answer ? "답변완료" : "답변대기"}
-                                                                        </span>
-                                                                </td>
-                                                        </tr>
-                                                        {expandedId === inquiry.sid && (
-                                                                <tr className="inquiry-detail-row">
-                                                                        <td colSpan="6">
-                                                                                <div className="my-detail-content">
-                                                                                        <div className="question-box">
-                                                                                                <strong>Q. 문의 내용</strong>
-                                                                                                <p style={{ whiteSpace: 'pre-wrap' }}>{inquiry.context}</p>
-                                                                                        </div>
-                                                                                        {inquiry.answer ? (
-                                                                                                <div className="answer-box">
-                                                                                                        <strong>A. 답변 내용</strong>
-                                                                                                        <p style={{ whiteSpace: 'pre-wrap' }}>{inquiry.answer}</p>
-                                                                                                        {inquiry.answerdate && <small>답변일: {inquiry.answerdate.split('T')[0]}</small>}
-                                                                                                </div>
-                                                                                        ) : (
-                                                                                                <div className="waiting-box"><small>답변 준비 중입니다.</small></div>
-                                                                                        )}
-                                                                                </div>
+                                        inquiries.map((inquiry, index) => {
+                                                //글 번호 분기 처리 (서비스지원은 s_id, 백엔드 상품문의는 id 사용)
+                                                const currentId = inquiry.s_id || inquiry.id || (index + 1);
+
+                                                // 카테고리 분기 처리 (상품문의는 별도 카테고리가 없으므로 텍스트 지정)
+                                                const displayCategory = inquiry.category || '상품문의';
+
+                                                // 작성자명 분기 처리 (공통 데이터 구조 대응 및 세션백업)
+                                                const displayWriter = maskUserId(inquiry.writer || inquiry.member?.userid || sessionUserName);
+
+                                                // 답변 유무 상태 체크 (서비스지원은 answer, 상품문의는 reply 사용)
+                                                const hasAnswer = !!(inquiry.answer || inquiry.reply);
+
+                                                // 현재 행이 확장되었는지 여부 확인
+                                                const isThisExpanded = expandedId === currentId;
+
+                                                return (
+                                                        <tbody key={currentId || index}>
+                                                                {/* 행 클릭 시 전체가 아니라 현재 행의 고유 ID만 상태값에 넣어 토글합니다 */}
+                                                                <tr
+                                                                        onClick={() => setExpandedId(isThisExpanded ? null : currentId)}
+                                                                        style={{ cursor: 'pointer' }}
+                                                                >
+                                                                        <td>{currentId}</td>
+                                                                        <td><span className="category-tag">{displayCategory}</span></td>
+                                                                        <td className="inquiry-title-cell">{inquiry.subject}</td>
+                                                                        <td>{displayWriter}</td>
+                                                                        <td>{inquiry.writedate ? inquiry.writedate.split('T')[0] : "-"}</td>
+                                                                        <td className="text-center">
+                                                                                <span className={`status-badge ${hasAnswer ? 'complete' : 'waiting'}`}>
+                                                                                        {hasAnswer ? "답변완료" : "답변대기"}
+                                                                                </span>
                                                                         </td>
                                                                 </tr>
-                                                        )}
-                                                </tbody>
-                                        ))
+
+                                                                {/* 내가 선택한 문의 번호의 상세 칸만 정확하게 노출 */}
+                                                                {isThisExpanded && (
+                                                                        <tr className="inquiry-detail-row">
+                                                                                <td colSpan="6">
+                                                                                        <div className="my-detail-content">
+                                                                                                <div className="question-box">
+                                                                                                        <strong>Q. 문의 내용</strong>
+                                                                                                        <p style={{ whiteSpace: 'pre-wrap' }}>{inquiry.context}</p>
+                                                                                                </div>
+                                                                                                {hasAnswer ? (
+                                                                                                        <div className="answer-box">
+                                                                                                                <strong>A. 답변 내용</strong>
+                                                                                                                <p style={{ whiteSpace: 'pre-wrap' }}>
+                                                                                                                        {inquiry.answer || inquiry.reply}
+                                                                                                                </p>
+                                                                                                                {(inquiry.answerdate || inquiry.replydate) && (
+                                                                                                                        <small>
+                                                                                                                                답변일: {(inquiry.answerdate || inquiry.replydate).split('T')[0]}
+                                                                                                                        </small>
+                                                                                                                )}
+                                                                                                        </div>
+                                                                                                ) : (
+                                                                                                        <div className="waiting-box">
+                                                                                                                <small>안녕하세요 고객님, 곧 답변을 등록해 드리겠습니다.</small>
+                                                                                                        </div>
+                                                                                                )}
+                                                                                        </div>
+                                                                                </td>
+                                                                        </tr>
+                                                                )}
+                                                        </tbody>
+                                                );
+                                        })
                                 )}
                         </table>
                 </div>
@@ -670,6 +778,7 @@ const InquiryList = ({ inquiries, isCorp }) => {
 };
 
 // 기업 사용자 : 상품 등록/수정
+
 const ProductManagement = ({ products, setProducts }) => {
         const [editingId, setEditingId] = useState(null);
         const [editFormData, setEditFormData] = useState({});
@@ -696,7 +805,7 @@ const ProductManagement = ({ products, setProducts }) => {
                 const targetId = editingId;
                 try {
                         // 백엔드로 수정 데이터 전송
-                        await axios.put(`http://192.168.4.51:9989/product/seller/update/${targetId}`, editFormData);
+                        await axios.put(`http://192.168.4.60:9991/product/seller/update/${targetId}`, editFormData);
 
                         // 프론트 UI 실시간 업데이트 반영
                         setProducts(products.map(p => (p.pId === targetId || p.pid === targetId) ? editFormData : p));
@@ -713,7 +822,7 @@ const ProductManagement = ({ products, setProducts }) => {
                 if (!window.confirm("정말 이 상품을 완전히 삭제하시겠습니까?\n삭제된 상품은 복구할 수 없습니다.")) return;
                 try {
                         // 백엔드로 삭제 요청 보내기
-                        await axios.delete(`http://192.168.4.51:9989/product/seller/delete/${pId}`);
+                        await axios.delete(`http://192.168.4.60:9991/product/seller/delete/${pId}`);
 
                         // 프론트 UI에서 제외하기
                         setProducts(prev => prev.filter(p => (p.pId !== pId && p.pid !== pId)));
@@ -805,7 +914,7 @@ const ProductManagement = ({ products, setProducts }) => {
                                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                                                                 <div style={{ width: '40px', height: '40px', backgroundColor: '#f5f5f5', borderRadius: '4px', overflow: 'hidden' }}>
                                                                                                         {product.fileList && product.fileList[0] && (
-                                                                                                                <img src={`http://192.168.4.51:9989/static/uploads/${product.fileList[0].filename}.${product.fileList[0].extname}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                                                                <img src={getImageUrl(product)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                                                                         )}
                                                                                                 </div>
 
@@ -908,7 +1017,7 @@ const SalesStatus = ({ sales }) => {
                                                                 {/* 결제금액 */}
                                                                 <td className="settle-price">{price.toLocaleString()}원</td>
                                                                 {/* 주문자 ID */}
-                                                                <td>{item.member?.userid || `회원(${item.mId || '정보없음'})`}</td>
+                                                                <td>{maskUserId(item.member?.userid || item.userid)}</td>
                                                                 {/* 주문상태 뱃지 */}
                                                                 <td className="text-center">
                                                                         <span className={`status-badge ${item.status === '결제완료' ? 'complete' : 'waiting'}`}>
@@ -1074,9 +1183,11 @@ const SettlementHistory = ({ sales }) => {
 };
 
 // 기업사용자 : 상품 문의 관리
-const CorpInquiryList = ({ inquiries }) => {
+const CorpCustomerInquiryList = ({ inquiries }) => {
         const [expandedId, setExpandedId] = useState(null);
         const [replyText, setReplyText] = useState(""); // 기업 답변 입력 상태
+
+        const customerInquiries = inquiries.filter(item => !item.s_id);
 
         // 문의 열고 닫기 토글
         const toggleInquiry = (id, currentReply) => {
@@ -1097,7 +1208,7 @@ const CorpInquiryList = ({ inquiries }) => {
                 }
                 try {
                         // 백엔드 /question 컨트롤러의 PUT 주소로 데이터 전송
-                        await axios.put(`http://192.168.4.51:9989/question/seller/reply/${id}`, {
+                        await axios.put(`http://192.168.4.60:9991/question/seller/reply/${id}`, {
                                 reply: replyText
                         });
                         alert("상품 문의 답변이 성공적으로 등록되었습니다.");
@@ -1122,13 +1233,26 @@ const CorpInquiryList = ({ inquiries }) => {
                                         </tr>
                                 </thead>
                                 <tbody>
-                                        {inquiries.length === 0 ? (
+                                        {customerInquiries.length === 0 ? (
                                                 <tr><td colSpan="6" className="empty-row" style={{ textAlign: 'center', padding: '30px', color: '#888' }}>접수된 상품 문의가 존재하지 않습니다.</td></tr>
                                         ) : (
-                                                inquiries.map((item, index) => {
+                                                customerInquiries.map((item, index) => {
                                                         const currentId = item.id; // PaskEntity의 id
                                                         const isReplied = !!item.reply; // reply 필드가 있으면 답변완료
-                                                        const writerName = item.member?.userid;
+                                                        const writerName = maskUserId(item.member?.userid || (item.mId ? `회원(${item.mId})` : ""));
+                                                        const getMaskedName = (name) => {
+                                                                if (!name) return "고객";
+
+                                                                // 글자 수가 2글자 이하인 경우 (예: '홍길' -> '홍*')
+                                                                if (name.length <= 2) {
+                                                                        return name.charAt(0) + "*";
+                                                                }
+
+                                                                // 글자 수가 3글자 이상인 경우 (예: 'daeogho' -> 'daeo***', '홍길동' -> '***')
+                                                                // 뒤에서부터 딱 3글자만 잘라내고 그 자리를 ***로 치환합니다.
+                                                                return name.slice(0, -3) + "***";
+                                                        };
+
                                                         const productName = item.product?.name;
 
                                                         return (
@@ -1187,5 +1311,78 @@ const CorpInquiryList = ({ inquiries }) => {
         );
 };
 
+// 기업사용자 : 나의 문의내역
+const CorpMyInquiryList = ({ inquiries }) => {
+        const [expandedId, setExpandedId] = useState(null);
+
+        // 🚨 본인이 작성한 고객센터 1:1 문의(s_id가 존재하는 데이터)만 정확하게 필터링!
+        const myInquiries = inquiries.filter(item => item.s_id);
+        const sessionLogId = sessionStorage.getItem("logId") || "기업회원";
+
+        return (
+                <div className="inquiry-list-wrapper">
+                        <table className="management-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                                <thead>
+                                        <tr style={{ borderBottom: '2px solid #333', textAlign: 'left' }}>
+                                                <th style={{ padding: '12px', width: '8%' }}>번호</th>
+                                                <th style={{ width: '15%' }}>카테고리</th>
+                                                <th>문의 제목</th>
+                                                <th style={{ width: '15%' }}>작성자</th>
+                                                <th style={{ width: '15%' }}>등록일</th>
+                                                <th style={{ width: '12%', textAlign: 'center' }}>상태</th>
+                                        </tr>
+                                </thead>
+                                <tbody>
+                                        {myInquiries.length === 0 ? (
+                                                <tr><td colSpan="6" className="empty-row" style={{ textAlign: 'center', padding: '30px', color: '#888' }}>내가 작성한 1:1 문의 내역이 존재하지 않습니다.</td></tr>
+                                        ) : (
+                                                myInquiries.map((item, index) => {
+                                                        const currentId = item.s_id;
+                                                        const hasAnswer = !!item.answer;
+                                                        const displayCategory = item.category || '고객센터 문의';
+                                                        const displayWriter = item.writer || sessionLogId; // 🚨 작성자 본인 ID 고정!
+
+                                                        return (
+                                                                <React.Fragment key={currentId || index}>
+                                                                        <tr onClick={() => setExpandedId(expandedId === currentId ? null : currentId)} style={{ borderBottom: '1px solid #eee', cursor: 'pointer' }}>
+                                                                                <td style={{ padding: '12px' }}>{currentId}</td>
+                                                                                <td><span className="category-tag center-type" style={{ backgroundColor: '#e3f2fd', color: '#0d47a1', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>{displayCategory}</span></td>
+                                                                                <td className="inquiry-title-cell">{item.subject}</td>
+                                                                                <td>{displayWriter}</td>
+                                                                                <td>{item.writedate ? item.writedate.split('T')[0] : "-"}</td>
+                                                                                <td className="text-center">
+                                                                                        <span className={`status-badge ${hasAnswer ? 'complete' : 'waiting'}`}
+                                                                                                style={{ backgroundColor: hasAnswer ? '#e8f5e9' : '#fff3e0', color: hasAnswer ? '#4caf50' : '#ff9800', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>
+                                                                                                {hasAnswer ? "답변완료" : "답변대기"}
+                                                                                        </span>
+                                                                                </td>
+                                                                        </tr>
+
+                                                                        {expandedId === currentId && (
+                                                                                <tr className="inquiry-detail-row" style={{ backgroundColor: '#fafafa' }}>
+                                                                                        <td colSpan="6" style={{ padding: '20px' }}>
+                                                                                                <div className="question-box" style={{ marginBottom: '15px' }}>
+                                                                                                        <strong style={{ color: '#2c2c2e', display: 'block', marginBottom: '6px' }}>Q. 내가 보낸 문의 내용</strong>
+                                                                                                        <p style={{ whiteSpace: 'pre-wrap', color: '#333', margin: 0 }}>{item.context}</p>
+                                                                                                </div>
+
+                                                                                                <div className="answer-box" style={{ marginTop: '15px', borderTop: '1px dashed #ccc', paddingTop: '15px' }}>
+                                                                                                        <strong style={{ color: '#4caf50', display: 'block', marginBottom: '6px' }}>A. 고객센터 답변 내용</strong>
+                                                                                                        <p style={{ whiteSpace: 'pre-wrap', color: '#555', margin: 0 }}>
+                                                                                                                {item.answer || "안녕하세요 회원님, 접수하신 내용 확인 중입니다. 곧 성심껏 답변드리겠습니다."}
+                                                                                                        </p>
+                                                                                                </div>
+                                                                                        </td>
+                                                                                </tr>
+                                                                        )}
+                                                                </React.Fragment>
+                                                        );
+                                                })
+                                        )}
+                                </tbody>
+                        </table>
+                </div>
+        );
+};
 
 export default MyPage;

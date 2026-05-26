@@ -1,22 +1,24 @@
 package com.finalproject.canvas.websocket;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 1) C:/upload/ 전체 접근
-        registry.addResourceHandler("/upload/**")
-                .addResourceLocations("file:/C:/upload/");
+        // 1. 시스템 환경변수를 활용하여 경로를 OS에 맡김
+        String uploadPath = "file:////C:/upload/";
 
-        // 2) C:/upload/review/ 개별 접근
-        registry.addResourceHandler("/upload/review/**")
-                .addResourceLocations("file:/C:/upload/review/");
+        // 2. 경로를 더 명확하게 매핑
+        registry.addResourceHandler("/upload/**")
+                .addResourceLocations(uploadPath);
     }
     @Override
     public void addCorsMappings(CorsRegistry registry) {

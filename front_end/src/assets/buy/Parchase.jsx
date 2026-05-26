@@ -12,6 +12,7 @@ function Parchase() {
                 const items = sessionStorage.getItem('buyItems');
                 if (items) setCartList(JSON.parse(items));
         }, []);
+        console.log(cartList)
 
         // 로그인 유저 정보 (기존 주소 표시용)
         const [userInfo, setUserInfo] = useState(null);
@@ -24,7 +25,7 @@ function Parchase() {
                 if (mId) {
                         setUserInfo({ mId, logId, logName, usertype });
 
-                        axios.get(`http://192.168.4.51:9989/member/info/${mId}`)
+                        axios.get(`http://192.168.4.60:9991/member/info/${mId}`)
                                 .then(res => {
                                         setUserInfo(prev => ({ ...prev, ...res.data }));
                                         setDelivery(prev => ({
@@ -138,7 +139,7 @@ function Parchase() {
                 }));
 
                 // 여러 개 한 번에 POST
-                axios.post('http://192.168.4.51:9989/delivery/add/all', payloads)
+                axios.post('http://192.168.4.60:9991/delivery/add/all', payloads)
                         .then(res => {
                                 const savedDeliveries = res.data;
                                 const dIds = savedDeliveries.map(d => d.did);
@@ -151,14 +152,14 @@ function Parchase() {
                                 const colors = cartList.map(item => item.color || '');
                                 const sizes = cartList.map(item => item.size || '');
 
-                                return axios.post('http://192.168.4.51:9989/buy/add', {
+                                return axios.post('http://192.168.4.60:9991/buy/add', {
                                         cartIds, dIds, counts, discounts, prices
                                 });
                         })
                         .then(() => {
                                 // ✅ buy 저장 성공 후 장바구니 삭제
                                 const cartIds = cartList.map(item => item.cartId);
-                                return axios.delete('http://192.168.4.51:9989/cart/delete', {
+                                return axios.delete('http://192.168.4.60:9991/cart/delete', {
                                 data: cartIds  // axios delete는 data로 body 전송
                                 });
                         })
@@ -213,7 +214,7 @@ function Parchase() {
                                                                 <td style={{ width: '55%' }}>
                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                                                 <img src={item.product.fileList?.[0]
-                                                                                                        ? `http://192.168.4.51:9989/upload/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`
+                                                                                                        ? `http://192.168.4.60:9991/upload/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`
                                                                                                         : "/no-image.png"
                                                                                                 }
                                                                                                         className='img-basket' alt="제품" />
@@ -237,7 +238,7 @@ function Parchase() {
                                                                 <td style={{ width: '20%' }}>
                                                                         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center' }}>
                                                                                 <span style={{ fontWeight: '600' }}>
-                                                                                        {(item.product.price * item.count - item.discount).toLocaleString()}원
+                                                                                        {(item.product.price * item.count).toLocaleString()}원
                                                                                 </span>
                                                                         </div>
                                                                 </td>

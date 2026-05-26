@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface PaskRepository extends JpaRepository<PaskEntity, Integer> {
     List<PaskEntity> findBypId(Integer pId);
+    @Query("SELECT ask FROM PaskEntity ask WHERE ask.mId = :mId ORDER BY ask.writedate DESC")
+    List<PaskEntity> findByMemberId(@Param("mId") Integer mId);
 
     // 마이페이지 기업용 고객 문의 관리 조회 전용 쿼리 - 대호추가
     @Query("SELECT ask FROM PaskEntity ask " +

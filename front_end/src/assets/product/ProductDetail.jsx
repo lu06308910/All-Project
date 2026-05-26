@@ -62,7 +62,7 @@ function ProductDetail() {
                 if (!mId) return;
 
                 // 컨트롤러의 @GetMapping("/list/{memberId}") 경로를 정확히 찌릅니다.
-                axios.get(`http://192.168.4.51:9989/like/list/${mId}`)
+                axios.get(`http://192.168.4.60:9991/like/list/${mId}`)
                         .then(res => {
                                 console.log("DB에서 가져온 내 찜 목록(상품ID배열):", res.data);
                                 // 백엔드가 [42, 43, 44] 같은 숫자 배열을 주므로 그대로 저장합니다.
@@ -149,7 +149,8 @@ function ProductDetail() {
                 const selectedSize = sizes.find(s => s.size === extraOption);
                 const sizeExtraPrice = Number(selectedSize?.price || 0);
 
-                const basePrice = Number(data.price || 0);
+                //const basePrice = Number(data.price || 0);
+                const basePrice = Number(data.salePrice || data.price || 0); // 할인가격에서 적용
 
                 const finalPrice = basePrice + sizeExtraPrice;
 
@@ -161,9 +162,9 @@ function ProductDetail() {
                         size: extraOption,
                         count,
 
-                        basePrice,
+                        basePrice,          // 할인된 기준 가격
                         sizeExtraPrice,
-                        finalPrice   // ⭐ 핵심
+                        finalPrice          // 단가 (1개 기준)
                 };
 
                 setSelectedOptions(prev => [...prev, newOption]);
@@ -183,7 +184,7 @@ function ProductDetail() {
 
         // 상품 정보 백엔드
         function getDataDetail() {
-                axios.get(`http://192.168.4.51:9989/productDetail/${id}`)
+                axios.get(`http://192.168.4.60:9991/productDetail/${id}`)
 
                         .then((response) => {
 
@@ -211,7 +212,10 @@ function ProductDetail() {
                                         id: d.product?.pid,
                                         username: d.product?.company?.name,
                                         name: d.product?.name,
-                                        price: d.product?.price,
+                                        scategory: d.product?.scategory,
+                                        b_category: d.product?.b_category,
+                                        price: d.finalPrice,      // 화면에 표시되는 최종가
+                                        originPrice: d.product?.price, //  옵션 계산에 필요
                                         content: d.product?.context
                                 });
 
@@ -220,7 +224,7 @@ function ProductDetail() {
                                 d.fileList?.forEach((f) => {
                                         file.push({
                                                 color: f.colorName,
-                                                url: `http://192.168.4.51:9989/upload/${f.filename}.${f.extname}`
+                                                url: `http://192.168.4.60:9991/upload/${f.filename}.${f.extname}`
                                         });
                                 });
                                 setFilelist(file);
@@ -243,7 +247,7 @@ function ProductDetail() {
                 }
 
                 // 컨트롤러의 @PostMapping("/toggle")에 맞춰서 데이터 전송
-                axios.post("http://192.168.4.51:9989/like/toggle", {
+                axios.post("http://192.168.4.60:9991/like/toggle", {
                         userid: logId,
                         memberId: Number(mId),
                         productId: Number(productId),
@@ -292,11 +296,12 @@ function ProductDetail() {
                                 discount: 0,
                                 count: opt.count,
                                 color: opt.color,
+                                originprice: Number(opt.basePrice),
                                 size: opt.size || opt.extraOption,
                                 price: opt.finalPrice // 총금액(사이즈별 추가금액도 합산)
                         };
 
-                        axios.post("http://192.168.4.51:9989/cart/add", payload)
+                        axios.post("http://192.168.4.60:9991/cart/add", payload)
                                 .catch(err => console.log(err));
                 });
 
@@ -338,7 +343,7 @@ function ProductDetail() {
                         formData.append("file", file);
                 }
 
-                axios.post("http://192.168.4.51:9989/review/write", formData)
+                axios.post("http://192.168.4.60:9991/review/write", formData)
                         .then(res => {
                                 console.log("리뷰 작성 성공:", res.data);
 
@@ -347,7 +352,7 @@ function ProductDetail() {
                         .catch(err => console.log("리뷰 에러:", err));
         }
         function getReviews() {
-                axios.get(`http://192.168.4.51:9989/review/list/${data?.id}`)
+                axios.get(`http://192.168.4.60:9991/review/list/${data?.id}`)
                         .then(res => {
                                 setReviews(res.data);
 
@@ -357,7 +362,7 @@ function ProductDetail() {
 
         // 문의 불러오기
         function getQuestions() {
-                axios.get(`http://192.168.4.51:9989/question/list/${data.id}`)
+                axios.get(`http://192.168.4.60:9991/question/list/${data.id}`)
                         .then(res => {
                                 console.log(" Q&A 서버 데이터 전체 확인");
                                 console.log(res.data);
@@ -382,7 +387,7 @@ function ProductDetail() {
                 formData.append("subject", qnaTitle);
                 formData.append("context", questionText);
 
-                axios.post("http://192.168.4.51:9989/question/write", formData)
+                axios.post("http://192.168.4.60:9991/question/write", formData)
                         .then(() => {
                                 alert("문의가 등록되었습니다.");
                                 setQuestionText("");
@@ -400,7 +405,7 @@ function ProductDetail() {
 
                         {/* 상단 카테고리 경로 */}
                         <div className="breadcrumb">
-                                제품 &gt; 수납가구 &gt; 책장
+                                제품 &gt; {data?.b_category } &gt; {data?.scategory} 
                         </div>
 
                         <div className="product-wrapper">
@@ -445,7 +450,26 @@ function ProductDetail() {
                                                 </span>
                                         </div>
 
-                                        <p className="price">{data?.price}원</p>
+                                        <div className="price-line" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+
+                                                {/* 원가 */}
+                                                <span className="origin-price" style={{ textDecoration: "line-through", color: "#999" }}>
+                                                       {Number(data?.originPrice || 0).toLocaleString()}원
+                                                </span>
+
+                                                {/* 할인율 (event 있을 때만) */}
+                                                {data?.event && (
+                                                        <span className="discount-percent" style={{ color: "red", fontWeight: "bold" }}>
+                                                                {data?.event?.discountPercent}%
+                                                        </span>
+                                                )}
+
+                                                {/* 최종 가격 */}
+                                                <span className="final-price" style={{ fontWeight: "bold", color: "#000" }}>
+                                                        ₩ {Number(data?.price || 0).toLocaleString()}
+                                                </span>
+
+                                        </div>
 
                                         <div className="rating">
                                                 <span style={{ fontSize: '20px' }}>{renderStar(averageStar)}</span>
@@ -701,14 +725,14 @@ function ProductDetail() {
                                                                 onClick={() => setReviewFilter("all")}
                                                                 className={reviewFilter === "all" ? "active" : ""}
                                                         >
-                                                                전체(1,500건)
+                                                                전체 {reviews.length}건
                                                         </button>
 
                                                         <button
                                                                 onClick={() => setReviewFilter("photo")}
                                                                 className={reviewFilter === "photo" ? "active" : ""}
                                                         >
-                                                                사진(620건)
+                                                                사진 {reviews.filter((r) => r.imgUrl).length}건
                                                         </button>
                                                 </div>
 
@@ -726,8 +750,8 @@ function ProductDetail() {
                                                                 .map((r) => (
                                                                         <img
                                                                                 key={r.id}
-                                                                                src={`http://192.168.4.51:9989/upload/review/${r.imgUrl}`} // 서버 주소 + 이미지 경로
-                                                                                onClick={() => setZoomImage(`http://192.168.4.51:9989/upload/review/${r.imgUrl}`)}
+                                                                                src={`http://192.168.4.60:9991/upload/review/${r.imgUrl}`} // 서버 주소 + 이미지 경로
+                                                                                onClick={() => setZoomImage(`http://192.168.4.60:9991/upload/review/${r.imgUrl}`)}
                                                                                 style={{
                                                                                         width: "200px",
                                                                                         height: "200px",
