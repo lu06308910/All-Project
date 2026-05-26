@@ -212,7 +212,11 @@ function Parchase() {
                                                         <tr>
                                                                 <td style={{ width: '55%' }}>
                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                                                <img src='image/bed.jpeg' className='img-basket' alt="제품" />
+                                                                                <img src={item.product.fileList?.[0]
+                                                                                                        ? `http://192.168.4.51:9989/upload/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`
+                                                                                                        : "/no-image.png"
+                                                                                                }
+                                                                                                        className='img-basket' alt="제품" />
                                                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: 0, textAlign: 'left' }}>
                                                                                         <span style={{
                                                                                                 overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
