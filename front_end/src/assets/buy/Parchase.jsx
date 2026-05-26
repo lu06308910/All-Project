@@ -212,7 +212,11 @@ function Parchase() {
                                                         <tr>
                                                                 <td style={{ width: '55%' }}>
                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                                                <img src='image/bed.jpeg' className='img-basket' alt="제품" />
+                                                                                <img src={item.product.fileList?.[0]
+                                                                                                        ? `http://192.168.4.51:9989/upload/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`
+                                                                                                        : "/no-image.png"
+                                                                                                }
+                                                                                                        className='img-basket' alt="제품" />
                                                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: 0, textAlign: 'left' }}>
                                                                                         <span style={{
                                                                                                 overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
@@ -292,7 +296,13 @@ function Parchase() {
                                         <div style={{ flex: 1, textAlign: 'center' }}>배송비{'\u2003'}{'\u2003'}{totalDelivery.toLocaleString()}원</div>
                                 </div>
                                 <hr />
-                                <div style={{ textDecoration: 'underline', textAlign: 'right' }}>주문 취소</div>
+                                <div onClick={() => {
+                                        if (window.confirm('주문을 취소하시겠습니까?')) {
+                                                navigate('/basket');
+                                                window.confirm('취소되었습니다.')
+                                        }
+                                        }}
+                                        style={{ textDecoration: 'underline', textAlign: 'right' }}>주문 취소</div>
 
                                 {/* 배송지 입력 섹션 */}
                                 <div style={{ backgroundColor: '#EDEDED', padding: '40px', marginTop: '50px' }}>
