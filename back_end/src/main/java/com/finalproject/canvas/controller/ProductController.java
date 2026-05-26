@@ -22,6 +22,7 @@ import java.io.File;
 import java.sql.SQLException;
 import java.util.*;
 
+@CrossOrigin(origins="*")
 @RestController
 @RequiredArgsConstructor
 @Slf4j

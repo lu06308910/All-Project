@@ -1,5 +1,6 @@
 package com.finalproject.canvas.controller;
 
+import com.finalproject.canvas.dto.EventRequestDto;
 import com.finalproject.canvas.entity.EventEntity;
 import com.finalproject.canvas.entity.FileEntity;
 import com.finalproject.canvas.service.EventService;
@@ -59,6 +60,17 @@ public class EventController {
     public String addEvent(@RequestBody EventEntity eventEntity) {
         try {
             eventService.addEvent(eventEntity);
+            return "OK";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "FAIL";
+        }
+    }
+    // 게시글 수정
+    @PutMapping("/update/{eId}")
+    public String updateEvent(@PathVariable Integer eId, @RequestBody EventRequestDto dto) {
+        try {
+            eventService.updateEvent(eId, dto);
             return "OK";
         } catch (Exception e) {
             e.printStackTrace();

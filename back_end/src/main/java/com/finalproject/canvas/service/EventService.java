@@ -1,5 +1,6 @@
 package com.finalproject.canvas.service;
 
+import com.finalproject.canvas.dto.EventRequestDto;
 import com.finalproject.canvas.entity.EventEntity;
 import com.finalproject.canvas.entity.OutStatus;
 import com.finalproject.canvas.repository.EventRepository;
@@ -40,5 +41,29 @@ public class EventService {
     // 진행 중인 이벤트만 (sale.jsx용)
     public List<EventEntity> getActiveEvents() {
         return eventRepository.findActiveEvents(LocalDateTime.now());
+    }
+    // 이벤트 수정
+    public void updateEvent(Integer eId, EventRequestDto dto) {
+        EventEntity event = eventRepository.findById(eId)
+                .orElseThrow(() -> new RuntimeException("이벤트를 찾을 수 없습니다: " + eId));
+
+        event.setSubject(dto.getSubject());
+        event.setContext(dto.getContext());
+        event.setUpdatedate(dto.getUpdatedate());
+        event.setEnddate(dto.getEnddate());
+
+        // upload 상태 재계산
+        LocalDateTime now = LocalDateTime.now();
+        if (dto.getUpdatedate() != null && dto.getEnddate() != null) {
+            if (!now.isBefore(dto.getUpdatedate()) && !now.isAfter(dto.getEnddate())) {
+                event.setUpload(OutStatus.Y);
+            } else {
+                event.setUpload(OutStatus.N);
+            }
+        } else {
+            event.setUpload(OutStatus.N);
+        }
+
+        eventRepository.save(event);
     }
 }

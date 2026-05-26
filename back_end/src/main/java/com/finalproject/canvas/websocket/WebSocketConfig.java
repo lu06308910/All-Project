@@ -14,7 +14,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // 1. 클라이언트(리액트)가 처음 연결을 시도할 때 사용할 주소
         registry.addEndpoint("/ws-canvas")
-                .setAllowedOriginPatterns("http://localhost:5173") // 리액트 주소 허용
+                .setAllowedOriginPatterns("http://192.168.4.51:9989") // 리액트 주소 허용
                 .withSockJS(); // 낮은 버전의 브라우저도 지원하도록 SockJS 설정
     }
 

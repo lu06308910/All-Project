@@ -21,6 +21,12 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations(uploadPath)
                 .setCachePeriod(0); // 캐시를 0으로 해서 즉시 반영되게 함
     }
-
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("*")
+                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+                .allowedHeaders("*");
+    }
 
 }

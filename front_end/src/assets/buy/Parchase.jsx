@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import './../css/gayoung.css'
 
 function Parchase() {
         const navigate = useNavigate();
@@ -24,8 +25,14 @@ function Parchase() {
                         setUserInfo({ mId, logId, logName, usertype });
 
                         axios.get(`http://192.168.4.60:9991/member/info/${mId}`)
-                                .then(res=> setUserInfo(prev=>({...prev,...res.data})))
-                                .catch(err=>console.log(err));
+                                .then(res => {
+                                        setUserInfo(prev => ({ ...prev, ...res.data }));
+                                        setDelivery(prev => ({
+                                                ...prev,
+                                                n_name: res.data.username || '',
+                                                n_tel: res.data.tel || '',
+                                        }));
+                                })
                 }
         }, []);
 
@@ -141,6 +148,8 @@ function Parchase() {
                                 const prices = cartList.map(item =>
                                         parseInt(String(item.price).replace(/[^0-9]/g, ''))
                                 );
+                                const colors = cartList.map(item => item.color || '');
+                                const sizes = cartList.map(item => item.size || '');
 
                                 return axios.post('http://192.168.4.60:9991/buy/add', {
                                         cartIds, dIds, counts, discounts, prices
@@ -203,7 +212,11 @@ function Parchase() {
                                                         <tr>
                                                                 <td style={{ width: '55%' }}>
                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                                                <img src='image/bed.jpeg' className='img-basket' alt="제품" />
+                                                                                <img src={item.product.fileList?.[0]
+                                                                                                        ? `http://192.168.4.60:9991/upload/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`
+                                                                                                        : "/no-image.png"
+                                                                                                }
+                                                                                                        className='img-basket' alt="제품" />
                                                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: 0, textAlign: 'left' }}>
                                                                                         <span style={{
                                                                                                 overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
@@ -212,7 +225,7 @@ function Parchase() {
                                                                                         }}>
                                                                                                 {item.product.name}
                                                                                         </span>
-                                                                                        <div><span>{item.product.option}</span></div>
+                                                                                        <div style={{fontSize:'0.8em', color:'gray'}}><span>{item.color}, {item.size}</span></div>
                                                                                 </div>
                                                                         </div>
                                                                 </td>
@@ -225,9 +238,6 @@ function Parchase() {
                                                                         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center' }}>
                                                                                 <span style={{ fontWeight: '600' }}>
                                                                                         {(item.product.price * item.count - item.discount).toLocaleString()}원
-                                                                                </span>
-                                                                                <span style={{ textDecoration: 'line-through', color: 'gray' }}>
-                                                                                        {(item.product.price * item.count).toLocaleString()}원
                                                                                 </span>
                                                                         </div>
                                                                 </td>
@@ -286,7 +296,13 @@ function Parchase() {
                                         <div style={{ flex: 1, textAlign: 'center' }}>배송비{'\u2003'}{'\u2003'}{totalDelivery.toLocaleString()}원</div>
                                 </div>
                                 <hr />
-                                <div style={{ textDecoration: 'underline', textAlign: 'right' }}>주문 취소</div>
+                                <div onClick={() => {
+                                        if (window.confirm('주문을 취소하시겠습니까?')) {
+                                                navigate('/basket');
+                                                window.confirm('취소되었습니다.')
+                                        }
+                                        }}
+                                        style={{ textDecoration: 'underline', textAlign: 'right' }}>주문 취소</div>
 
                                 {/* 배송지 입력 섹션 */}
                                 <div style={{ backgroundColor: '#EDEDED', padding: '40px', marginTop: '50px' }}>
@@ -402,9 +418,10 @@ function Parchase() {
                                                 </div>
                                         </div>
                                         <button type="button" onClick={handleSubmit}
+                                                className='button2'
                                                 style={{
-                                                        width: '80px', backgroundColor: 'blue', color: 'white',
-                                                        border: '1px solid blue', marginLeft: '90%', marginTop: '20px'
+                                                        color:'black',
+                                                        width: '80px', marginLeft: '90%', marginTop: '20px'
                                                 }}>
                                                 결제 진행
                                         </button>
