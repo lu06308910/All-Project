@@ -393,5 +393,9 @@ public class ProductController {
             return "FAIL";
         }
     }
-
+//    // 탑 상품검색기능, 이슬추가
+//    @GetMapping("/search")
+//    public List<ProductEntity> searchProduct(@RequestParam String keyword) {
+//        return productService.searchProduct(keyword);
+//    }
 }

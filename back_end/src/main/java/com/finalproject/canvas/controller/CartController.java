@@ -71,4 +71,10 @@ public class CartController {
 
         return ResponseEntity.ok("updated");
     }
+
+    // 이슬추가, 상세페이지에서 바로구매
+    @PostMapping("/list-by-ids")
+    public List<CartEntity> getCartByIds(@RequestBody List<Integer> ids) {
+        return cartService.getCartByIds(ids);
+    }
 }

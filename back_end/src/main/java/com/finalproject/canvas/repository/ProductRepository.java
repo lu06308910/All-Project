@@ -67,4 +67,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Integer>
     @Query("SELECT p FROM ProductEntity p WHERE p.company.userid = :sellerId ORDER BY p.pId DESC")
     List<ProductEntity> findProductsBySeller(@Param("sellerId") String sellerId);
 
+    // 상품검색기능
+    @Query("SELECT p FROM ProductEntity p WHERE p.name LIKE %:keyword% OR p.sCategory = :keyword")
+    List<ProductEntity> searchAll(@Param("keyword") String keyword);
 }

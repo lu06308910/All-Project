@@ -275,7 +275,10 @@ function Parchase() {
                                                                 <td style={{ width: '20%' }}>
                                                                         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center' }}>
                                                                                 <span style={{ fontWeight: '600' }}>
-                                                                                        {(item.product.price * item.count).toLocaleString()}원
+                                                                                        {(
+                                                                                                Number(String(item.product?.price || 0).replace(/[^0-9]/g, '')) *
+                                                                                                Number(item.count || 0)
+                                                                                        ).toLocaleString()}원
                                                                                 </span>
                                                                         </div>
                                                                 </td>
@@ -289,7 +292,7 @@ function Parchase() {
                                                                         </td>
                                                                 ) : (
                                                                         <td style={{ width: '15%', textAlign: 'center' }}>
-                                                                                {item.newdelivery.toLocaleString()}원
+                                                                                {Number(String(item.newdelivery || 0).replace(/[^0-9]/g, '')).toLocaleString()}원
                                                                         </td>
                                                                 )}
                                                         </tr>
