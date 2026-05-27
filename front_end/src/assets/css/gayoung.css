@@ -204,7 +204,7 @@
         border-color: #000000 !important;
 }
 
-/* 대호추가 - 관리자페이지 세일관리 관련 스타일 */
+/* 대호추가 - 관리자페이지 세일관리 관련 스타일
 
 .management-table {
         width: 100%;
@@ -255,4 +255,4 @@
 .btn-delete {
         background-color: #dc3545;
         color: #fff;
-}
+} */

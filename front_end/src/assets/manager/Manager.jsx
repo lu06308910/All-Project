@@ -35,15 +35,15 @@ ChartJS.register(
 function Reservation({ reservedEvents, selectedEventIds, handleEventCheck, handleBulkEventDelete, handleEventDelete, handleEventEditClick, setEventModalOpen }) {
         return (
                 <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                        
-                                <h4 style={{ textAlign: 'left', fontWeight: '600' }}>예약 게시글 목록</h4>
-                                <hr />
-                                <button className='button'
-                                        style={{
-                                                height: '36px', border: 'none', backgroundColor: '#555', color: '#fff',
-                                                padding: '0 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer'
-                                        }}
-                                        onClick={handleBulkEventDelete}>선택삭제</button>
+
+                        <h4 style={{ textAlign: 'left', fontWeight: '600' }}>예약 게시글 목록</h4>
+                        <hr />
+                        <button className='button'
+                                style={{
+                                        height: '36px', border: 'none', backgroundColor: '#555', color: '#fff',
+                                        padding: '0 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer'
+                                }}
+                                onClick={handleBulkEventDelete}>선택삭제</button>
 
                         <table className="management-table">
                                 <thead>
@@ -2383,12 +2383,6 @@ function Manager() {
                                                                                                                                                                                         maxHeight: '350px',
                                                                                                                                                                                         borderRadius: '8px',
                                                                                                                                                                                         border: '1px solid #ddd'
-                                                                                                                                                                                }}
-                                                                                                                                                                                onError={(e) => {
-
-                                                                                                                                                                                        if (!e.target.src.includes(":9991")) {
-                                                                                                                                                                                                e.target.src = `http://192.168.4.60:9991/upload/${realFileName}`;
-                                                                                                                                                                                        }
                                                                                                                                                                                 }}
                                                                                                                                                                         />
                                                                                                                                                                 </div>

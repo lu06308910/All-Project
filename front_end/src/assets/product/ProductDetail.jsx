@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Carousel } from 'react-bootstrap';
@@ -72,7 +73,7 @@ function ProductDetail() {
 
                         .then(res => {
                                 setLikedItems((res.data || []).map(Number));
-                                console.log("찜한 상품 ID 리스트:", res.data);
+
                         })
                         .catch(console.log);
         }, [data.id]);
@@ -295,9 +296,11 @@ function ProductDetail() {
         function handleLike(productId) {
                 // const logId = sessionStorage.getItem("logId") || sessionStorage.getItem("loginUserId");
                 const mId = sessionStorage.getItem("mId");
+                const logId = sessionStorage.getItem("logId")
                 console.log("session mId:", sessionStorage.getItem("mId"));
+                console.log("session logId:", sessionStorage.getItem("logId"));
 
-                if (!mId || !productId) {
+                if (!mId) {
                         alert("로그인 후 이용 가능합니다.");
                         return;
                 }
@@ -370,6 +373,47 @@ function ProductDetail() {
                 alert("장바구니에 담겼습니다!");
         };
 
+
+        // 바로 구매하기 버튼 클릭시 선택한 옵션값 보내기
+        const navigate = useNavigate();
+        const handleBuyNow = async () => {
+                if (selectedOptions.length === 0) {
+                        return alert("추가한 옵션이 없습니다.");
+                }
+
+                const mId = sessionStorage.getItem("mId");
+                if (!mId) {
+                        alert("로그인해주세요.");
+                        return;
+                }
+
+                try {
+                        const createdCartIds = [];
+
+                        for (const opt of selectedOptions) {
+                                const res = await axios.post("http://192.168.4.60:9991/cart/add", {
+                                        mId: Number(mId),
+                                        pId: Number(data.id),
+                                        count: opt.count,
+                                        color: opt.color,
+                                        size: opt.size || opt.extraOption,
+                                        originprice: Number(opt.basePrice),
+                                        price: Number(opt.finalPrice)
+                                });
+                                // 🔥 핵심: cartId 저장
+                                createdCartIds.push(res.data.cartId);
+                        }
+
+                        // 🔥 Parchase로 cartIds 전달
+                        navigate("/parchase", {
+                                state: { cartIds: createdCartIds }
+                        });
+
+                } catch (err) {
+                        console.log(err);
+                        alert("구매 처리 중 오류가 발생했습니다.");
+                }
+        };
 
         // 리뷰 작성
         const averageStar =
@@ -658,7 +702,7 @@ function ProductDetail() {
                                         )}
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '10px 0', justifyContent: 'space-between' }}>
                                                 <button className="buy-btn" onClick={addToCart}>장바구니</button>
-                                                <button className="buy-btn">구매하기</button>
+                                                <button className="buy-btn" onClick={handleBuyNow}>구매하기</button>
                                         </div>
                                 </div>
                         </div>
@@ -777,21 +821,6 @@ function ProductDetail() {
                                                                                                                                 style={{
                                                                                                                                         width: "100%",
                                                                                                                                         display: "block",
-                                                                                                                                }}
-                                                                                                                        />
-
-                                                                                                                        {/* 좋아요 버튼 */}
-                                                                                                                        <img
-                                                                                                                                className="like-btn"
-                                                                                                                                src={
-                                                                                                                                        likedItems.includes(Number(item.pid))
-                                                                                                                                                ? "/like2.png"
-                                                                                                                                                : "/like.png"
-                                                                                                                                }
-                                                                                                                                alt="like"
-                                                                                                                                onClick={(e) => {
-                                                                                                                                        e.preventDefault(); // Link 이동 방지
-                                                                                                                                        handleLike(item.id);
                                                                                                                                 }}
                                                                                                                         />
 
