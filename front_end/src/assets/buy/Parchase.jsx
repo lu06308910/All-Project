@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import axios from 'axios';
 import './../css/gayoung.css'
 
@@ -13,6 +14,11 @@ function Parchase() {
                 if (items) setCartList(JSON.parse(items));
         }, []);
         console.log(cartList)
+
+        // 바로구매하기 클릭했을때 받기
+        const location = useLocation();
+        const cartIds = location.state?.cartIds || [];
+
 
         // 로그인 유저 정보 (기존 주소 표시용)
         const [userInfo, setUserInfo] = useState(null);
@@ -53,9 +59,17 @@ function Parchase() {
         };
 
         // 총액 계산
+        // const totalProductPrice = cartList.reduce((sum, item) =>
+        //         sum + (parseInt(item.product.price) * item.count), 0);
         const totalProductPrice = cartList.reduce((sum, item) =>
-                sum + (parseInt(item.product.price) * item.count), 0);
-        const totalDiscount = cartList.reduce((sum, item) => sum + (item.discount * item.count || 0), 0);
+                sum + (Number(item.price || 0) * (item.count || 1)),
+                0);
+
+        // const totalDiscount = cartList.reduce((sum, item) => sum + (item.discount * item.count || 0), 0);
+        const totalDiscount = cartList.reduce((sum, item) =>
+                sum + (Number(item.discount || 0) * (item.count || 1)),
+                0);
+
         const totalDelivery = cartList.reduce((sum, item) => sum + (item.newdelivery || 0), 0);
         const totalPayment = totalProductPrice - totalDiscount + totalDelivery;
 

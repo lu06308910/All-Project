@@ -51,7 +51,7 @@ public class PaymentService {
         params.add("quantity", "1");
         params.add("total_amount", payload.get("total_amount").toString());
         params.add("tax_free_amount", "0");
-        params.add("approval_url", "http://192.168.4.60:9991/buy/payment/success");
+        params.add("approval_url", "http://localhost:9990/buy/payment/success");
         params.add("cancel_url", "http://192.168.4.60:5173/purchase");
         params.add("fail_url", "http://192.168.4.60:5173/purchase");
 

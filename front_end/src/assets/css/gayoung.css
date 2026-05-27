@@ -1,5 +1,5 @@
 /*관리자 페이지 로고*/
-.canvas{
+.canvas {
         font-weight: 600;
         color: white;
         font-size: 1.7rem;
@@ -7,16 +7,18 @@
         word-break: break-all;
         text-decoration: none;
 }
+
 /* 매니저 카테고리 */
 .manager-container {
-        display : flex;
+        display: flex;
         width: 100%;
         margin-left: 0 auto;
         padding: 40px 0;
         font-family: 'Pretendard', sans-serif;
         color: #333;
 }
-.category-mana{
+
+.category-mana {
         background-color: #333333;
         width: 15%;
         min-height: 800px;
@@ -24,19 +26,22 @@
         margin-left: 15px;
         padding-top: 30px;
 }
-.category-content{
+
+.category-content {
         flex: 1;
         padding: 20px;
 }
+
 /* 메뉴 셀렉 후 */
-.sub-mana{
+.sub-mana {
         display: flex;
         flex-direction: column;
         color: white;
         gap: 10px;
         padding-top: 50px;
 }
-.button{
+
+.button {
         font-size: 0.8em;
         background-color: #666666;
         text-align: center;
@@ -45,7 +50,8 @@
         width: 80px;
         padding: 3px;
 }
-.button2{
+
+.button2 {
         font-size: 0.8em;
         text-align: center;
         color: white;
@@ -55,7 +61,8 @@
         background: #f5f5f5;
         color: #888
 }
-.button3{
+
+.button3 {
         font-size: 0.8em;
         background-color: white;
         text-align: center;
@@ -64,51 +71,63 @@
         padding: 5px;
         border: 1px solid;
 }
+
 /* 대쉬보드 */
-.dash-board{
+.dash-board {
         display: 'flex';
         justify-content: space-evenly;
         overflow-x: auto;
-        padding:20px;
+        padding: 20px;
         width: 50%;
         border-radius: 10px;
         box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
         animation: fadeIn 0.4s ease-out;
 }
+
 @keyframes fadeIn {
-    from {
-        opacity: 0;            /* 시작은 투명하게 */
-        transform: translateY(5px); /* 아래에서 위로 살짝 올라오는 느낌 */
-    }
-    to {
-        opacity: 1;            /* 끝은 선명하게 */
-        transform: translateY(0);    /* 원래 위치로 */
-    }
+        from {
+                opacity: 0;
+                /* 시작은 투명하게 */
+                transform: translateY(5px);
+                /* 아래에서 위로 살짝 올라오는 느낌 */
+        }
+
+        to {
+                opacity: 1;
+                /* 끝은 선명하게 */
+                transform: translateY(0);
+                /* 원래 위치로 */
+        }
 }
+
 /* 캘린더 */
-.calendar{
+.calendar {
         padding: 2px;
         border: 1px solid #333333;
         border-radius: 10px;
         text-align: center;
         width: 180px;
 }
+
 /* 페이지네이션 */
-.pagination{
+.pagination {
         gap: 20px;
         display: flex;
         justify-content: center;
 }
-.paging-text{
-        text-decoration:none;
-        color:#c4c4c4;
+
+.paging-text {
+        text-decoration: none;
+        color: #c4c4c4;
 }
-.paging-active-text{
-        text-decoration:none;
-        color:#000000;
+
+.paging-active-text {
+        text-decoration: none;
+        color: #000000;
         font-weight: 600;
 }
-.light-but{
+
+.light-but {
         border: 1px solid #999999;
         color: #999999;
         border-radius: 10px;
@@ -117,65 +136,123 @@
 }
 
 .stepper-container {
-  display: flex;
-  justify-content: space-evenly;
-  position: relative; /* 이제 active-line의 기준점이 됩니다 */
-  width: 100%;
-  margin: 50px auto;
-  align-items: center;
+        display: flex;
+        justify-content: space-evenly;
+        position: relative;
+        /* 이제 active-line의 기준점이 됩니다 */
+        width: 100%;
+        margin: 50px auto;
+        align-items: center;
 }
+
 /* 배경 회색 선 */
 .stepper-container::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: #ccc;
-  transform: translateY(-50%);
-  z-index: 1;
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: #ccc;
+        transform: translateY(-50%);
+        z-index: 1;
 }
 
 /* 활성화 검은 선 */
 .stepper-line-active {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  height: 2px;
-  background-color: #000000;
-  z-index: 2;
+        position: absolute;
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+        height: 2px;
+        background-color: #000000;
+        z-index: 2;
 }
 
-.stepper-container > div {
-  position: relative;
-  z-index: 3;
-  background-color: white;
+.stepper-container>div {
+        position: relative;
+        z-index: 3;
+        background-color: white;
 }
 
-.img-basket{
-        width:150px;
-        height:120px;
-        object-fit:cover;
-        flex-shrink:0;
+.img-basket {
+        width: 150px;
+        height: 120px;
+        object-fit: cover;
+        flex-shrink: 0;
         margin-bottom: 20px;
         margin-left: 30px;
 }
+
 /* 세로줄 */
 .v-line {
-  border-left: 2px solid #cccc;
-  height: 20px;
+        border-left: 2px solid #cccc;
+        height: 20px;
 }
+
 /* 주소입력창(구매페이지) */
-.c-code{
+.c-code {
         display: flex;
         align-items: center;
         gap: 10px;
         margin-bottom: 10px;
         width: 40%;
 }
-.real-dark-border, 
+
+.real-dark-border,
 .real-dark-border .col {
-    border-color: #000000 !important;
+        border-color: #000000 !important;
 }
+
+/* 대호추가 - 관리자페이지 세일관리 관련 스타일
+
+.management-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        border: 1px solid #ddd;
+}
+
+.management-table th {
+        background-color: #f8f9fa;
+        padding: 12px;
+        text-align: center;
+        border: 1px solid #ddd;
+        font-size: 0.9em;
+        font-weight: 600;
+}
+
+.management-table td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: center;
+        font-size: 0.9em;
+        vertical-align: middle;
+}
+
+/* 뱃지 및 버튼 스타일 */
+.status-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+}
+
+.btn-management {
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.85em;
+        margin: 0 4px;
+}
+
+.btn-edit {
+        background-color: #6c757d;
+        color: #fff;
+}
+
+.btn-delete {
+        background-color: #dc3545;
+        color: #fff;
+} */
