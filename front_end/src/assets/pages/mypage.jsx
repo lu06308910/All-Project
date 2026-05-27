@@ -226,6 +226,7 @@ const MyPage = () => {
                 }
         };
 
+
         // --------------------------------------------------마이스토어 공통 ---------------------------------------
         return (
                 <div className="mypage-container">
@@ -969,7 +970,40 @@ const ProductManagement = ({ products, setProducts }) => {
 };
 
 // 기업 사용자 : 판매현황
+
+// 기업사용자 : 판매현황 상태변경
+const getStatusColor = (status) => {
+        switch (status) {
+                case '결제완료': return '#007bff'; // 파란색
+                case '결제취소': return '#dc3545'; // 빨간색
+                case '배송 중':
+                case '배송완료': return '#28a745'; // 초록색
+                default: return '#333';           // 기본값
+        }
+};
+
 const SalesStatus = ({ sales }) => {
+        const handleStatusChange = async (bid, newStatus) => {
+
+                console.log("전송할 bId:", bid);
+                console.log("전송할 status:", newStatus);
+
+                if (!window.confirm(`주문 상태를 '${newStatus}'(으)로 변경하시겠습니까?`)) return;
+
+                try {
+                        // 서버에 상태 업데이트 요청 (백엔드 API 경로 확인 필요)
+                        await axios.post(`http://192.168.4.60:9991/buy/status/update`, {
+                                bId: bid, // 여기서 보내는 키값이
+                                status: newStatus
+                        });
+                        alert("상태가 성공적으로 변경되었습니다.");
+                        window.location.reload(); // 변경 후 목록 새로고침
+                } catch (error) {
+                        console.error("상태 변경 에러:", error);
+                        alert("상태 변경에 실패했습니다.");
+                }
+        };
+
         if (!sales || sales.length === 0) {
                 return (
                         <div className="recent-orders">
@@ -1002,8 +1036,9 @@ const SalesStatus = ({ sales }) => {
                                 <tbody>
                                         {sales.map((item, index) => {
                                                 const price = item.price ? Number(item.price.toString().replace(/[^0-9]/g, "")) : 0;
+                                                console.log("현재 아이템 객체:", item);
                                                 return (
-                                                        <tr key={item.bId || index}>
+                                                        <tr key={item.bid || index}>
                                                                 {/* 주문일시 */}
                                                                 <td className="order-date">
                                                                         {item.writedate ? item.writedate.split("T")[0] : "날짜 없음"}
@@ -1020,9 +1055,22 @@ const SalesStatus = ({ sales }) => {
                                                                 <td>{maskUserId(item.member?.userid || item.userid)}</td>
                                                                 {/* 주문상태 뱃지 */}
                                                                 <td className="text-center">
-                                                                        <span className={`status-badge ${item.status === '결제완료' ? 'complete' : 'waiting'}`}>
-                                                                                {item.status || "결제완료"}
-                                                                        </span>
+                                                                        <select
+                                                                                value={item.status}
+                                                                                onChange={(e) => handleStatusChange(item.bid, e.target.value)}
+                                                                                style={{
+                                                                                        padding: '4px',
+                                                                                        borderRadius: '4px',
+                                                                                        color: getStatusColor(item.status),
+                                                                                        fontWeight: 'bold',
+                                                                                        border: `1px solid ${getStatusColor(item.status)}`
+                                                                                }}
+                                                                        >
+                                                                                <option value="결제완료" style={{ color: '#007bff' }}>결제완료</option>
+                                                                                <option value="배송 중" style={{ color: '#28a745' }}>배송중</option>
+                                                                                <option value="배송완료" style={{ color: '#28a745' }}>배송완료</option>
+                                                                                <option value="결제취소" style={{ color: '#dc3545' }}>결제취소</option>
+                                                                        </select>
                                                                 </td>
                                                         </tr>
                                                 );
@@ -1315,7 +1363,7 @@ const CorpCustomerInquiryList = ({ inquiries }) => {
 const CorpMyInquiryList = ({ inquiries }) => {
         const [expandedId, setExpandedId] = useState(null);
 
-        // 🚨 본인이 작성한 고객센터 1:1 문의(s_id가 존재하는 데이터)만 정확하게 필터링!
+        // 본인이 작성한 고객센터 1:1 문의(s_id가 존재하는 데이터)만 정확하게 필터링!
         const myInquiries = inquiries.filter(item => item.s_id);
         const sessionLogId = sessionStorage.getItem("logId") || "기업회원";
 

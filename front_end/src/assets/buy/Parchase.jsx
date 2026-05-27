@@ -130,82 +130,43 @@ function Parchase() {
         //결제 진행
         const handleSubmit = async () => {
                 const mId = sessionStorage.getItem('mId');
-                if (!delivery.n_address) return alert('배송지를 선택하거나 입력해주세요.');
-                if (!delivery.n_tel) return alert('전화번호를 입력해주세요.');
 
+                if (!mId) {
+                        alert("로그인 정보가 없습니다.");
+                        return;
+                }
 
-                // 카카오페이 결제 준비 요청
+                if (!cartList || cartList.length === 0) {
+                        alert("장바구니가 비어있습니다.");
+                        return;
+                }
+
                 try {
+                        // payload 변수명을 쓰지 않고 직접 객체를 전달합니다.
                         const response = await axios.post("http://192.168.4.60:9991/buy/payment/ready", {
-                                item_name: cartList.length > 1 ? `${cartList[0].product.name} 외 ${cartList.length - 1}건` : cartList[0].product.name,
-                                total_amount: totalPayment,
-                                memberId: sessionStorage.getItem('mId')
+                                itemName: cartList.length > 1 ? `${cartList[0].product.name} 외 ${cartList.length - 1}건` : cartList[0].product.name,
+                                totalAmount: totalPayment,
+                                memberId: mId,
+                                delivery: delivery,
+                                cartList: cartList
                         });
 
                         if (response.data.next_redirect_pc_url) {
-                                // 결제 정보를 세션에 임시 저장 (결제 완료 후 주문 저장을 위해 필요)
-                                sessionStorage.setItem('tempDelivery', JSON.stringify(delivery));
-                                sessionStorage.setItem('tempCart', JSON.stringify(cartList));
-
-                                // 카카오페이 결제창으로 이동
                                 window.location.href = response.data.next_redirect_pc_url;
-                                return;
                         }
                 } catch (err) {
                         console.error("결제 준비 실패:", err);
                         alert("결제 연결에 실패했습니다.");
                 }
-
-                let requestMsg = '요청사항 없음';
-                if (isDirectInput) {
-                        if (!deliveryMsg.trim()) return alert('배송 요청사항을 입력해주세요.');
-                        requestMsg = deliveryMsg;
-                } else if (delivery.request) {
-                        requestMsg = delivery.request;
-                }
-
-                const payloads = cartList.map(item => ({
-                        request: requestMsg,
-                        n_zipcode: delivery.n_zipcode,
-                        n_address: delivery.n_address,
-                        n_addressDetail: delivery.n_addressDetail,
-                        n_tel: delivery.n_tel,
-                        n_name: delivery.n_name,
-                        mid: parseInt(mId),
-                        pid: item.pid
-                }));
-
-                // 여러 개 한 번에 POST
-                axios.post('http://192.168.4.60:9991/delivery/add/all', payloads)
-                        .then(res => {
-                                const savedDeliveries = res.data;
-                                const dIds = savedDeliveries.map(d => d.did);
-                                const cartIds = cartList.map(item => item.cartId);
-                                const counts = cartList.map(item => item.count);
-                                const discounts = cartList.map(item => item.discount || 0);
-                                const prices = cartList.map(item =>
-                                        parseInt(String(item.price).replace(/[^0-9]/g, ''))
-                                );
-                                const colors = cartList.map(item => item.color || '');
-                                const sizes = cartList.map(item => item.size || '');
-
-                                return axios.post('http://192.168.4.60:9991/buy/add', {
-                                        cartIds, dIds, counts, discounts, prices
-                                });
-                        })
-                        .then(() => {
-                                // buy 저장 성공 후 장바구니 삭제
-                                const cartIds = cartList.map(item => item.cartId);
-                                return axios.delete('http://192.168.4.60:9991/cart/delete', {
-                                        data: cartIds  // axios delete는 data로 body 전송
-                                });
-                        })
-                        .then(() => {
-                                sessionStorage.setItem('deliveryInfo', JSON.stringify(delivery));
-                                navigate('/finalcheck');
-                        })
-                        .catch(err => console.log(err));
         };
+
+        let requestMsg = '요청사항 없음';
+        if (isDirectInput) {
+                if (!deliveryMsg.trim()) return alert('배송 요청사항을 입력해주세요.');
+                requestMsg = deliveryMsg;
+        } else if (delivery.request) {
+                requestMsg = delivery.request;
+        }
 
         return (
                 <>
@@ -467,6 +428,5 @@ function Parchase() {
                         </div>
                 </>
         )
-}
-
+};
 export default Parchase

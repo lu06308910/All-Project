@@ -26,7 +26,7 @@ import NoticeWrite from './assets/qna/NoticeWrite';
 import Basket from './assets/buy/Basket';
 import Parchase from './assets/buy/Parchase';
 import Finalbuy from './assets/buy/Finalbuy';
-
+import PaymentApproval from './assets/buy/PaymentApproval';
 
 function App() {
 
@@ -62,6 +62,7 @@ function App() {
           <Route path='/parchase' element={<Parchase />}></Route>
           <Route path='/finalcheck' element={<Finalbuy />}></Route>
           <Route path='/manager' element={<Manager />}></Route>
+          <Route path='/payment/approve' element={<PaymentApproval />}></Route>
         </Route>
 
       </Routes>
