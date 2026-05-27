@@ -95,7 +95,7 @@ function Member() {
                 }
 
                 //백엔드
-                axios.post('http://192.168.4.60:9991/member/signup', formData)
+                axios.post('http://localhost:9990/member/signup', formData)
                         .then(function (response) {
                                 console.log(response.data);
                                 if (response.data) { // 회원가입 성공

@@ -45,7 +45,7 @@ function NoticeWrite() {
                 }
 
                 // 비동기 호출
-                axios.post("http://192.168.4.60:9991/notice/write", noticeData)
+                axios.post("http://localhost:9990/notice/write", noticeData)
                         .then((response) => {
                                 console.log("등록 성공:", response.data);
                                 if (response.status === 200 || response.data) {

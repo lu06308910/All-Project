@@ -32,8 +32,8 @@ public class CartService {
         }
     }
     // 상세페이지 -> 장바구니
-    public void addCart(CartEntity cart) {
-        // 필요한 기본값 지정 가능
+    public CartEntity addCart(CartEntity cart) {
+
         if (cart.getDiscount() == null) {
             cart.setDiscount(0);
         }
@@ -41,13 +41,13 @@ public class CartService {
         if (cart.getCount() == null || cart.getCount() <= 0) {
             cart.setCount(1);
         }
-        //  최종 가격 없으면 서버에서라도 계산
+
         if (cart.getPrice() == null) {
             int base = Integer.parseInt(cart.getProduct().getPrice().replace(",", ""));
             cart.setPrice(base);
         }
 
-        cartRepository.save(cart);
+        return cartRepository.save(cart); // ★ return
     }
 
 

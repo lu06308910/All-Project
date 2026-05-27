@@ -29,7 +29,7 @@ function Space() {
                 getDataList();
         }, []);
         useEffect(() => {
-                axios.get("http://192.168.4.60:9991/event/sale/list")
+                axios.get("http://localhost:9990/event/sale/list")
                         .then(res => {
                                 console.log("할인 데이터:", res.data);
                                 setSaleList(res.data);
@@ -70,7 +70,7 @@ function Space() {
 
                 if (!loginUserId) return;
 
-                axios.get(`http://192.168.4.60:9991/like/list/${mId}`)
+                axios.get(`http://localhost:9990/like/list/${mId}`)
                         .then(res => setLikedItems(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -81,7 +81,7 @@ function Space() {
                 let url = "?";
 
 
-                axios.get(`http://192.168.4.60:9991/spaceproduct${url}`)
+                axios.get(`http://localhost:9990/spaceproduct${url}`)
                         .then((response) => {
 
                                 const dataList = response.data ?? [];  // ⭐ 핵심 수정
@@ -92,7 +92,7 @@ function Space() {
                                         price: Number(String(record.price).replace(/[^0-9]/g, "")),
                                         category: record.b_category,
                                         img: record.fileList?.[0]
-                                                ? `http://192.168.4.60:9991/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
+                                                ? `http://localhost:9990/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
                                                 : "/no-image.png"
 
 
@@ -129,7 +129,7 @@ function Space() {
                         return;
                 }
 
-                axios.post("http://192.168.4.60:9991/like/toggle", {
+                axios.post("http://localhost:9990/like/toggle", {
                         memberId: mId,
                         productId: productId
                 })
@@ -150,7 +150,7 @@ function Space() {
                 if (!list || list.length === 0) return;
 
                 list.forEach(product => {
-                        axios.get(`http://192.168.4.60:9991/review/avg/${product.id}`)
+                        axios.get(`http://localhost:9990/review/avg/${product.id}`)
                                 .then(res => {
 
                                         setStarMap(prev => ({

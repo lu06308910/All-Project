@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Carousel } from 'react-bootstrap';
@@ -68,11 +69,11 @@ function ProductDetail() {
                 if (!mId) return;
 
                 // 컨트롤러의 @GetMapping("/list/{memberId}") 경로를 정확히 찌릅니다.
-                axios.get(`http://192.168.4.60:9991/like/list/${mId}`)
+                axios.get(`http://localhost:9990/like/list/${mId}`)
 
                         .then(res => {
                                 setLikedItems((res.data || []).map(Number));
-                                console.log("찜한 상품 ID 리스트:", res.data);
+
                         })
                         .catch(console.log);
         }, [data.id]);
@@ -126,7 +127,7 @@ function ProductDetail() {
 
         // 제품 데이터 배열, 관련상품 
         useEffect(() => {
-                axios.get("http://192.168.4.60:9991/allproduct")
+                axios.get("http://localhost:9990/allproduct")
                         .then(res => setAllProducts(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -237,7 +238,7 @@ function ProductDetail() {
 
         // 상품 정보 백엔드
         function getDataDetail() {
-                axios.get(`http://192.168.4.60:9991/productDetail/${id}`)
+                axios.get(`http://localhost:9990/productDetail/${id}`)
 
                         .then((response) => {
 
@@ -279,7 +280,7 @@ function ProductDetail() {
                                 d.fileList?.forEach((f) => {
                                         file.push({
                                                 color: f.colorName,
-                                                url: `http://192.168.4.60:9991/upload/${f.filename}.${f.extname}`
+                                                url: `http://localhost:9990/upload/${f.filename}.${f.extname}`
                                         });
                                 });
                                 setFilelist(file);
@@ -295,15 +296,17 @@ function ProductDetail() {
         function handleLike(productId) {
                 // const logId = sessionStorage.getItem("logId") || sessionStorage.getItem("loginUserId");
                 const mId = sessionStorage.getItem("mId");
+                const logId = sessionStorage.getItem("logId")
                 console.log("session mId:", sessionStorage.getItem("mId"));
+                console.log("session logId:", sessionStorage.getItem("logId"));
 
-                if (!mId || !productId) {
+                if (!mId) {
                         alert("로그인 후 이용 가능합니다.");
                         return;
                 }
 
                 // 컨트롤러의 @PostMapping("/toggle")에 맞춰서 데이터 전송
-                axios.post("http://192.168.4.60:9991/like/toggle", {
+                axios.post("http://localhost:9990/like/toggle", {
                         userid: logId,
                         memberId: Number(mId),
                         productId: Number(productId),
@@ -363,13 +366,54 @@ function ProductDetail() {
                                 price: opt.finalPrice // 총금액(사이즈별 추가금액도 합산)
                         };
 
-                        axios.post("http://192.168.4.60:9991/cart/add", payload)
+                        axios.post("http://localhost:9990/cart/add", payload)
                                 .catch(err => console.log(err));
                 });
 
                 alert("장바구니에 담겼습니다!");
         };
 
+
+        // 바로 구매하기 버튼 클릭시 선택한 옵션값 보내기
+        const navigate = useNavigate();
+        const handleBuyNow = async () => {
+                if (selectedOptions.length === 0) {
+                        return alert("추가한 옵션이 없습니다.");
+                }
+
+                const mId = sessionStorage.getItem("mId");
+                if (!mId) {
+                        alert("로그인해주세요.");
+                        return;
+                }
+
+                try {
+                        const createdCartIds = [];
+
+                        for (const opt of selectedOptions) {
+                                const res = await axios.post("http://localhost:9990/cart/add", {
+                                        mId: Number(mId),
+                                        pId: Number(data.id),
+                                        count: opt.count,
+                                        color: opt.color,
+                                        size: opt.size || opt.extraOption,
+                                        originprice: Number(opt.basePrice),
+                                        price: Number(opt.finalPrice)
+                                });
+                                // 🔥 핵심: cartId 저장
+                                createdCartIds.push(res.data.cartId);
+                        }
+
+                        // 🔥 Parchase로 cartIds 전달
+                        navigate("/parchase", {
+                                state: { cartIds: createdCartIds }
+                        });
+
+                } catch (err) {
+                        console.log(err);
+                        alert("구매 처리 중 오류가 발생했습니다.");
+                }
+        };
 
         // 리뷰 작성
         const averageStar =
@@ -406,7 +450,7 @@ function ProductDetail() {
                         formData.append("file", file);
                 }
 
-                axios.post("http://192.168.4.60:9991/review/write", formData)
+                axios.post("http://localhost:9990/review/write", formData)
                         .then(res => {
                                 console.log("리뷰 작성 성공:", res.data);
 
@@ -415,7 +459,7 @@ function ProductDetail() {
                         .catch(err => console.log("리뷰 에러:", err));
         }
         function getReviews() {
-                axios.get(`http://192.168.4.60:9991/review/list/${data?.id}`)
+                axios.get(`http://localhost:9990/review/list/${data?.id}`)
                         .then(res => {
                                 setReviews(res.data);
 
@@ -425,7 +469,7 @@ function ProductDetail() {
 
         // 문의 불러오기
         function getQuestions() {
-                axios.get(`http://192.168.4.60:9991/question/list/${data.id}`)
+                axios.get(`http://localhost:9990/question/list/${data.id}`)
                         .then(res => {
                                 console.log(" Q&A 서버 데이터 전체 확인");
                                 console.log(res.data);
@@ -450,7 +494,7 @@ function ProductDetail() {
                 formData.append("subject", qnaTitle);
                 formData.append("context", questionText);
 
-                axios.post("http://192.168.4.60:9991/question/write", formData)
+                axios.post("http://localhost:9990/question/write", formData)
                         .then(() => {
                                 alert("문의가 등록되었습니다.");
                                 setQuestionText("");
@@ -658,7 +702,7 @@ function ProductDetail() {
                                         )}
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '10px 0', justifyContent: 'space-between' }}>
                                                 <button className="buy-btn" onClick={addToCart}>장바구니</button>
-                                                <button className="buy-btn">구매하기</button>
+                                                <button className="buy-btn" onClick={handleBuyNow}>구매하기</button>
                                         </div>
                                 </div>
                         </div>
@@ -771,27 +815,12 @@ function ProductDetail() {
                                                                                                                         <img
                                                                                                                                 className="main-product-img"
                                                                                                                                 src={item.fileList?.[0]
-                                                                                                                                        ? `http://192.168.4.60:9991/upload/${item.fileList[0].filename}.${item.fileList[0].extname}`
+                                                                                                                                        ? `http://localhost:9990/upload/${item.fileList[0].filename}.${item.fileList[0].extname}`
                                                                                                                                         : "/no-image.png"}
                                                                                                                                 alt=""
                                                                                                                                 style={{
                                                                                                                                         width: "100%",
                                                                                                                                         display: "block",
-                                                                                                                                }}
-                                                                                                                        />
-
-                                                                                                                        {/* 좋아요 버튼 */}
-                                                                                                                        <img
-                                                                                                                                className="like-btn"
-                                                                                                                                src={
-                                                                                                                                        likedItems.includes(Number(item.pid))
-                                                                                                                                                ? "/like2.png"
-                                                                                                                                                : "/like.png"
-                                                                                                                                }
-                                                                                                                                alt="like"
-                                                                                                                                onClick={(e) => {
-                                                                                                                                        e.preventDefault(); // Link 이동 방지
-                                                                                                                                        handleLike(item.id);
                                                                                                                                 }}
                                                                                                                         />
 
@@ -916,8 +945,8 @@ function ProductDetail() {
                                                                 .map((r) => (
                                                                         <img
                                                                                 key={r.id}
-                                                                                src={`http://192.168.4.60:9991/upload/review/${r.imgUrl}`} // 서버 주소 + 이미지 경로
-                                                                                onClick={() => setZoomImage(`http://192.168.4.60:9991/upload/review/${r.imgUrl}`)}
+                                                                                src={`http://localhost:9990/upload/review/${r.imgUrl}`} // 서버 주소 + 이미지 경로
+                                                                                onClick={() => setZoomImage(`http://localhost:9990/upload/review/${r.imgUrl}`)}
                                                                                 style={{
                                                                                         width: "200px",
                                                                                         height: "200px",

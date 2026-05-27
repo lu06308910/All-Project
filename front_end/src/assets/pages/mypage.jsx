@@ -21,7 +21,7 @@ const maskUserId = (name) => {
 const getImageUrl = (item) => {
         const fileList = item.product?.fileList || item.fileList;
         if (fileList && fileList.length > 0 && fileList[0].filename) {
-                return `http://192.168.4.60:9991/upload/${fileList[0].filename}.${fileList[0].extname}`;
+                return `http://localhost:9990/upload/${fileList[0].filename}.${fileList[0].extname}`;
         }
         return null;
 };
@@ -58,7 +58,7 @@ const MyPage = () => {
 
                                 // 유저 정보 가져오기
                                 if (logId) {
-                                        const userRes = await axios.get(`http://192.168.4.60:9991/member/edit?userid=${logId}&usertype=${usertype}`);
+                                        const userRes = await axios.get(`http://localhost:9990/member/edit?userid=${logId}&usertype=${usertype}`);
                                         setUserInfo(userRes.data);
                                         // 주문목록 가져올때 필요한 id
                                         ordersMemberId = userRes.data?.mid;
@@ -68,7 +68,7 @@ const MyPage = () => {
                                 let supportData = [];
                                 if (loginName) {
                                         try {
-                                                const inqRes = await axios.get(`http://192.168.4.60:9991/support/list?writer=${loginName}`);
+                                                const inqRes = await axios.get(`http://localhost:9990/support/list?writer=${loginName}`);
                                                 supportData = inqRes.data || [];
                                         } catch (e) {
                                                 console.error("고객센터 문의 로드 실패:", e);
@@ -81,7 +81,7 @@ const MyPage = () => {
                                         try {
                                                 // 일반 사용자 본인이 상품 상세보기에서 작성한 Q&A 내역 수집
                                                 if (ordersMemberId) {
-                                                        const productQnaRes = await axios.get(`http://192.168.4.60:9991/question/user/list?mId=${ordersMemberId}`);
+                                                        const productQnaRes = await axios.get(`http://localhost:9990/question/user/list?mId=${ordersMemberId}`);
                                                         productQnaData = productQnaRes.data || [];
                                                 }
                                         } catch (e) {
@@ -90,14 +90,14 @@ const MyPage = () => {
 
                                         // 일반사용자 목록
 
-                                        const wishRes = await axios.get(`http://192.168.4.60:9991/wish/list?userid=${logId}`);
+                                        const wishRes = await axios.get(`http://localhost:9990/wish/list?userid=${logId}`);
                                         setWishItems(wishRes.data); // 찜목록
 
-                                        const orderRes = await axios.get(`http://192.168.4.60:9991/buy/list/${ordersMemberId}`);
+                                        const orderRes = await axios.get(`http://localhost:9990/buy/list/${ordersMemberId}`);
                                         setOrders(orderRes.data); // 주문목록
                                         console.log("주문상품정보 : ", orderRes.data)
 
-                                        const cancelRes = await axios.get(`http://192.168.4.60:9991/buy/cancel/list/${ordersMemberId}`);
+                                        const cancelRes = await axios.get(`http://localhost:9990/buy/cancel/list/${ordersMemberId}`);
                                         setCancelItems(cancelRes.data); // 취소목록              
 
                                         setInquiries([...supportData, ...productQnaData]);
@@ -108,16 +108,16 @@ const MyPage = () => {
                                         let corpInqData = [];
                                         try {
                                                 // 소비자들이 내 상품들에 보낸 Q&A 내역 수집
-                                                const corpInqRes = await axios.get(`http://192.168.4.60:9991/question/seller/list?sellerId=${logId}`);
+                                                const corpInqRes = await axios.get(`http://localhost:9990/question/seller/list?sellerId=${logId}`);
                                                 corpInqData = corpInqRes.data || [];
                                         } catch (e) {
                                                 console.error("기업용 고객 상품 문의 로드 실패:", e);
                                         }
 
-                                        const salesRes = await axios.get(`http://192.168.4.60:9991/buy/seller/saleslist?sellerId=${logId}`);
+                                        const salesRes = await axios.get(`http://localhost:9990/buy/seller/saleslist?sellerId=${logId}`);
                                         setSalesList(salesRes.data); // 판매목록
 
-                                        const prodRes = await axios.get(`http://192.168.4.60:9991/product/seller/list?sellerId=${logId}`);
+                                        const prodRes = await axios.get(`http://localhost:9990/product/seller/list?sellerId=${logId}`);
                                         setProducts(prodRes.data); // 상품 목록, 수정
 
                                         setInquiries([...supportData, ...corpInqData]);
@@ -202,7 +202,7 @@ const MyPage = () => {
 
                 try {
                         // 아까 통합한 백엔드 LikeController 주소(/like/toggle)로 요청을 보냅니다.
-                        const response = await axios.post("http://192.168.4.60:9991/like/toggle", {
+                        const response = await axios.post("http://localhost:9990/like/toggle", {
                                 userid: logId,
                                 memberId: mId ? Number(mId) : null,
                                 productId: Number(pid),
@@ -359,7 +359,7 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
 
                 try {
                         // 2. 경로에 bid를 넣습니다.
-                        await axios.post(`http://192.168.4.60:9991/buy/status/${bid}?action=${actionType}`);
+                        await axios.post(`http://localhost:9990/buy/status/${bid}?action=${actionType}`);
 
                         alert(`${actionLabel} 처리가 완료되었습니다.`);
 
@@ -805,7 +805,7 @@ const ProductManagement = ({ products, setProducts }) => {
                 const targetId = editingId;
                 try {
                         // 백엔드로 수정 데이터 전송
-                        await axios.put(`http://192.168.4.60:9991/product/seller/update/${targetId}`, editFormData);
+                        await axios.put(`http://localhost:9990/product/seller/update/${targetId}`, editFormData);
 
                         // 프론트 UI 실시간 업데이트 반영
                         setProducts(products.map(p => (p.pId === targetId || p.pid === targetId) ? editFormData : p));
@@ -822,7 +822,7 @@ const ProductManagement = ({ products, setProducts }) => {
                 if (!window.confirm("정말 이 상품을 완전히 삭제하시겠습니까?\n삭제된 상품은 복구할 수 없습니다.")) return;
                 try {
                         // 백엔드로 삭제 요청 보내기
-                        await axios.delete(`http://192.168.4.60:9991/product/seller/delete/${pId}`);
+                        await axios.delete(`http://localhost:9990/product/seller/delete/${pId}`);
 
                         // 프론트 UI에서 제외하기
                         setProducts(prev => prev.filter(p => (p.pId !== pId && p.pid !== pId)));
@@ -1208,7 +1208,7 @@ const CorpCustomerInquiryList = ({ inquiries }) => {
                 }
                 try {
                         // 백엔드 /question 컨트롤러의 PUT 주소로 데이터 전송
-                        await axios.put(`http://192.168.4.60:9991/question/seller/reply/${id}`, {
+                        await axios.put(`http://localhost:9990/question/seller/reply/${id}`, {
                                 reply: replyText
                         });
                         alert("상품 문의 답변이 성공적으로 등록되었습니다.");

@@ -11,7 +11,7 @@ import axios from 'axios';
 function sale() {
         const [events, setEvents] = useState([]);
                 useEffect(() => {
-                axios.get('http://192.168.4.60:9991/event/active')
+                axios.get('http://localhost:9990/event/active')
                         .then(res => setEvents(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -71,7 +71,7 @@ function sale() {
         const [saleList, setSaleList] = useState([]);
 
         useEffect(() => {
-                axios.get("http://192.168.4.60:9991/event/sale/list")
+                axios.get("http://localhost:9990/event/sale/list")
                         .then(res => {
                                 console.log("할인상품 리스트:", res.data);
                                 setList(res.data);
@@ -116,7 +116,7 @@ function sale() {
 
                 if (!loginUserId) return;
 
-                axios.get(`http://192.168.4.60:9991/like/list/${mId}`)
+                axios.get(`http://localhost:9990/like/list/${mId}`)
                         .then(res => setLikedItems(res.data))
                         .catch(err => console.log(err));
         }, []);
@@ -126,7 +126,7 @@ function sale() {
                 if (list.length === 0) return;
 
                 list.forEach(product => {
-                        axios.get(`http://192.168.4.60:9991/review/avg/${product.pid}`)
+                        axios.get(`http://localhost:9990/review/avg/${product.pid}`)
                                 .then(res => {
                                         setStarMap(prev => ({
                                                 ...prev,
@@ -160,7 +160,7 @@ function sale() {
                         return;
                 }
 
-                axios.post("http://192.168.4.60:9991/like/toggle", {
+                axios.post("http://localhost:9990/like/toggle", {
                         memberId: mId,
                         productId: productId
                 })
@@ -223,7 +223,7 @@ function sale() {
                                                                                                 className="main-product-img"
                                                                                                 src={
                                                                                                         product.fileList[0].filename
-                                                                                                                ? `http://192.168.4.60:9991/upload/${product.fileList[0].filename}.${product.fileList[0].extname}`
+                                                                                                                ? `http://localhost:9990/upload/${product.fileList[0].filename}.${product.fileList[0].extname}`
                                                                                                                 : "/no-image.png"
                                                                                                 }
                                                                                                 alt={product?.name}
