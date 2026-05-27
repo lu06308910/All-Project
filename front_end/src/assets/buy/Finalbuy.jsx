@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import { Carousel } from "react-bootstrap";
 
-function Finalbuy(){
+function Finalbuy() {
 
         // 제품 데이터 배열, 관련상품 
         const products = [
@@ -24,20 +24,45 @@ function Finalbuy(){
 
         const productChunks = chunkProducts(products, 4);
 
+        useEffect(() => {
+                // 1. 세션 스토리지에서 결제 직전에 저장한 데이터 꺼내기
+                const tempDelivery = JSON.parse(sessionStorage.getItem('tempDelivery'));
+                const tempCart = JSON.parse(sessionStorage.getItem('tempCart'));
+
+                // 데이터가 있다면 서버로 주문 저장 요청하기
+                if (tempDelivery && tempCart) {
+                        axios.post('http://192.168.4.60:9991/buy/process-order', {
+                                delivery: tempDelivery,
+                                cartList: tempCart
+                        })
+                                .then(res => {
+                                        console.log("주문 DB 저장 완료!");
+                                        // 저장이 끝났으니 임시 데이터는 삭제
+                                        sessionStorage.removeItem('tempDelivery');
+                                        sessionStorage.removeItem('tempCart');
+                                        sessionStorage.removeItem('buyItems'); // 장바구니 비우기 연동
+                                })
+                                .catch(err => {
+                                        console.error("주문 DB 저장 실패:", err);
+                                        alert("결제는 완료되었으나 주문 저장 중 오류가 발생했습니다.");
+                                });
+                }
+        }, []);
+
         return (
                 <>
-                        <div className="footer-container" style={{backgroundColor:'white'}}>
+                        <div className="footer-container" style={{ backgroundColor: 'white' }}>
                                 <div>
-                                        <h3 style={{fontWeight:'600'}}>결제 진행</h3>
+                                        <h3 style={{ fontWeight: '600' }}>결제 진행</h3>
                                         <div style={{ position: 'relative' }}>
-                                        <div className='stepper-line-active' style={{ width: '75%' }}></div>
-                                        <div className="stepper-container">
-                                                <div><span>●</span></div>
-                                                <div><span>●</span></div>
-                                                <div><span>●</span></div>
+                                                <div className='stepper-line-active' style={{ width: '75%' }}></div>
+                                                <div className="stepper-container">
+                                                        <div><span>●</span></div>
+                                                        <div><span>●</span></div>
+                                                        <div><span>●</span></div>
                                                 </div>
                                         </div>
-                                        <div style={{display:'flex', justifyContent:'space-evenly', marginTop:'-40px'}}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-evenly', marginTop: '-40px' }}>
                                                 <div>
                                                         <span>장바구니</span>
                                                 </div>
@@ -49,20 +74,20 @@ function Finalbuy(){
                                                 </div>
                                         </div>
                                 </div>
-                                <h4 style={{textAlign:'center', marginTop:'50px'}}>결제가 완료 되었습니다.</h4>
-                                <div style={{marginTop:'50px', marginBottom:'100px', display:'flex', justifyContent:'center'}}>
+                                <h4 style={{ textAlign: 'center', marginTop: '50px' }}>결제가 완료 되었습니다.</h4>
+                                <div style={{ marginTop: '50px', marginBottom: '100px', display: 'flex', justifyContent: 'center' }}>
                                         <Link to='/'>
-                                                <button className='button3' style={{marginRight:'10px', width:'100px'}}>
+                                                <button className='button3' style={{ marginRight: '10px', width: '100px' }}>
                                                         메인 페이지
                                                 </button>
                                         </Link>
                                         <Link to='/mypage'>
-                                                <button className='button3' style={{width:'100px'}}>마이스토어</button>
+                                                <button className='button3' style={{ width: '100px' }}>마이스토어</button>
                                         </Link>
                                 </div>
-                                <hr/>
-                                        <h5 style={{ margin:'20px 30px'}}>관련 상품</h5>
-                                <hr/>
+                                <hr />
+                                <h5 style={{ margin: '20px 30px' }}>관련 상품</h5>
+                                <hr />
                                 <div style={{ padding: "40px 0", textAlign: "center" }}>
                                         <Carousel
                                                 indicators={false} // 하단 점 숨기기

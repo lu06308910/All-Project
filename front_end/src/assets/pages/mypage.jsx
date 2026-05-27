@@ -347,9 +347,9 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
         const handleOrderAction = async (item, actionType, actionLabel) => {
 
                 console.log("전달받은 bId 값:", item);
-                const bId = item.bId;
+                const bid = item.bid;
 
-                if (!bId) {
+                if (!bid) {
                         console.error("주문 번호(bid)를 찾을 수 없습니다:", item);
                         alert("데이터 오류: 주문 번호를 확인해주세요.");
                         return;
@@ -359,11 +359,11 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
 
                 try {
                         // 2. 경로에 bid를 넣습니다.
-                        await axios.post(`http://192.168.4.60:9991/buy/status/${bId}?action=${actionType}`);
+                        await axios.post(`http://192.168.4.60:9991/buy/status/${bid}?action=${actionType}`);
 
                         alert(`${actionLabel} 처리가 완료되었습니다.`);
 
-                        setOrders(prev => prev.filter(i => i.bId !== bId));
+                        setOrders(prev => prev.filter(i => i.bid !== bid));
 
                 } catch (error) {
                         console.error("요청 중 오류 발생:", error);

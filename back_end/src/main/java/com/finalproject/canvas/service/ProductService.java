@@ -164,5 +164,8 @@ public class ProductService {
         // 서비스 내부에 만들어두신 기존 productDelete 메서드를 그대로 호출하여 안전하게 삭제합니다.
         this.productDelete(id);
     }
-
+    // 이슬 카테고리 페이지
+    public List<ProductEntity> getBysCategory(String sCategory) {
+        return productRepository.findBysCategory(sCategory.trim());
+    }
 }

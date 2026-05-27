@@ -3,8 +3,11 @@ package com.finalproject.canvas.controller;
 import com.finalproject.canvas.entity.BuyEntity;
 import com.finalproject.canvas.repository.BuyRepository;
 import com.finalproject.canvas.service.BuyService;
+import com.finalproject.canvas.service.PaymentService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -84,5 +87,38 @@ public class BuyController {
             buyRepository.save(buy);
             return ResponseEntity.ok("주문번호 [" + bId + "] 건 정산 완료 처리 완료! 💰");
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @Autowired
+    private PaymentService paymentService; // 카카오페이 통신을 위한 서비스(별도 구현 필요)
+
+    @PostMapping("/payment/ready") // 이제 /buy/payment/ready 가 됨
+    public ResponseEntity<?> ready(@RequestBody Map<String, Object> payload) {
+        return paymentService.readyPayment(payload); // paymentService 구현 필요
+    }
+
+    @PostMapping("/payment/success")
+    public String paymentSuccess(@RequestParam("pg_token") String pgToken, HttpSession session) {
+
+        // PaymentService는 카카오페이 승인을 위해 세션(tid 확인용)이 필요하므로 같이 넘겨줍니다.
+        boolean isApproved = paymentService.approvePayment(pgToken, session);
+
+        if (isApproved) {
+            // 결제만 승인하고 프론트엔드로 리다이렉트 (주문 DB 저장은 프론트에서 /process-order 로 따로 요청)
+            return "redirect:http://192.168.4.60:5173/finalcheck";
+        }
+        return "redirect:http://192.168.4.60:5173/purchase?error=payment_failed";
+    }
+
+    // 프론트엔드의 Finalcheck.jsx가 호출할 경로 (이 부분은 아까와 동일하게 두시면 됩니다)
+    @PostMapping("/process-order")
+    public ResponseEntity<?> processOrder(@RequestBody Map<String, Object> payload) {
+        try {
+            buyService.saveOrderFromPayload(payload);
+            return ResponseEntity.ok("주문 저장 성공");
+        } catch (Exception e) {
+            log.error("주문 저장 실패", e);
+            return ResponseEntity.internalServerError().body("주문 저장 실패");
+        }
     }
 }
