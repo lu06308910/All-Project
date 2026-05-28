@@ -191,7 +191,6 @@ function sale() {
                                 <div className="product-grid">
 
                                         {visibleProducts
-                                                .filter(item => Number(item.discountPercent || 0) > 0)
                                                 .map((item) => {
 
                                                         const product = item.product;
@@ -258,7 +257,7 @@ function sale() {
 
                                                                                                 {/* 정가 */}
                                                                                                 <span className="origin-price">
-                                                                                                        ₩ {Number(product?.price || 0).toLocaleString()}
+                                                                                                        ₩ {Number(String(product?.price || '0').replace(/[^0-9]/g, '')).toLocaleString()}
                                                                                                 </span>
                                                                                                 {/* 할인율 */}
                                                                                                 <span className="discount-percent">
@@ -272,8 +271,7 @@ function sale() {
                                                                                                 {/* 할인 가격 */}
                                                                                                 <span className="sale-price">
                                                                                                         ₩ {Math.floor(
-                                                                                                                Number(product?.price || 0) *
-                                                                                                                (1 - Number(item.discountPercent || 0) / 100)
+                                                                                                                Number(String(product?.price || '0').replace(/[^0-9]/g, '')) * (1 - Number(item.discountPercent || 0) / 100)
                                                                                                         ).toLocaleString()}
                                                                                                 </span>
                                                                                         </div>

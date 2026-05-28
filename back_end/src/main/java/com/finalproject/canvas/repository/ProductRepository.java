@@ -64,10 +64,10 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Integer>
     List<ProductEntity> findBysCategory(String sCategory);
 
     // 상품 관리 쿼리문 - 대호추가
-    @Query("SELECT p FROM ProductEntity p WHERE p.company.userid = :sellerId ORDER BY p.pId DESC")
+    @Query("SELECT p FROM ProductEntity p WHERE p.company.userid = :sellerId ORDER BY p.writedate DESC")
     List<ProductEntity> findProductsBySeller(@Param("sellerId") String sellerId);
 
     // 상품검색기능
-    @Query("SELECT p FROM ProductEntity p WHERE p.name LIKE %:keyword% OR p.sCategory = :keyword")
+    @Query("SELECT p FROM ProductEntity p WHERE p.name LIKE %:keyword% OR p.sCategory = :keyword ORDER BY p.writedate DESC")
     List<ProductEntity> searchAll(@Param("keyword") String keyword);
 }

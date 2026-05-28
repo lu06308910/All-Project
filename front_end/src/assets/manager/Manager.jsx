@@ -976,7 +976,8 @@ function Manager() {
                 context: '',
                 updatedate: '',
                 enddate: '',
-                pId: ''
+                pId: '',
+                discountPercent: 0
         });
         // 이벤트 수정용 state
         const [editEventModalOpen, setEditEventModalOpen] = useState(false);
@@ -986,7 +987,8 @@ function Manager() {
                 context: '',
                 updatedate: '',
                 enddate: '',
-                pId: ''
+                pId: '',
+                discountPercent: 0
         });
         //수정 버튼 클릭 시 등장 핸들러
         const handleEventEditClick = (item) => {
@@ -996,7 +998,8 @@ function Manager() {
                         context: item.context || '',
                         updatedate: item.updatedate ? item.updatedate.slice(0, 10) : '',
                         enddate: item.enddate ? item.enddate.slice(0, 10) : '',
-                        pId: item.product?.pid || item.product?.p_id || ''
+                        pId: item.product?.pid || item.product?.p_id || '',
+                        discountPercent: item.discountPercent ?? 0
                 });
                 setEditEventModalOpen(true);
         };
@@ -1009,7 +1012,8 @@ function Manager() {
                         context: editEvent.context,
                         updatedate: editEvent.updatedate ? editEvent.updatedate + 'T00:00:00' : null,
                         enddate: editEvent.enddate ? editEvent.enddate + 'T00:00:00' : null,
-                        p_id: Number(editEvent.pId)
+                        p_id: Number(editEvent.pId),
+                        discountPercent: Number(editEvent.discountPercent || 0)
                 })
                         .then(() => {
                                 alert('수정 완료');
@@ -1033,12 +1037,13 @@ function Manager() {
                         context: newEvent.context,
                         updatedate: newEvent.updatedate ? newEvent.updatedate + 'T00:00:00' : null,
                         enddate: newEvent.enddate ? newEvent.enddate + 'T00:00:00' : null,
-                        p_id: Number(newEvent.pId)
+                        p_id: Number(newEvent.pId),
+                        discountPercent: Number(newEvent.discountPercent || 0)
                 })
                         .then(() => {
                                 alert('등록 완료');
                                 setEventModalOpen(false);
-                                setNewEvent({ subject: '', context: '', updatedate: '', enddate: '', pId: '' });
+                                setNewEvent({ subject: '', context: '', updatedate: '', enddate: '', pId: '', discountPercent: 0 });
                                 axios.get('http://192.168.4.60:9991/event/all')
                                         .then(res => setEvents(res.data));
                         })
@@ -2645,7 +2650,13 @@ function Manager() {
                                                                         value={editEvent.enddate}
                                                                         onChange={(e) => setEditEvent({ ...editEvent, enddate: e.target.value })} />
                                                         </div>
-
+                                                        <div style={{ marginBottom: '12px' }}>
+                                                                <div style={{ fontWeight: '500', marginBottom: '4px' }}>할인율 (%)</div>
+                                                                <input type='number' style={{ width: '100%', padding: '6px', marginTop: '4px' }}
+                                                                        value={editEvent.discountPercent ?? 0}
+                                                                        onChange={(e) => setEditEvent({ ...editEvent, discountPercent: e.target.value })}
+                                                                        placeholder='할인율 입력 (0이면 할인 없음)' />
+                                                        </div>
                                                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                                                                 <button className='button2' onClick={() => setEditEventModalOpen(false)}>취소</button>
                                                                 <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}
@@ -2733,7 +2744,7 @@ function Manager() {
                                                         </div>
 
                                                         {/* 종료 날짜 */}
-                                                        <div style={{ marginBottom: '20px' }}>
+                                                        <div style={{ marginBottom: '12px' }}>
                                                                 <div style={{ display: 'flex' }}>
                                                                         <div style={{ fontWeight: '600', color: 'red' }}>*</div>
                                                                         <label style={{ fontSize: '0.9em' }}>종료 날짜</label>
@@ -2743,6 +2754,17 @@ function Manager() {
                                                                         onChange={(e) => setNewEvent({ ...newEvent, enddate: e.target.value })} />
                                                         </div>
 
+                                                        {/* 할인율 */}
+                                                        <div style={{ marginBottom: '20px' }}>
+                                                                <div style={{ display: 'flex' }}>
+                                                                        <div style={{ fontWeight: '600', color: 'red' }}>*</div>
+                                                                        <label style={{ fontSize: '0.9em' }}>할인율 (%)</label>
+                                                                </div>
+                                                                <input type='number' min='0' max='100' style={{ width: '100%', padding: '6px', marginTop: '4px' }}
+                                                                        value={newEvent.discountPercent ?? 0}
+                                                                        onChange={(e) => setNewEvent({ ...newEvent, discountPercent: e.target.value })}
+                                                                        placeholder='할인율 입력 (0이면 할인 없음)' />
+                                                        </div>
                                                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                                                                 <button className='button' style={{ border: '1px solid blue', backgroundColor: 'blue' }}
                                                                         onClick={handleEventSubmit}>등록</button>

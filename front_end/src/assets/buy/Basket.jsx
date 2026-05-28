@@ -73,29 +73,29 @@ function Basket() {
 
 
 
-                const safeCount = Number(count || 1);
 
-                // 1. 원가
-                const basePrice = Number(item.product?.price || 0);
+                // 가격 문자열 안전 변환(콤마 제거)
+                const toNumber = (v) => Number(String(v).replace(/,/g, "")) || 0;
 
-                // 2. 사이즈 목록에서 새 사이즈 추가금 찾기
+                const safeCount = toNumber(count || 1);
+
+                // 1. 원가 (콤마가 들어 있는 상품 대비)
+                const basePrice = toNumber(item.product?.price);
+
+                // 2. 사이즈 리스트
                 const sizes = JSON.parse(item.product?.size || "[]");
 
-
-
+                // 3. 선택된 사이즈 추가금 (문자열일 수도 있음)
                 const selectedSize = sizes.find(s => s.size === size);
-                const sizeExtra = Number(selectedSize?.price || 0);
+                const sizeExtra = toNumber(selectedSize?.price);
 
-                console.log("사이즈 추가금액:", sizeExtra);
-
-                // 3. 단가 = 원가 + 사이즈 추가금
+                // 4. 단가 = 원가 + 추가금
                 const unitPrice = basePrice + sizeExtra;
 
-                // 4. 총 금액
+                // 5. 총 금액
                 const totalPrice = unitPrice * safeCount;
-                console.log("총 금액:", totalPrice);
 
-                // 5. 배송비
+                // 6. 배송비 계산
                 const newDelivery = totalPrice >= 50000 ? 0 : 3000;
 
                 try {

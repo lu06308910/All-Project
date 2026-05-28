@@ -106,7 +106,7 @@ public class BuyController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    // 주문 저장
+    /* // 주문 저장
     @PostMapping("/process-order")
     public ResponseEntity<?> processOrder(@RequestBody Map<String, Object> payload) {
         try {
@@ -117,7 +117,7 @@ public class BuyController {
             return ResponseEntity.internalServerError().body("주문 저장 실패");
         }
     }
-/*
+
     @PostMapping("/payment/ready")
     public ResponseEntity<?> ready(@RequestBody Map<String, Object> payload,
                                    HttpSession session) {

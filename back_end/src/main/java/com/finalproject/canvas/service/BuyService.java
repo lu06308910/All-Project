@@ -72,6 +72,27 @@ public class BuyService {
     }
 
     @Transactional
+    public void updateOrderStatus(Integer bId, String status) {
+        BuyEntity buy = buyRepository.findById(bId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문 거래입니다."));
+
+        String finalStatus = status;
+
+        if ("cancel".equalsIgnoreCase(status)) {
+            finalStatus = "주문취소";
+        } else if ("return".equalsIgnoreCase(status)) {
+            finalStatus = "반품완료";
+        } else if ("exchange".equalsIgnoreCase(status)) {
+            finalStatus = "교환완료";
+        }
+
+        buy.setStatus(finalStatus);
+        buyRepository.save(buy);
+
+        log.info("주문 번호 {}의 상태가 {}로 변경되었습니다.", bId, finalStatus);
+    }
+
+    /* @Transactional
     public void saveOrderFromPayload(Map<String, Object> payload) {
         ObjectMapper mapper = new ObjectMapper();
         DeliveryEntity delivery = mapper.convertValue(payload.get("delivery"), DeliveryEntity.class);
@@ -124,7 +145,6 @@ public class BuyService {
 
         try {
             rt.postForObject(url, new HttpEntity<>(params, headers), Map.class);
-            // 💡 클래스명 제거!
             this.saveOrderFromPayload(payload);
             session.removeAttribute("tid");
             session.removeAttribute("orderPayload");
@@ -133,21 +153,6 @@ public class BuyService {
             log.error("승인 에러", e);
             return false;
         }
-    }
-
-    @Transactional
-    public void updateOrderStatus(Integer bId, String status) {
-        // 1. 주문 조회 (데이터베이스에서 주문 번호로 찾기)
-        BuyEntity buy = buyRepository.findById(bId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문 거래입니다."));
-
-        // 2. 입력받은 status 값을 엔티티에 세팅
-        // 주의: BuyEntity 클래스에 setStatus(String status) 메서드가 꼭 있어야 합니다.
-        buy.setStatus(status);
-
-        // 3. 저장 및 로그 출력
-        buyRepository.save(buy);
-        log.info("주문 번호 {}의 상태가 {}로 변경되었습니다.", bId, status);
-    }
+    } */
 
 }

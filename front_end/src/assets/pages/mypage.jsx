@@ -91,14 +91,16 @@ const MyPage = () => {
                                         // 일반사용자 목록
 
                                         const wishRes = await axios.get(`http://192.168.4.60:9991/wish/list?userid=${logId}`);
-                                        setWishItems(wishRes.data); // 찜목록
+                                        const sortedWishItems = [...wishRes.data].sort((a, b) => new Date(b.writedate) - new Date(a.writedate));
+                                        setWishItems(sortedWishItems); // 찜목록
 
                                         const orderRes = await axios.get(`http://192.168.4.60:9991/buy/list/${ordersMemberId}`);
-                                        setOrders(orderRes.data); // 주문목록
-                                        console.log("주문상품정보 : ", orderRes.data)
+                                        const sortedOrders = [...orderRes.data].sort((a, b) => new Date(b.writedate) - new Date(a.writedate));
+                                        setOrders(sortedOrders);
 
                                         const cancelRes = await axios.get(`http://192.168.4.60:9991/buy/cancel/list/${ordersMemberId}`);
-                                        setCancelItems(cancelRes.data); // 취소목록              
+                                        const sortedCancel = [...cancelRes.data].sort((a, b) => new Date(b.writedate) - new Date(a.writedate));
+                                        setCancelItems(sortedCancel);
 
                                         setInquiries([...supportData, ...productQnaData]);
                                 }
@@ -137,7 +139,7 @@ const MyPage = () => {
 
         const sideMenus = isCorporate
                 ? ['상품 등록/관리', '판매 현황', '정산내역', '고객문의 관리', '문의 내역']
-                : ['주문내역', '취소/반품/교환 내역', '찜', '상품문의 내역'];
+                : ['주문내역', '취소/반품/교환 내역', '찜', '문의 내역'];
 
 
         // 대시보드
@@ -188,7 +190,7 @@ const MyPage = () => {
                                 case '주문내역': return <OrderHistory orders={orders} setOrders={setOrders} setCancelItems={setCancelItems} />;
                                 case '취소/반품/교환 내역': return <CancelHistory cancelItems={cancelItems} />;
                                 case '찜': return <WishList wishItems={wishItems} onDelete={handleWishDelete} />;
-                                case '상품문의 내역': return <InquiryList inquiries={inquiries} />;
+                                case '문의 내역': return <InquiryList inquiries={inquiries} />;
                                 default: return <div className="empty-state">준비 중인 페이지입니다.</div>;
                         }
                 }
@@ -322,7 +324,7 @@ const OrderHistory = ({ orders, setOrders, setCancleItems }) => {
 
         console.log("=== OrderHistory 전체 orders 데이터 ===", orders);
         const validOrders = orders ? orders.filter(item =>
-                item.status !== "취소완료" &&
+                item.status !== "주문취소" &&
                 item.status !== "반품신청" &&
                 item.status !== "교환신청"
         ) : [];
@@ -975,8 +977,8 @@ const ProductManagement = ({ products, setProducts }) => {
 const getStatusColor = (status) => {
         switch (status) {
                 case '결제완료': return '#007bff'; // 파란색
-                case '결제취소': return '#dc3545'; // 빨간색
-                case '배송 중':
+                case '주문취소': return '#dc3545'; // 빨간색
+                case '배송중':
                 case '배송완료': return '#28a745'; // 초록색
                 default: return '#333';           // 기본값
         }
@@ -1069,7 +1071,7 @@ const SalesStatus = ({ sales }) => {
                                                                                 <option value="결제완료" style={{ color: '#007bff' }}>결제완료</option>
                                                                                 <option value="배송 중" style={{ color: '#28a745' }}>배송중</option>
                                                                                 <option value="배송완료" style={{ color: '#28a745' }}>배송완료</option>
-                                                                                <option value="결제취소" style={{ color: '#dc3545' }}>결제취소</option>
+                                                                                <option value="주문취소" style={{ color: '#dc3545' }}>주문취소</option>
                                                                         </select>
                                                                 </td>
                                                         </tr>
