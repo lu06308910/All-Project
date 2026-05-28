@@ -377,41 +377,38 @@ function ProductDetail() {
         // 바로 구매하기 버튼 클릭시 선택한 옵션값 보내기
         const navigate = useNavigate();
         const handleBuyNow = async () => {
-                if (selectedOptions.length === 0) {
-                        return alert("추가한 옵션이 없습니다.");
-                }
+                const mId = Number(sessionStorage.getItem("mId"));
 
-                const mId = sessionStorage.getItem("mId");
-                if (!mId) {
-                        alert("로그인해주세요.");
-                        return;
+                if (selectedOptions.length === 0) {
+                        return alert("옵션 없음");
                 }
 
                 try {
-                        const createdCartIds = [];
+                        const cartIds = [];
 
                         for (const opt of selectedOptions) {
                                 const res = await axios.post("http://192.168.4.60:9991/cart/add", {
-                                        mId: Number(mId),
-                                        pId: Number(data.id),
+                                        mId,
+                                        pId: data.id,
                                         count: opt.count,
                                         color: opt.color,
-                                        size: opt.size || opt.extraOption,
-                                        originprice: Number(opt.basePrice),
-                                        price: Number(opt.finalPrice)
+                                        size: opt.size,
+                                        originprice: opt.basePrice,
+                                        price: opt.finalPrice
                                 });
-                                // 🔥 핵심: cartId 저장
-                                createdCartIds.push(res.data.cartId);
+
+                                cartIds.push(res.data.cartId);
                         }
 
-                        // 🔥 Parchase로 cartIds 전달
-                        navigate("/parchase", {
-                                state: { cartIds: createdCartIds }
-                        });
+                        const cartRes = await axios.post("http://192.168.4.60:9991/cart/list-by-ids", cartIds);
+
+                        // Parchase에서 쓸 데이터로 통일 저장
+                        sessionStorage.setItem("buyItems", JSON.stringify(cartRes.data));
+
+                        navigate("/parchase");
 
                 } catch (err) {
                         console.log(err);
-                        alert("구매 처리 중 오류가 발생했습니다.");
                 }
         };
 

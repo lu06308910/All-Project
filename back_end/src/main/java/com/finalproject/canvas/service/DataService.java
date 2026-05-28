@@ -203,6 +203,7 @@ public class DataService {
 
         // 하드코딩을 전부 지우고 위에서 정의한 런타임 변수(clientId, redirectUri)를 주입받아 사용합니다.
         params.add("client_id", clientId);
+        log.info("카카오 토큰 요청 시 사용하는 redirectUri: {}", redirectUri);
         params.add("redirect_uri", redirectUri);
         params.add("code", code);
 

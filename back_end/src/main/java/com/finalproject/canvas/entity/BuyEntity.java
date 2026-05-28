@@ -22,21 +22,33 @@ public class BuyEntity {
 
     @Column(name = "status")
     private String status;
+
     @Column(name = "count")
     private Integer count;
+
     @Column(name = "discount")
     private Integer discount;
+
     @Column(name = "price")
-    private String price;
+    private Integer price;
 
     @Column(name = "m_id")
     private Integer mId;
+
     @Column(name = "p_id")
     private Integer pId;
+
     @Column(name = "cart_id")
     private Integer cartId;
+
     @Column(name = "d_id")
     private Integer dId;
+
+    @Column(name = "order_id", unique = true)
+    private String orderId;
+
+    @Column(name = "tid")
+    private String tid; // 카카오페이 결제 고유번호 저장용
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "d_id", insertable = false, updatable = false)

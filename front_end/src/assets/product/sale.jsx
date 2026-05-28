@@ -66,26 +66,20 @@ function sale() {
         // 상품리스트 더보기 상태
         const [showMore, setShowMore] = useState(false);
 
-        // 상품 정보
-        const [list, setList] = useState([]);
-        const [saleList, setSaleList] = useState([]);
-
-        useEffect(() => {
-                axios.get("http://192.168.4.60:9991/event/sale/list")
-                        .then(res => {
-                                console.log("할인상품 리스트:", res.data);
-                                setList(res.data);
-                        })
-                        .catch(err => console.log(err));
-        }, []);
+        // Manager 이벤트에서 상품 목록 추출
+        // events: /event/active 에서 받아온 배열 (위에서 이미 fetch)
+        // 각 event = { e_id, subject, context, updatedate, enddate, discountPercent, product: { pid, name, price, company, fileList, ... } }
+        const eventProducts = events
+                .filter(e => e.product != null)
+                .map(e => ({
+                        e_id: e.e_id,
+                        pid: e.product?.pid,
+                        discountPercent: e.discountPercent ?? 0,
+                        product: e.product,
+                }));
 
         // 보여줄 상품
-        const visibleProducts = showMore ? list : list.slice(0, 8);
-
-        // 할인 필터 (안전하게)
-        const discountedProducts = visibleProducts.filter(
-                item => Number(item?.discountPercent || 0) > 0
-        );
+        const visibleProducts = showMore ? eventProducts : eventProducts.slice(0, 8);
 
         // 리뷰,별점  
         const [starMap, setStarMap] = useState({});// 예: { 1: 4.2, 3: 0, 5: 3.7 }
@@ -123,18 +117,18 @@ function sale() {
 
         // 별 리뷰 수 가져오기
         useEffect(() => {
-                if (list.length === 0) return;
+                if (eventProducts.length === 0) return;
 
-                list.forEach(product => {
-                        axios.get(`http://192.168.4.60:9991/review/avg/${product.pid}`)
+                eventProducts.forEach(item => {
+                        axios.get(`http://192.168.4.60:9991/review/avg/${item.pid}`)
                                 .then(res => {
                                         setStarMap(prev => ({
                                                 ...prev,
-                                                [product.pid]: res.data ?? 0
+                                                [item.pid]: res.data ?? 0
                                         }));
                                 });
                 });
-        }, [list]);
+        }, [events]);
         // 숫자 → 별(★) 변환 함수
         function renderStars(avg) {
                 if (!avg) return "☆☆☆☆☆";  // 값 없을 때
@@ -222,7 +216,7 @@ function sale() {
                                                                                         <img
                                                                                                 className="main-product-img"
                                                                                                 src={
-                                                                                                        product.fileList[0].filename
+                                                                                                        product?.fileList?.[0]?.filename
                                                                                                                 ? `http://192.168.4.60:9991/upload/${product.fileList[0].filename}.${product.fileList[0].extname}`
                                                                                                                 : "/no-image.png"
                                                                                                 }
@@ -295,6 +289,21 @@ function sale() {
                                                         );
                                                 })}
                                 </div>
+                                {/* 더보기 버튼 */}
+                                {eventProducts.length > 8 && (
+                                        <div style={{ textAlign: 'center', marginTop: '20px', marginBottom: '40px' }}>
+                                                <button
+                                                        style={{
+                                                                padding: '10px 40px', border: '1px solid #333',
+                                                                borderRadius: '6px', background: 'white', cursor: 'pointer',
+                                                                fontSize: '14px', fontWeight: '500'
+                                                        }}
+                                                        onClick={() => setShowMore(prev => !prev)}
+                                                >
+                                                        {showMore ? '접기' : '더보기'}
+                                                </button>
+                                        </div>
+                                )}
                         </div>
 
                 </>

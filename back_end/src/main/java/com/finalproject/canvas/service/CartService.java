@@ -49,6 +49,9 @@ public class CartService {
 
         return cartRepository.save(cart); // ★ return
     }
-
+    // 이슬추가, 상세페이지에서 바로구매
+    public List<CartEntity> getCartByIds(List<Integer> ids) {
+        return cartRepository.findByCartIdIn(ids);
+    }
 
 }

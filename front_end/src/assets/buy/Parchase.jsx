@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useLocation } from "react-router-dom";
 import axios from 'axios';
 import './../css/gayoung.css'
 
@@ -14,11 +13,6 @@ function Parchase() {
                 if (items) setCartList(JSON.parse(items));
         }, []);
         console.log(cartList)
-
-        // 바로구매하기 클릭했을때 받기
-        const location = useLocation();
-        const cartIds = location.state?.cartIds || [];
-
 
         // 로그인 유저 정보 (기존 주소 표시용)
         const [userInfo, setUserInfo] = useState(null);
@@ -59,17 +53,9 @@ function Parchase() {
         };
 
         // 총액 계산
-        // const totalProductPrice = cartList.reduce((sum, item) =>
-        //         sum + (parseInt(item.product.price) * item.count), 0);
         const totalProductPrice = cartList.reduce((sum, item) =>
-                sum + (Number(item.price || 0) * (item.count || 1)),
-                0);
-
-        // const totalDiscount = cartList.reduce((sum, item) => sum + (item.discount * item.count || 0), 0);
-        const totalDiscount = cartList.reduce((sum, item) =>
-                sum + (Number(item.discount || 0) * (item.count || 1)),
-                0);
-
+                sum + (parseInt(item.product.price) * item.count), 0);
+        const totalDiscount = cartList.reduce((sum, item) => sum + (item.discount * item.count || 0), 0);
         const totalDelivery = cartList.reduce((sum, item) => sum + (item.newdelivery || 0), 0);
         const totalPayment = totalProductPrice - totalDiscount + totalDelivery;
 
@@ -128,33 +114,10 @@ function Parchase() {
         };
 
         //결제 진행
-        const handleSubmit = async () => {
+        const handleSubmit = () => {
                 const mId = sessionStorage.getItem('mId');
                 if (!delivery.n_address) return alert('배송지를 선택하거나 입력해주세요.');
                 if (!delivery.n_tel) return alert('전화번호를 입력해주세요.');
-
-
-                // 카카오페이 결제 준비 요청
-                try {
-                        const response = await axios.post("http://192.168.4.60:9991/buy/payment/ready", {
-                                item_name: cartList.length > 1 ? `${cartList[0].product.name} 외 ${cartList.length - 1}건` : cartList[0].product.name,
-                                total_amount: totalPayment,
-                                memberId: sessionStorage.getItem('mId')
-                        });
-
-                        if (response.data.next_redirect_pc_url) {
-                                // 결제 정보를 세션에 임시 저장 (결제 완료 후 주문 저장을 위해 필요)
-                                sessionStorage.setItem('tempDelivery', JSON.stringify(delivery));
-                                sessionStorage.setItem('tempCart', JSON.stringify(cartList));
-
-                                // 카카오페이 결제창으로 이동
-                                window.location.href = response.data.next_redirect_pc_url;
-                                return;
-                        }
-                } catch (err) {
-                        console.error("결제 준비 실패:", err);
-                        alert("결제 연결에 실패했습니다.");
-                }
 
                 let requestMsg = '요청사항 없음';
                 if (isDirectInput) {
@@ -194,10 +157,10 @@ function Parchase() {
                                 });
                         })
                         .then(() => {
-                                // buy 저장 성공 후 장바구니 삭제
+                                // ✅ buy 저장 성공 후 장바구니 삭제
                                 const cartIds = cartList.map(item => item.cartId);
                                 return axios.delete('http://192.168.4.60:9991/cart/delete', {
-                                        data: cartIds  // axios delete는 data로 body 전송
+                                data: cartIds  // axios delete는 data로 body 전송
                                 });
                         })
                         .then(() => {
@@ -251,10 +214,10 @@ function Parchase() {
                                                                 <td style={{ width: '55%' }}>
                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                                                 <img src={item.product.fileList?.[0]
-                                                                                        ? `http://192.168.4.60:9991/upload/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`
-                                                                                        : "/no-image.png"
-                                                                                }
-                                                                                        className='img-basket' alt="제품" />
+                                                                                                        ? `http://192.168.4.60:9991/upload/${item.product.fileList[0].filename}.${item.product.fileList[0].extname}`
+                                                                                                        : "/no-image.png"
+                                                                                                }
+                                                                                                        className='img-basket' alt="제품" />
                                                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: 0, textAlign: 'left' }}>
                                                                                         <span style={{
                                                                                                 overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
@@ -263,7 +226,7 @@ function Parchase() {
                                                                                         }}>
                                                                                                 {item.product.name}
                                                                                         </span>
-                                                                                        <div style={{ fontSize: '0.8em', color: 'gray' }}><span>{item.color}, {item.size}</span></div>
+                                                                                        <div style={{fontSize:'0.8em', color:'gray'}}><span>{item.color}, {item.size}</span></div>
                                                                                 </div>
                                                                         </div>
                                                                 </td>
@@ -339,7 +302,7 @@ function Parchase() {
                                                 navigate('/basket');
                                                 window.confirm('취소되었습니다.')
                                         }
-                                }}
+                                        }}
                                         style={{ textDecoration: 'underline', textAlign: 'right' }}>주문 취소</div>
 
                                 {/* 배송지 입력 섹션 */}
@@ -458,7 +421,7 @@ function Parchase() {
                                         <button type="button" onClick={handleSubmit}
                                                 className='button2'
                                                 style={{
-                                                        color: 'black',
+                                                        color:'black',
                                                         width: '80px', marginLeft: '90%', marginTop: '20px'
                                                 }}>
                                                 결제 진행

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
+
 import { Link, Outlet } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Footer from './Footer';
 import './../css/top.css';
@@ -51,6 +53,19 @@ function Top() {
       behavior: 'smooth' // 부드럽게 올라가는 효과
     });
   }
+  // =============== 검색기능, 이슬추가 ===============
+
+  const navigate = useNavigate();
+  const [keyword, setKeyword] = useState("");
+
+  const handleSearch = () => {
+    if (!keyword.trim()) return;
+
+    navigate(`/search?keyword=${keyword}`);
+    setKeyword("");
+  };
+
+
   //---------------------------------------------------------------------
   return (
     <div className="layoutAll">
@@ -84,8 +99,14 @@ function Top() {
           {/* 검색 및 아이콘카테고리 */}
           <div className="sub-categori">
             <div className="search-bar">
-              <input type="text" placeholder="검색할 상품을 입력해주세요." />
-              <button className="search-icon"></button>
+              <input type="text" placeholder="검색할 상품을 입력해주세요."
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSearch();
+                }}
+              />
+              <button className="search-icon" onClick={handleSearch}></button>
             </div>
 
             <div className="icon-categori">

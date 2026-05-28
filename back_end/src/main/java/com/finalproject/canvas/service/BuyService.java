@@ -1,7 +1,5 @@
 package com.finalproject.canvas.service;
 
-// 1. IMPORT 수정: 올바른 Jackson 패키지 사용
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.finalproject.canvas.entity.*;
@@ -12,24 +10,30 @@ import com.finalproject.canvas.repository.ProductRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders; // 💡 수정됨
+import org.springframework.http.MediaType;    // 💡 추가됨
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
 
+@CrossOrigin("*")
 @Slf4j
 @Service
 @RequiredArgsConstructor
-
 @Transactional(readOnly = true)
 public class BuyService {
     private final BuyRepository buyRepository;
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
-    private final DeliveryRepository deliveryRepository; // 주입 확인 완료
+    private final DeliveryRepository deliveryRepository;
 
-    // ... (addFromCart, updateOrderStatus 등 기존 메서드 동일) ...
     @Transactional
     public void addFromCart(Map<String, Object> payload) {
         List<Object> cartIdObjs = (List<Object>) payload.get("cartIds");
@@ -42,130 +46,108 @@ public class BuyService {
             Integer cartId = ((Number) cartIdObjs.get(i)).intValue();
             Integer count = countObjs != null ? ((Number) countObjs.get(i)).intValue() : 1;
 
-            // 데이터 조회 및 null 체크
             Integer pId = cartRepository.findPIdByCartId(cartId);
             Integer mId = cartRepository.findMIdByCartId(cartId);
 
-            if (pId == null) {
-                throw new RuntimeException("CartId " + cartId + "에 해당하는 상품을 찾을 수 없습니다.");
-            }
+            if (pId == null) throw new RuntimeException("상품을 찾을 수 없습니다.");
 
-            // 상품 조회
-            ProductEntity product = productRepository.findById(pId)
-                    .orElseThrow(() -> new RuntimeException("상품 없음: " + pId));
-
+            ProductEntity product = productRepository.findById(pId).orElseThrow();
             int parsedPrice = Integer.parseInt(product.getPrice().replaceAll("[^0-9]", ""));
 
             BuyEntity buy = new BuyEntity();
             buy.setCartId(cartId);
-            buy.setMId(mId != null ? mId : 0); // 필요 시 기본값 처리
+            buy.setMId(mId != null ? mId : 0);
             buy.setPId(pId);
             buy.setDId(dIdObjs != null ? ((Number) dIdObjs.get(i)).intValue() : null);
             buy.setCount(count);
-            buy.setDiscount(discountObjs != null ? ((Number) discountObjs.get(i)).intValue() : 0);
             buy.setStatus("결제완료");
             buy.setPrice(priceObjs != null
-                    ? String.valueOf(((Number) priceObjs.get(i)).intValue())
-                    : String.valueOf(parsedPrice));
+                    ? ((Number) priceObjs.get(i)).intValue()
+                    : parsedPrice);
 
             buyRepository.save(buy);
-
-            // 재고 차감
-            int newStock = product.getCount() - count;
-            product.setCount(Math.max(0, newStock));
+            product.setCount(Math.max(0, product.getCount() - count));
             productRepository.save(product);
-            }
         }
+    }
 
-
-        @Transactional //대호추가
-        public void processOrderAfterPayment (HttpSession session) throws Exception {
-            log.info("결제 후 세션 확인 - DeliveryJson: {}", session.getAttribute("tempDelivery"));
-            log.info("결제 후 세션 확인 - CartJson: {}", session.getAttribute("tempCart"));
-            String deliveryJson = (String) session.getAttribute("tempDelivery");
-            String cartJson = (String) session.getAttribute("tempCart");
-
-            ObjectMapper mapper = new ObjectMapper();
-
-            // 데이터 역직렬화
-            DeliveryEntity delivery = mapper.readValue(deliveryJson, DeliveryEntity.class);
-            List<CartEntity> cartList = mapper.readValue(cartJson, new TypeReference<List<CartEntity>>() {
-            });
-
-            // 배송지 정보 저장 (중복 제거 완료)
-            DeliveryEntity savedDelivery = deliveryRepository.save(delivery);
-            Integer dId = savedDelivery.getDId();
-
-            // 주문 정보 저장
-            for (CartEntity item : cartList) {
-                BuyEntity buy = new BuyEntity();
-                buy.setMId(item.getMId());
-                buy.setPId(item.getPId());
-                buy.setDId(dId);
-                buy.setCount(item.getCount());
-                buy.setPrice(String.valueOf(item.getPrice()));
-                buy.setStatus("결제완료");
-                buy.setIsBuy(OutStatus.Y);
-                buy.setPaymentMethod("카카오페이");
-                buy.setSettleStatus("COMPLETED");
-
-                buyRepository.save(buy);
-
-                // 장바구니 비우기
-                cartRepository.deleteById(item.getCartId());
-            }
-
-            session.removeAttribute("tempDelivery");
-            session.removeAttribute("tempCart");
-        }
-
-        // 상품취소, 반품, 교환 업데이트 - 대호추가
-        @Transactional
-        public void updateOrderStatus (Integer bId, String actionType){
-            BuyEntity buy = buyRepository.findById(bId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문 거래입니다."));
-
-            // 사용자가 요청한 actionType에 따라 status 매핑 변경
-            if ("CANCEL".equals(actionType)) {
-                buy.setStatus("취소완료");
-            } else if ("RETURN".equals(actionType)) {
-                buy.setStatus("반품신청");
-            } else if ("EXCHANGE".equals(actionType)) {
-                buy.setStatus("교환신청");
-            } else {
-                throw new IllegalArgumentException("잘못된 요청 타입입니다.");
-            }
-
-            buyRepository.save(buy);
-        }
     @Transactional
     public void saveOrderFromPayload(Map<String, Object> payload) {
         ObjectMapper mapper = new ObjectMapper();
-
-        // 데이터 역직렬화
         DeliveryEntity delivery = mapper.convertValue(payload.get("delivery"), DeliveryEntity.class);
-        List<CartEntity> cartList = mapper.convertValue(payload.get("cartList"), new TypeReference<List<CartEntity>>(){});
+        List<CartEntity> cartList = mapper.convertValue(payload.get("cartList"), new TypeReference<List<CartEntity>>() {
+        });
 
-        // 배송지 저장
         DeliveryEntity savedDelivery = deliveryRepository.save(delivery);
-        Integer dId = savedDelivery.getDId();
-
-        // 주문 정보 저장
         for (CartEntity item : cartList) {
             BuyEntity buy = new BuyEntity();
             buy.setMId(item.getMId());
             buy.setPId(item.getPId());
-            buy.setDId(dId);
+            buy.setDId(savedDelivery.getDId());
             buy.setCount(item.getCount());
-            buy.setPrice(String.valueOf(item.getPrice()));
-            buy.setStatus("결제완료");
+            buy.setPrice(item.getPrice());
+            buy.setStatus("결제대기");
             buy.setIsBuy(OutStatus.Y);
             buy.setPaymentMethod("카카오페이");
-            buy.setSettleStatus("COMPLETED");
+            buy.setSettleStatus("WAITING");
 
             buyRepository.save(buy);
+            ProductEntity product = productRepository.findById(item.getPId()).orElseThrow();
+            product.setCount(product.getCount() - item.getCount());
+            productRepository.save(product);
             cartRepository.deleteById(item.getCartId());
         }
     }
 
+    @Transactional
+    public boolean approvePayment(String pgToken, HttpSession session) {
+        String tid = (String) session.getAttribute("tid");
+        String orderId = (String) session.getAttribute("orderId");
+        String userId = (String) session.getAttribute("userId");
+
+        Map<String, Object> payload = (Map<String, Object>) session.getAttribute("orderPayload");
+
+        if (tid == null || payload == null) return false;
+
+        String url = "https://kapi.kakao.com/v1/payment/approve";
+        RestTemplate rt = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "KakaoAK 6e8b1a5f56c7f6c57a1172fa4401e59f");
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("cid", "TC0ONETIME");
+        params.add("tid", tid);
+        params.add("partner_order_id", orderId);
+        params.add("partner_user_id", userId);
+        params.add("pg_token", pgToken);
+
+        try {
+            rt.postForObject(url, new HttpEntity<>(params, headers), Map.class);
+            // 💡 클래스명 제거!
+            this.saveOrderFromPayload(payload);
+            session.removeAttribute("tid");
+            session.removeAttribute("orderPayload");
+            return true;
+        } catch (Exception e) {
+            log.error("승인 에러", e);
+            return false;
+        }
     }
+
+    @Transactional
+    public void updateOrderStatus(Integer bId, String status) {
+        // 1. 주문 조회 (데이터베이스에서 주문 번호로 찾기)
+        BuyEntity buy = buyRepository.findById(bId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문 거래입니다."));
+
+        // 2. 입력받은 status 값을 엔티티에 세팅
+        // 주의: BuyEntity 클래스에 setStatus(String status) 메서드가 꼭 있어야 합니다.
+        buy.setStatus(status);
+
+        // 3. 저장 및 로그 출력
+        buyRepository.save(buy);
+        log.info("주문 번호 {}의 상태가 {}로 변경되었습니다.", bId, status);
+    }
+
+}
