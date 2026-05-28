@@ -17,7 +17,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = "*")
+@CrossOrigin(
+        origins = "http://192.168.4.60:5173",
+        allowCredentials = "true"
+)
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -118,7 +121,7 @@ public class DataController {
 
         String userId = loginData.get("userid");
         String userPwd = loginData.get("userpwd");
-        String userType = loginData.get("usertype"); // PERSONAL / BUSINESS
+        String userType = loginData.get("usertype");
 
         Map<String, Object> result = new HashMap<>();
 
@@ -128,56 +131,84 @@ public class DataController {
             return result;
         }
 
-        log.info("로그인 요청 → " + loginData.toString());
+        log.info("로그인 요청 → " + loginData);
 
         Object loginUser = null;
 
-        // 일반 회원 로그인
+        // =========================
+        // PERSONAL 로그인
+        // =========================
         if (userType.equals("PERSONAL")) {
             loginUser = dataService.loginPersonal(userId, userPwd);
-        }
-        // 기업 회원 로그인
-        else if (userType.equals("BUSINESS")) {
-            loginUser = dataService.businessLogin(userId, userPwd);
-        }
 
-        // 로그인 실패
-        if (loginUser == null) {
-            session.setAttribute("logStatus", "N");
-            result.put("status", "FAIL");
-            result.put("message", "아이디 또는 비밀번호를 확인하세요.");
-            return result;
-        }
+            if (loginUser == null) {
+                session.setAttribute("logStatus", "N");
+                result.put("status", "FAIL");
+                result.put("message", "아이디 또는 비밀번호를 확인하세요.");
+                return result;
+            }
 
-        // 로그인 성공
-        session.setAttribute("logStatus", "Y");
-
-        if (userType.equals("PERSONAL")) {
             DataEntity user = (DataEntity) loginUser;
+
+            session.setAttribute("logStatus", "Y");
             session.setAttribute("logId", user.getUserid());
             session.setAttribute("logName", user.getUsername());
 
+            // 🔥 결제 핵심 (무조건 필요)
+            session.setAttribute("mId", user.getMId());
+            session.setAttribute("loginUser", user);
+
+            result.put("status", "OK");
             result.put("username", user.getUsername());
             result.put("userid", user.getUserid());
             result.put("usertype", "PERSONAL");
-
             result.put("mId", user.getMId());
-        } else {
+
+            return result;
+        }
+
+        // =========================
+        // BUSINESS 로그인
+        // =========================
+        else if (userType.equals("BUSINESS")) {
+            loginUser = dataService.businessLogin(userId, userPwd);
+
+            if (loginUser == null) {
+                session.setAttribute("logStatus", "N");
+                result.put("status", "FAIL");
+                result.put("message", "아이디 또는 비밀번호를 확인하세요.");
+                return result;
+            }
+
             CpDataEntity biz = (CpDataEntity) loginUser;
+
+            session.setAttribute("logStatus", "Y");
             session.setAttribute("logId", biz.getUserid());
             session.setAttribute("logName", biz.getBusinessName());
 
+            // 🔥 결제용 통일 (핵심)
+            session.setAttribute("mId", biz.getCId());
+            session.setAttribute("loginUser", biz);
+
+            result.put("status", "OK");
             result.put("username", biz.getBusinessName());
             result.put("userid", biz.getUserid());
             result.put("usertype", "BUSINESS");
 
-            // 이슬 기업 로그인 아이디추가
+            // 프론트도 필요하면 유지
             result.put("cId", biz.getCId());
 
+            return result;
         }
 
+        result.put("status", "ERROR");
+        result.put("message", "잘못된 userType");
 
-        result.put("status", "OK");
+        log.info("=== LOGIN 성공 ===");
+        log.info("SESSION ID = {}", session.getId());
+        log.info("loginUser = {}", session.getAttribute("loginUser"));
+        log.info("mId = {}", session.getAttribute("mId"));
+
         return result;
     }
 

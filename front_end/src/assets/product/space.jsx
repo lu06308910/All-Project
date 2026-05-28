@@ -91,6 +91,7 @@ function Space() {
                                         title: record.name,
                                         price: Number(String(record.price).replace(/[^0-9]/g, "")),
                                         category: record.b_category,
+                                        businessName: record.company?.businessName,
                                         img: record.fileList?.[0]
                                                 ? `http://192.168.4.60:9991/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
                                                 : "/no-image.png"
@@ -362,8 +363,8 @@ function Space() {
 
                                                                 <div className="product-info">
 
-                                                                        <div style={{ fontWeight: "bold" }}>
-                                                                                {item.company?.name || "canvas"}
+                                                                        <div style={{ fontWeight: "bold", color: "#868686", fontSize: "14px" }}>
+                                                                                {item.businessName || "brand"}
                                                                         </div>
 
                                                                         <div className="title">

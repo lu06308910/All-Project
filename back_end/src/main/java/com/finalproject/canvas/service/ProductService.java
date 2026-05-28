@@ -168,4 +168,9 @@ public class ProductService {
     public List<ProductEntity> getBysCategory(String sCategory) {
         return productRepository.findBysCategory(sCategory.trim());
     }
+
+//    // 탑 상품 검색기능 , 이슬추가
+//    public List<ProductEntity> searchProduct(String keyword) {
+//        return productRepository.findByNameContaining(keyword);
+//    }
 }

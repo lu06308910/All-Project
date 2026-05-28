@@ -28,4 +28,8 @@ public interface CartRepository extends JpaRepository<CartEntity, Integer> {
     //프로덕트 삭제 시 같이 삭제
     @Transactional
     void deleteBypId(Integer pId);
+
+    // 상세페이지에서 바로 구매하기 , 이슬추가
+    @Query("select c from CartEntity c join fetch c.product p left join fetch p.fileList where c.cartId in :ids")
+    List<CartEntity> findByCartIdIn(@Param("ids") List<Integer> ids);
 }

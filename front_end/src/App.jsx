@@ -27,6 +27,7 @@ import Basket from './assets/buy/Basket';
 import Parchase from './assets/buy/Parchase';
 import Finalbuy from './assets/buy/Finalbuy';
 import PaymentApproval from './assets/buy/PaymentApproval';
+import SearchProduct from './assets/product/Searchproduct';
 
 function App() {
 
@@ -49,6 +50,7 @@ function App() {
           <Route path='/mypage/addproduct' element={<AddProduct />}></Route>
           <Route path='/allproduct' element={<AllRroduct />}></Route>
           <Route path='/productDetail/:id' element={<ProductDetail />}></Route>
+          <Route path='/search' element={<SearchProduct />}></Route>
           <Route path='/spaceproduct' element={<Space />}></Route>
           <Route path='/sale' element={<Sale />}></Route>
           <Route path='/qna/popularqna' element={<PopularQna />}></Route>

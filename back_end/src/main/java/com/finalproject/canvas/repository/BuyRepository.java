@@ -2,6 +2,7 @@ package com.finalproject.canvas.repository;
 
 import com.finalproject.canvas.entity.BuyEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -29,4 +30,20 @@ public interface BuyRepository extends JpaRepository<BuyEntity, Integer> {
     List<BuyEntity> findSalesBySeller(@Param("sellerId") String sellerId);
 
     List<BuyEntity> findByProduct_pId(Integer pId);
+
+    /**
+     * orderId로 주문 조회 (결제 후 매칭용)
+     */
+    @Query("SELECT b FROM BuyEntity b WHERE b.orderId = :orderId")
+    BuyEntity findByOrderId(@Param("orderId") String orderId);
+
+    /**
+     * orderId 기준 상태 업데이트 (선택 - 빠른 방식)
+     */
+    @Modifying
+    @Query("UPDATE BuyEntity b SET b.status = :status WHERE b.orderId = :orderId")
+    void updateStatusByOrderId(@Param("orderId") String orderId,
+                               @Param("status") String status);
+
+
 }

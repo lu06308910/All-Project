@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import './../css/seul.css';
 
 
-function CategoryProduct() {
+function SearchProduct() {
 
         const [openMenu, setOpenMenu] = useState(null);
         const [showMore, setShowMore] = useState(false);
 
         const { id } = useParams(); // URL에서 카테고리 정보 추출
+
+        const [data, setData] = useState([]); // 제품 데이터
+
 
         // 리뷰,별점
         const [reviews, setReviews] = useState({}); // 백엔드 받아오기
@@ -38,24 +42,6 @@ function CategoryProduct() {
                         .catch(err => console.log(err));
         }, []);
 
-        const { sCategory } = useParams(); // 카테고리 매핑주소
-        const [data, setData] = useState([]); // 카테고리 해당 제품 데이터
-
-
-        // 처음 4개 + showMore true면 전체 + 내림차순 정렬(새상품부터 보여짐)
-        const visibleProducts = showMore
-                ? [...data].sort((a, b) => b.pid - a.pid)
-                : [...data].sort((a, b) => b.pid - a.pid).slice(0, 4);
-
-        // 카테고리별 제품 데이터 
-        useEffect(() => {
-                if (!sCategory) return;
-
-                axios.get(`http://192.168.4.60:9991/categoryproduct/${sCategory}`)
-                        .then((res) => {
-                                setData(res.data.dataList);
-                        });
-        }, [sCategory]);
 
         // 좋아요 백엔드
         function handleLike(productId) {
@@ -114,6 +100,36 @@ function CategoryProduct() {
                         + (halfStar ? "☆" : "")
                         + "☆".repeat(emptyStars);
         }
+
+        //=============== 검색기능===============
+
+
+        const location = useLocation();
+        const keyword = new URLSearchParams(location.search).get("keyword");
+
+        useEffect(() => {
+                if (!keyword) return;
+
+                axios.post("http://192.168.4.60:9991/search/product", {
+                        searchKey: "name",
+                        searchWord: keyword
+                })
+                        .then(res => setData(res.data))
+                        .catch(console.log);
+
+        }, [keyword]);
+
+        // 처음 4개 + showMore true면 전체 + 내림차순 정렬(새상품부터 보여짐)
+        const visibleProducts = keyword
+                ? data
+                : (showMore
+                        ? [...data].sort((a, b) => b.pid - a.pid)
+                        : [...data].sort((a, b) => b.pid - a.pid).slice(0, 4));
+
+
+
+
+
 
         return (
                 <div className="all-product-wrap">
@@ -198,7 +214,7 @@ function CategoryProduct() {
                         {/* 오른쪽 컨텐츠 ---------------------------------------------------- */}
                         <div className="product-content">
                                 <div style={{ borderBottom: '2px solid black', marginBottom: '30px', padding: '10px' }}>
-                                        <h2>{data?.[0]?.scategory}</h2>
+                                        <h2>{keyword ? `"${keyword}" 검색 결과` : data?.[0]?.scategory}</h2>
                                 </div>
 
                                 {/* 제품 리스트 (한 줄 4개 고정 + 더보기 기능) */}
@@ -273,11 +289,13 @@ function CategoryProduct() {
                                 </div>
 
                                 {/* 더보기 버튼 */}
-                                <div className="more-box">
-                                        <button className="more-btn" onClick={() => setShowMore(!showMore)}>
-                                                {showMore ? "접기" : "더보기"}
-                                        </button>
-                                </div>
+                                {!keyword && (
+                                        <div className="more-box">
+                                                <button className="more-btn" onClick={() => setShowMore(!showMore)}>
+                                                        {showMore ? "접기" : "더보기"}
+                                                </button>
+                                        </div>
+                                )}
 
                         </div>
                 </div>
@@ -285,4 +303,4 @@ function CategoryProduct() {
 
 
 }
-export default CategoryProduct;
+export default SearchProduct;
