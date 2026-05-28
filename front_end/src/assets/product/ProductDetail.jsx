@@ -450,8 +450,10 @@ function ProductDetail() {
                 axios.post("http://192.168.4.60:9991/review/write", formData)
                         .then(res => {
                                 console.log("리뷰 작성 성공:", res.data);
+                                alert("리뷰가 성공적으로 등록되었습니다!");
 
                                 setOpenReviewModal(false); // 성공하면 모달 닫기
+                                getReviews(); // 리뷰 목록 다시 불러오기
                         })
                         .catch(err => console.log("리뷰 에러:", err));
         }
@@ -562,7 +564,7 @@ function ProductDetail() {
                                                                 className="origin-price"
                                                                 style={{ textDecoration: "line-through", color: "#999" }}
                                                         >
-                                                                ₩ {Number(data?.originPrice || 0).toLocaleString()}
+                                                                ₩ {Number(String(data?.originPrice || 0).replace(/,/g, "")).toLocaleString()}
                                                         </span>
                                                 )}
 

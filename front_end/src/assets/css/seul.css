@@ -637,3 +637,10 @@
     font-weight: 800;
     color: #111;
 }
+/* 모든 상품 정렬버튼/
+/ 🟦 활성화 버튼: 검정 배경 + 흰 글씨 */
+.sort-btns button.active {
+    background: black;
+    color: white;
+    border-color: black;
+}

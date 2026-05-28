@@ -112,6 +112,7 @@ function AllProduct() {
                         title: record.name,
                         price: Number(String(record.price).replace(/[^0-9]/g, "")),
                         businessName: record.company?.businessName,
+                        writedate: record.writedate,
                         img: record.fileList?.[0]
                             ? `http://192.168.4.60:9991/upload/${record.fileList[0].filename}.${record.fileList[0].extname}`
                             : "/no-image.png"
@@ -126,12 +127,6 @@ function AllProduct() {
                 console.log("목록조회 에러발생==>", error);
             });
     }
-    const visibleProducts = useMemo(() => {
-        return showMore
-            ? mergedList
-            : mergedList.slice(0, 8);
-    }, [mergedList, showMore]);
-
     // 별 리뷰 수 가져오기
     useEffect(() => {
 
@@ -189,6 +184,59 @@ function AllProduct() {
             })
             .catch(err => console.log(err));
     }
+    // ================ 정렬 버튼 ================
+    const [sortType, setSortType] = useState("new");
+
+    const visibleProducts = useMemo(() => {
+        let sorted = [...mergedList];
+
+        // 🔥 가격 문자열 컴마 제거 → 숫자 변환
+        const getPrice = (item) => Number(String(item.price).replace(/,/g, "") || 0);
+
+        if (sortType === "new") {
+            sorted.sort((a, b) => new Date(b.writedate) - new Date(a.writedate));
+        } else if (sortType === "low") {
+            sorted.sort((a, b) => getPrice(a) - getPrice(b));
+        } else if (sortType === "high") {
+            sorted.sort((a, b) => getPrice(b) - getPrice(a));
+        } else if (sortType === "rating") {
+            sorted.sort((a, b) => {
+                const aRating = starMap[a.id] || 0;
+                const bRating = starMap[b.id] || 0;
+                return bRating - aRating;
+            });
+        }
+
+        return sorted;
+    }, [mergedList, showMore, sortType]);
+
+    const changeSort = (type) => {
+        setSortType(type);
+
+        const sorted = [...visibleProducts].sort((a, b) => {
+            const priceA = Number(String(a.price).replace(/,/g, ""));
+            const priceB = Number(String(b.price).replace(/,/g, ""));
+
+            switch (type) {
+                case "new":
+                    return new Date(b.writedate) - new Date(a.writedate);
+                case "low":
+                    return priceA - priceB;
+
+                case "high":
+                    return priceB - priceA;
+
+                case "rating":
+                    return (b.starMap?.[b.id] || 0) - (a.starMap?.[a.id] || 0);
+
+                default:
+                    return 0;
+            }
+        });
+
+        setVisibleProducts(sorted); // 🔥 여기서 리스트 업데이트
+    };
+
 
     return (
         <div className="all-product-wrap">
@@ -263,11 +311,33 @@ function AllProduct() {
 
                 {/* 정렬 버튼 */}
                 <div className="sort-btns">
-                    <button>신제품</button>
-                    <button>베스트 매치</button>
-                    <button>낮은 가격순</button>
-                    <button>높은 가격순</button>
-                    <button>평점순</button>
+                    <button
+                        className={sortType === "new" ? "active" : ""}
+                        onClick={() => changeSort("new")}
+                    >
+                        신제품
+                    </button>
+
+                    <button
+                        className={sortType === "low" ? "active" : ""}
+                        onClick={() => changeSort("low")}
+                    >
+                        낮은 가격순
+                    </button>
+
+                    <button
+                        className={sortType === "high" ? "active" : ""}
+                        onClick={() => changeSort("high")}
+                    >
+                        높은 가격순
+                    </button>
+
+                    <button
+                        className={sortType === "rating" ? "active" : ""}
+                        onClick={() => changeSort("rating")}
+                    >
+                        평점순
+                    </button>
                 </div>
                 {/* 제품 리스트 */}
                 <div className="product-grid">
